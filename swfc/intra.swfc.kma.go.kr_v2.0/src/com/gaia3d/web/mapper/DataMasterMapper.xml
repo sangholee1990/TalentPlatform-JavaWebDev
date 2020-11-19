@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.DataMasterMapper">
+	<select id="SelectMany" parameterType="hashmap" resultType="DataMasterDTO">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+     			SELECT
+				        A.CLT_DTA_MSTR_SEQ_N
+				       ,A.COVERAGE_SEQ_N
+				       ,DECODE(B.DEL_F_CD , 'Y', '', B.COVERAGE_KOR_NM) AS COVERAGE_KOR_NM
+				       ,A.CLT_TAR_SEQ_N
+				       ,DECODE(C.DEL_F_CD , 'Y', '', C.CLT_TAR_KOR_NM) AS CLT_TAR_KOR_NM
+				       ,A.CLT_TAR_GRP_SEQ_N
+				       ,DECODE(D.DEL_F_CD , 'Y', '', D.CLT_TAR_GRP_KOR_NM) AS CLT_TAR_GRP_KOR_NM
+				       ,A.DMN_SEQ_N
+				       ,DECODE(E.DEL_F_CD , 'Y', '', E.DMN_KOR_NM) AS DMN_KOR_NM
+				       ,A.DMN_LAYER_SEQ_N
+				       ,DECODE(F.DEL_F_CD , 'Y', '', F.DMN_LAYER_KOR_NM) AS DMN_LAYER_KOR_NM
+				       ,A.DMN_SUB_SEQ_N
+				       ,DECODE(G.DEL_F_CD , 'Y', '', G.DMN_SUB_KOR_NM) AS DMN_SUB_KOR_NM
+				       ,A.DTA_KND_SEQ_N
+				       ,DECODE(H.DEL_F_CD , 'Y', '', H.DTA_KND_KOR_NM) AS DTA_KND_KOR_NM
+				       ,A.DTA_KND_INSIDE_SEQ_N
+				       ,DECODE(I.DEL_F_CD , 'Y', '', I.DTA_KND_INSIDE_KOR_NM) AS DTA_KND_INSIDE_KOR_NM
+				       ,A.METADATASEQN
+				       ,J.FILEIDENTIFIER AS metadataStandardName
+				       ,A.CLT_DTA_SV_TP_CD
+				       ,A.KEP_DIR
+				       ,A.CLT_DTA_TP_CD
+				       ,A.ALGO_NM
+				       ,A.ALGO_VER   
+				       ,A.USE_F_CD               
+				       ,A.DEL_F_CD               
+				       ,A.RG_K_SEQ_N             
+				       ,A.RG_D                   
+				       ,A.RG_TM                  
+				       ,A.RG_IP                  
+				       ,A.MDF_K_SEQ_N            
+				       ,A.MDF_D                  
+				       ,A.MDF_TM                 
+				       ,A.MDF_IP                 
+				       ,A.PROG_PATH                 
+				       ,A.PROG_FILE_NM                 
+				       ,A.MSTR_NM
+				       ,A.CLT_DTA_LST_DTM                 
+				       ,A.FRCT_MDL_SVR_IP                 
+				FROM
+				        SMT_CLT_DTA_MSTR_T A
+						LEFT  OUTER JOIN SMT_COVERAGE_T B ON B.COVERAGE_SEQ_N = A.COVERAGE_SEQ_N
+			       		LEFT  OUTER JOIN SMT_CLT_TAR_T C ON C.CLT_TAR_SEQ_N = A.CLT_TAR_SEQ_N
+			       		LEFT  OUTER JOIN SMT_CLT_TAR_GRP_T D ON D.CLT_TAR_GRP_SEQ_N = A.CLT_TAR_GRP_SEQ_N
+			       		LEFT  OUTER JOIN SMT_DMN_T E ON E.DMN_SEQ_N = A.DMN_SEQ_N
+			       		LEFT  OUTER JOIN SMT_DMN_LAYER_T F ON F.DMN_LAYER_SEQ_N = A.DMN_LAYER_SEQ_N
+			       		LEFT  OUTER JOIN SMT_DMN_SUB_T G ON G.DMN_SUB_SEQ_N = A.DMN_SUB_SEQ_N
+			       		LEFT  OUTER JOIN SMT_DTA_KND_T H ON H.DTA_KND_SEQ_N = A.DTA_KND_SEQ_N
+			       		LEFT  OUTER JOIN SMT_DTA_KND_INSIDE_T I ON I.DTA_KND_INSIDE_SEQ_N = A.DTA_KND_INSIDE_SEQ_N
+			       		LEFT  OUTER JOIN WMO_MD_METADATA J ON J.METADATASEQN = A.METADATASEQN
+				WHERE
+						A.DEL_F_CD = 'N'	
+	 			<if test="search_use != null and search_use != '' ">
+	 					AND A.USE_F_CD = #{search_use}
+	 			</if> 
+	 		
+	 			
+	 			<if test="search_dmn_seq_n != null and search_dmn_seq_n != '' ">
+	 					AND A.DMN_SEQ_N = #{search_dmn_seq_n}
+	 			</if> 
+	 			
+	 			<if test="search_dmn_sub_seq_n != null and search_dmn_sub_seq_n != '' ">
+	 					AND A.DMN_SUB_SEQ_N = #{search_dmn_sub_seq_n}
+	 			</if> 
+	 			
+	 			<if test="search_dmn_layer_seq_n != null and search_dmn_layer_seq_n != '' ">
+	 					AND A.DMN_LAYER_SEQ_N = #{search_dmn_layer_seq_n}
+	 			</if> 
+	 			
+	 			<if test="search_dta_knd_seq_n != null and search_dta_knd_seq_n != '' ">
+	 					AND A.DTA_KND_SEQ_N = #{search_dta_knd_seq_n}
+	 			</if> 
+	 			<if test="search_dta_knd_inside_seq_n != null and search_dta_knd_inside_seq_n != '' ">
+	 					AND A.DTA_KND_INSIDE_SEQ_N = #{search_dta_knd_inside_seq_n}
+	 			</if> 
+	 			<if test="search_text != null and search_text != '' ">
+	 					AND A.MSTR_NM LIKE  '%' ||#{search_text} ||'%'
+	 			</if> 
+	 					
+			ORDER BY
+				A.RG_D DESC, A.RG_TM DESC
+				
+		<![CDATA[		
+				) A
+			) WHERE RNUM >= #{startRow}	AND RNUM <= #{endRow}   
+		]]>		 	
+	</select>
+
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM
+				        SMT_CLT_DTA_MSTR_T A
+						LEFT  OUTER JOIN SMT_COVERAGE_T B ON B.COVERAGE_SEQ_N = A.COVERAGE_SEQ_N
+			       		LEFT  OUTER JOIN SMT_CLT_TAR_T C ON C.CLT_TAR_SEQ_N = A.CLT_TAR_SEQ_N
+			       		LEFT  OUTER JOIN SMT_CLT_TAR_GRP_T D ON D.CLT_TAR_GRP_SEQ_N = A.CLT_TAR_GRP_SEQ_N
+			       		LEFT  OUTER JOIN SMT_DMN_T E ON E.DMN_SEQ_N = A.DMN_SEQ_N
+			       		LEFT  OUTER JOIN SMT_DMN_LAYER_T F ON F.DMN_LAYER_SEQ_N = A.DMN_LAYER_SEQ_N
+			       		LEFT  OUTER JOIN SMT_DMN_SUB_T G ON G.DMN_SUB_SEQ_N = A.DMN_SUB_SEQ_N
+			       		LEFT  OUTER JOIN SMT_DTA_KND_T H ON H.DTA_KND_SEQ_N = A.DTA_KND_SEQ_N
+			       		LEFT  OUTER JOIN SMT_DTA_KND_INSIDE_T I ON I.DTA_KND_INSIDE_SEQ_N = A.DTA_KND_INSIDE_SEQ_N
+			       		LEFT  OUTER JOIN WMO_MD_METADATA J ON J.METADATASEQN = A.METADATASEQN
+				WHERE
+						A.DEL_F_CD = 'N'	
+	 			<if test="search_use != null and search_use != '' ">
+	 					AND A.USE_F_CD = #{search_use}
+	 			</if> 
+	 		
+	 			
+	 			<if test="search_dmn_seq_n != null and search_dmn_seq_n != '' ">
+	 					AND A.DMN_SEQ_N = #{search_dmn_seq_n}
+	 			</if> 
+	 			
+	 			<if test="search_dmn_sub_seq_n != null and search_dmn_sub_seq_n != '' ">
+	 					AND A.DMN_SUB_SEQ_N = #{search_dmn_sub_seq_n}
+	 			</if> 
+	 			
+	 			<if test="search_dmn_layer_seq_n != null and search_dmn_layer_seq_n != '' ">
+	 					AND A.DMN_LAYER_SEQ_N = #{search_dmn_layer_seq_n}
+	 			</if> 
+	 			
+	 			<if test="search_dta_knd_seq_n != null and search_dta_knd_seq_n != '' ">
+	 					AND A.DTA_KND_SEQ_N = #{search_dta_knd_seq_n}
+	 			</if> 
+	 			<if test="search_dta_knd_inside_seq_n != null and search_dta_knd_inside_seq_n != '' ">
+	 					AND A.DTA_KND_INSIDE_SEQ_N = #{search_dta_knd_inside_seq_n}
+	 			</if>
+	 			<if test="search_text != null and search_text != '' ">
+	 					AND A.MSTR_NM LIKE  '%' ||#{search_text} ||'%'
+	 			</if>  
+	 										
+	</select>
+	
+		
+	<select id="SelectOne" parameterType="hashmap" resultType="DataMasterDTO">
+		SELECT
+		        A.CLT_DTA_MSTR_SEQ_N
+		       ,A.COVERAGE_SEQ_N
+		       ,DECODE(B.DEL_F_CD , 'Y', '', B.COVERAGE_KOR_NM) AS COVERAGE_KOR_NM
+		       ,A.CLT_TAR_SEQ_N
+		       ,DECODE(C.DEL_F_CD , 'Y', '', C.CLT_TAR_KOR_NM) AS CLT_TAR_KOR_NM
+		       ,A.CLT_TAR_GRP_SEQ_N
+		       ,DECODE(D.DEL_F_CD , 'Y', '', D.CLT_TAR_GRP_KOR_NM) AS CLT_TAR_GRP_KOR_NM
+		       ,A.DMN_SEQ_N
+		       ,DECODE(E.DEL_F_CD , 'Y', '', E.DMN_KOR_NM) AS DMN_KOR_NM
+		       ,A.DMN_LAYER_SEQ_N
+		       ,DECODE(F.DEL_F_CD , 'Y', '', F.DMN_LAYER_KOR_NM) AS DMN_LAYER_KOR_NM
+		       ,A.DMN_SUB_SEQ_N
+		       ,DECODE(G.DEL_F_CD , 'Y', '', G.DMN_SUB_KOR_NM) AS DMN_SUB_KOR_NM
+		       ,A.DTA_KND_SEQ_N
+		       ,DECODE(H.DEL_F_CD , 'Y', '', H.DTA_KND_KOR_NM) AS DTA_KND_KOR_NM
+		       ,A.DTA_KND_INSIDE_SEQ_N
+		       ,DECODE(I.DEL_F_CD , 'Y', '', I.DTA_KND_INSIDE_KOR_NM) AS DTA_KND_INSIDE_KOR_NM
+		       ,A.METADATASEQN
+		       ,J.FILEIDENTIFIER AS metadataStandardName
+		       ,A.CLT_DTA_SV_TP_CD
+		       ,A.KEP_DIR
+		       ,A.CLT_DTA_TP_CD
+		       ,A.ALGO_NM
+		       ,A.ALGO_VER   
+		       ,A.USE_F_CD               
+		       ,A.DEL_F_CD               
+		       ,A.RG_K_SEQ_N             
+		       ,A.RG_D                   
+		       ,A.RG_TM                  
+		       ,A.RG_IP                  
+		       ,A.MDF_K_SEQ_N            
+		       ,A.MDF_D                  
+		       ,A.MDF_TM                 
+		       ,A.MDF_IP                 
+       	       ,A.PROG_PATH                 
+		       ,A.PROG_FILE_NM                 
+		       ,A.MSTR_NM
+		       ,C.CLT_TAR_CD
+	           ,B.COVERAGE_CD
+	           ,I.DTA_KND_CD  
+	           ,(SELECT CLT_TAR_SENSOR_CD FROM SMT_CLT_TAR_SENSOR_T WHERE CLT_TAR_SENSOR_CD IN (SELECT CLT_TAR_SENSOR_CD FROM SMT_CLT_TAR_SENSOR_MP_T WHERE CLT_TAR_SEQ_N = A.CLT_TAR_SEQ_N AND CLT_TAR_GRP_SEQ_N = A.CLT_TAR_GRP_SEQ_N AND ROWNUM = 1 ) AND ROWNUM = 1 ) AS CLT_TAR_SENSOR_CD 
+			   ,A.CLT_DTA_LST_DTM
+			   ,A.FRCT_MDL_SVR_IP 	
+		FROM
+		        SMT_CLT_DTA_MSTR_T A
+				LEFT  OUTER JOIN SMT_COVERAGE_T B ON B.COVERAGE_SEQ_N = A.COVERAGE_SEQ_N
+	       		LEFT  OUTER JOIN SMT_CLT_TAR_T C ON C.CLT_TAR_SEQ_N = A.CLT_TAR_SEQ_N
+	       		LEFT  OUTER JOIN SMT_CLT_TAR_GRP_T D ON D.CLT_TAR_GRP_SEQ_N = A.CLT_TAR_GRP_SEQ_N
+	       		LEFT  OUTER JOIN SMT_DMN_T E ON E.DMN_SEQ_N = A.DMN_SEQ_N
+	       		LEFT  OUTER JOIN SMT_DMN_LAYER_T F ON F.DMN_LAYER_SEQ_N = A.DMN_LAYER_SEQ_N
+	       		LEFT  OUTER JOIN SMT_DMN_SUB_T G ON G.DMN_SUB_SEQ_N = A.DMN_SUB_SEQ_N
+	       		LEFT  OUTER JOIN SMT_DTA_KND_T H ON H.DTA_KND_SEQ_N = A.DTA_KND_SEQ_N
+	       		LEFT  OUTER JOIN SMT_DTA_KND_INSIDE_T I ON I.DTA_KND_INSIDE_SEQ_N = A.DTA_KND_INSIDE_SEQ_N
+	       		LEFT  OUTER JOIN WMO_MD_METADATA J ON J.METADATASEQN = A.METADATASEQN
+	    <trim prefix="WHERE">
+	    	<choose>
+	    		<when test="api_type != null">
+	    			<if test="api_type == 'model'">
+	    				A.CLT_DTA_MSTR_SEQ_N = (SELECT frct_prog_seq_n FROM sos_frct_prog_mnp_t WHERE DTA_TYPE = 'M' AND clt_dta_seq_n = #{clt_dta_mstr_seq_n} AND ROWNUM=1 )
+	    			</if>
+	    			<if test="api_type == 'db'">
+	    				A.CLT_DTA_MSTR_SEQ_N = (SELECT clt_prog_seq_n FROM sos_clt_prog_mnp_t WHERE clt_dta_seq_n = #{clt_dta_mstr_seq_n} AND ROWNUM=1 )
+	    			</if>
+	    		</when>
+	    		<otherwise>
+					A.CLT_DTA_MSTR_SEQ_N = #{clt_dta_mstr_seq_n}
+	    		</otherwise>
+	    	</choose>
+	    </trim>
+		
+	</select>
+
+	
+	
+	<resultMap type="HashMap" id="masterMap">
+		<result column="CLT_DTA_MSTR_SEQ_N" property="CLT_DTA_MSTR_SEQ_N" />
+		<result column="COVERAGE_SEQ_N" property="COVERAGE_SEQ_N" />
+		<result column="COVERAGE_KOR_NM" property="COVERAGE_KOR_NM" />
+		<result column="COVERAGE_ENG_NM" property="COVERAGE_ENG_NM" />
+		<result column="COVERAGE_DESC" property="COVERAGE_DESC" />
+		<result column="CLT_TAR_SEQ_N" property="CLT_TAR_SEQ_N" />
+		<result column="CLT_TAR_KOR_NM" property="CLT_TAR_KOR_NM" />
+		<result column="CLT_TAR_ENG_NM" property="CLT_TAR_ENG_NM" />
+		<result column="CLT_TAR_DESC" property="CLT_TAR_DESC" />
+		<result column="CLT_TAR_GRP_SEQ_N" property="CLT_TAR_GRP_SEQ_N" />
+		<result column="CLT_TAR_GRP_KOR_NM" property="CLT_TAR_GRP_KOR_NM" />
+		<result column="CLT_TAR_GRP_ENG_NM" property="CLT_TAR_GRP_ENG_NM" />
+		<result column="CLT_TAR_GRP_DESC" property="CLT_TAR_GRP_DESC" />
+		<result column="DMN_SEQ_N" property="DMN_SEQ_N" />
+		<result column="DMN_KOR_NM" property="DMN_KOR_NM" />
+		<result column="DMN_ENG_NM" property="DMN_ENG_NM" />
+		<result column="DMN_DESC" property="DMN_DESC" />
+		<result column="DMN_LAYER_SEQ_N" property="DMN_LAYER_SEQ_N" />
+		<result column="DMN_LAYER_KOR_NM" property="DMN_LAYER_KOR_NM" />
+		<result column="DMN_LAYER_ENG_NM" property="DMN_LAYER_ENG_NM" />
+		<result column="DMN_LAYER_DESC" property="DMN_LAYER_DESC" />
+		<result column="DMN_SUB_SEQ_N" property="DMN_SUB_SEQ_N" />
+		<result column="DMN_SUB_KOR_NM" property="DMN_SUB_KOR_NM" />
+		<result column="DMN_SUB_ENG_NM" property="DMN_SUB_ENG_NM" />
+		<result column="DMN_SUB_DESC" property="DMN_SUB_DESC" />
+		<result column="DTA_KND_SEQ_N" property="DTA_KND_SEQ_N" />
+		<result column="DTA_KND_KOR_NM" property="DTA_KND_KOR_NM" />
+		<result column="DTA_KND_ENG_NM" property="DTA_KND_ENG_NM" />
+		<result column="DTA_KND_DESC" property="DTA_KND_DESC" />
+		<result column="MEASURING_UNT" property="MEASURING_UNT" />
+		<result column="UNCERTAINTY_UNT" property="UNCERTAINTY_UNT" />
+		<result column="HOR_RES_UNT" property="HOR_RES_UNT" />
+		<result column="VER_RES_UNT" property="VER_RES_UNT" />
+		<result column="STABILITY_UNT" property="STABILITY_UNT" />
+		<result column="RMK" property="RMK" />
+		<result column="DTA_KND_INSIDE_SEQ_N" property="DTA_KND_INSIDE_SEQ_N" />
+		<result column="DTA_KND_INSIDE_KOR_NM" property="DTA_KND_INSIDE_KOR_NM" />
+		<result column="DTA_KND_INSIDE_ENG_NM" property="DTA_KND_INSIDE_ENG_NM" />
+		<result column="DTA_KND_INSIDE_DESC" property="DTA_KND_INSIDE_DESC" />
+		<result column="METADATASEQN" property="METADATASEQN" />
+		<result column="METADATASTANDARDNAME" property="METADATASTANDARDNAME" />
+		<result column="CLT_DTA_SV_TP_CD" property="CLT_DTA_SV_TP_CD" />
+		<result column="KEP_DIR" property="KEP_DIR" />
+		<result column="CLT_DTA_TP_CD" property="CLT_DTA_TP_CD" />
+		<result column="ALGO_NM" property="ALGO_NM" />
+		<result column="ALGO_VER" property="ALGO_VER" />
+		<result column="USE_F_CD" property="USE_F_CD" />
+		<result column="DEL_F_CD" property="DEL_F_CD" />
+		<result column="RG_K_SEQ_N" property="RG_K_SEQ_N" />
+		<result column="RG_D" property="RG_D" />
+		<result column="RG_TM" property="RG_TM" />
+		<result column="RG_IP" property="RG_IP" />
+		<result column="MDF_K_SEQ_N" property="MDF_K_SEQ_N" />
+		<result column="MDF_D" property="MDF_D" />
+		<result column="MDF_TM" property="MDF_TM" />
+		<result column="MDF_IP" property="MDF_IP" />
+		<result column="PROG_PATH" property="PROG_PATH" />
+		<result column="PROG_FILE_NM" property="PROG_FILE_NM" />
+		<result column="MSTR_NM" property="MSTR_NM" />
+		<result column="CLT_TAR_CD" property="CLT_TAR_CD" />
+		<result column="COVERAGE_CD" property="COVERAGE_CD" />
+		<result column="DTA_KND_CD" property="DTA_KND_CD" />
+		<result column="CLT_TAR_SENSOR_CD" property="CLT_TAR_SENSOR_CD" />
+		<result column="CLT_DTA_LST_DTM" property="CLT_DTA_LST_DTM" />
+	</resultMap>
+		
+	<select id="SelectOneAll" parameterType="hashmap" resultType="java.util.HashMap">
+		SELECT
+		        A.CLT_DTA_MSTR_SEQ_N
+		       ,A.COVERAGE_SEQ_N
+		       ,DECODE(B.DEL_F_CD , 'Y', '', B.COVERAGE_KOR_NM) AS COVERAGE_KOR_NM
+		       ,DECODE(B.DEL_F_CD , 'Y', '', B.COVERAGE_ENG_NM) AS COVERAGE_ENG_NM
+		       ,DECODE(B.DEL_F_CD , 'Y', '', B.COVERAGE_DESC) AS COVERAGE_DESC
+		       ,A.CLT_TAR_SEQ_N
+		       ,DECODE(C.DEL_F_CD , 'Y', '', C.CLT_TAR_KOR_NM) AS CLT_TAR_KOR_NM
+		       ,DECODE(C.DEL_F_CD , 'Y', '', C.CLT_TAR_ENG_NM) AS CLT_TAR_ENG_NM
+		       ,DECODE(C.DEL_F_CD , 'Y', '', C.CLT_TAR_DESC) AS CLT_TAR_DESC
+		       ,A.CLT_TAR_GRP_SEQ_N
+		       ,DECODE(D.DEL_F_CD , 'Y', '', D.CLT_TAR_GRP_KOR_NM) AS CLT_TAR_GRP_KOR_NM
+		       ,DECODE(D.DEL_F_CD , 'Y', '', D.CLT_TAR_GRP_ENG_NM) AS CLT_TAR_GRP_ENG_NM
+		       ,DECODE(D.DEL_F_CD , 'Y', '', D.CLT_TAR_GRP_DESC) AS CLT_TAR_GRP_DESC
+		       ,A.DMN_SEQ_N
+		       ,DECODE(E.DEL_F_CD , 'Y', '', E.DMN_KOR_NM) AS DMN_KOR_NM
+		       ,DECODE(E.DEL_F_CD , 'Y', '', E.DMN_ENG_NM) AS DMN_ENG_NM
+		       ,DECODE(E.DEL_F_CD , 'Y', '', E.DMN_DESC) AS DMN_DESC
+		       ,A.DMN_LAYER_SEQ_N
+		       ,DECODE(F.DEL_F_CD , 'Y', '', F.DMN_LAYER_KOR_NM) AS DMN_LAYER_KOR_NM
+		       ,DECODE(F.DEL_F_CD , 'Y', '', F.DMN_LAYER_ENG_NM) AS DMN_LAYER_ENG_NM
+		       ,DECODE(F.DEL_F_CD , 'Y', '', F.DMN_LAYER_DESC) AS DMN_LAYER_DESC
+		       ,A.DMN_SUB_SEQ_N
+		       ,DECODE(G.DEL_F_CD , 'Y', '', G.DMN_SUB_KOR_NM) AS DMN_SUB_KOR_NM
+		       ,DECODE(G.DEL_F_CD , 'Y', '', G.DMN_SUB_ENG_NM) AS DMN_SUB_ENG_NM
+		       ,DECODE(G.DEL_F_CD , 'Y', '', G.DMN_SUB_DESC) AS DMN_SUB_DESC
+		       ,A.DTA_KND_SEQ_N
+		       ,DECODE(H.DEL_F_CD , 'Y', '', H.DTA_KND_KOR_NM) AS DTA_KND_KOR_NM
+		       ,DECODE(H.DEL_F_CD , 'Y', '', H.DTA_KND_ENG_NM) AS DTA_KND_ENG_NM
+		       ,DECODE(H.DEL_F_CD , 'Y', '', H.DTA_KND_DESC) AS DTA_KND_DESC
+		       ,DECODE(H.DEL_F_CD, 'Y', '', H.MEASURING_UNT  ) AS MEASURING_UNT   
+			   ,DECODE(H.DEL_F_CD, 'Y', '', H.UNCERTAINTY_UNT) AS UNCERTAINTY_UNT 
+			   ,DECODE(H.DEL_F_CD, 'Y', '', H.HOR_RES_UNT    ) AS HOR_RES_UNT     
+			   ,DECODE(H.DEL_F_CD, 'Y', '', H.VER_RES_UNT    ) AS VER_RES_UNT     
+			   ,DECODE(H.DEL_F_CD, 'Y', '', H.STABILITY_UNT  ) AS STABILITY_UNT   
+			   ,DECODE(H.DEL_F_CD, 'Y', '', H.RMK            ) AS RMK        
+		       ,A.DTA_KND_INSIDE_SEQ_N
+		       ,DECODE(I.DEL_F_CD , 'Y', '', I.DTA_KND_INSIDE_KOR_NM) AS DTA_KND_INSIDE_KOR_NM
+		       ,DECODE(I.DEL_F_CD , 'Y', '', I.DTA_KND_INSIDE_ENG_NM) AS DTA_KND_INSIDE_ENG_NM
+		       ,DECODE(I.DEL_F_CD , 'Y', '', I.DTA_KND_INSIDE_DESC) AS DTA_KND_INSIDE_DESC
+		       ,A.METADATASEQN
+		       ,J.FILEIDENTIFIER AS metadataStandardName
+		       ,A.CLT_DTA_SV_TP_CD
+		       ,A.KEP_DIR
+		       ,A.CLT_DTA_TP_CD 
+		       ,A.ALGO_NM
+		       ,A.ALGO_VER   
+		       ,A.USE_F_CD               
+		       ,A.DEL_F_CD               
+		       ,A.RG_K_SEQ_N             
+		       ,A.RG_D                   
+		       ,A.RG_TM                  
+		       ,A.RG_IP                  
+		       ,A.MDF_K_SEQ_N            
+		       ,A.MDF_D                  
+		       ,A.MDF_TM                 
+		       ,A.MDF_IP                 
+		       ,A.PROG_PATH                 
+		       ,A.PROG_FILE_NM                 
+		       ,A.MSTR_NM                   
+		       ,A.CLT_DTA_LST_DTM
+		       ,A.FRCT_MDL_SVR_IP                   
+		FROM
+		       	SMT_CLT_DTA_MSTR_T A
+				LEFT  OUTER JOIN SMT_COVERAGE_T B ON B.COVERAGE_SEQ_N = A.COVERAGE_SEQ_N
+	       		LEFT  OUTER JOIN SMT_CLT_TAR_T C ON C.CLT_TAR_SEQ_N = A.CLT_TAR_SEQ_N
+	       		LEFT  OUTER JOIN SMT_CLT_TAR_GRP_T D ON D.CLT_TAR_GRP_SEQ_N = A.CLT_TAR_GRP_SEQ_N
+	       		LEFT  OUTER JOIN SMT_DMN_T E ON E.DMN_SEQ_N = A.DMN_SEQ_N
+	       		LEFT  OUTER JOIN SMT_DMN_LAYER_T F ON F.DMN_LAYER_SEQ_N = A.DMN_LAYER_SEQ_N
+	       		LEFT  OUTER JOIN SMT_DMN_SUB_T G ON G.DMN_SUB_SEQ_N = A.DMN_SUB_SEQ_N
+	       		LEFT  OUTER JOIN SMT_DTA_KND_T H ON H.DTA_KND_SEQ_N = A.DTA_KND_SEQ_N
+	       		LEFT  OUTER JOIN SMT_DTA_KND_INSIDE_T I ON I.DTA_KND_INSIDE_SEQ_N = A.DTA_KND_INSIDE_SEQ_N
+	       		LEFT  OUTER JOIN WMO_MD_METADATA J ON J.METADATASEQN = A.METADATASEQN
+		WHERE
+				A.CLT_DTA_MSTR_SEQ_N = #{clt_dta_mstr_seq_n}
+		
+	</select>
+
+	
+	<select id="Insert" parameterType="DataMasterDTO">
+		INSERT INTO SMT_CLT_DTA_MSTR_T (
+			 CLT_DTA_MSTR_SEQ_N      
+			,CLT_DTA_SV_TP_CD        
+			,COVERAGE_SEQ_N          
+			,CLT_TAR_GRP_SEQ_N       
+			,CLT_TAR_SEQ_N           
+			,METADATASEQN            
+			,DMN_SEQ_N               
+			,DMN_LAYER_SEQ_N         
+			,DTA_KND_INSIDE_SEQ_N    
+			,DTA_KND_SEQ_N           
+			,DMN_SUB_SEQ_N           
+			,KEP_DIR                 
+			,CLT_DTA_TP_CD           
+			,ALGO_NM                 
+			,ALGO_VER                
+			,USE_F_CD                
+			,DEL_F_CD                
+			,RG_K_SEQ_N              
+			,RG_D                    
+			,RG_TM                   
+			,RG_IP                   
+			,MDF_K_SEQ_N             
+			,MDF_D                   
+			,MDF_TM                  
+			,MDF_IP                  
+			,PROG_PATH                 
+	        ,PROG_FILE_NM                 
+	        ,MSTR_NM
+	        ,FRCT_MDL_SVR_IP                   
+		) VALUES (
+			 SMT_CLT_DTA_MSTR_T_SQ01.NEXTVAL
+			,#{clt_dta_sv_tp_cd}
+			,#{coverage_seq_n}
+			,(SELECT CLT_TAR_GRP_SEQ_N FROM SMT_CLT_TAR_T WHERE CLT_TAR_SEQ_N = #{clt_tar_seq_n} )
+			,#{clt_tar_seq_n}
+			,#{metadataseqn}
+			,#{dmn_seq_n}
+			,#{dmn_layer_seq_n}
+			,#{dta_knd_inside_seq_n}
+			,#{dta_knd_seq_n}
+			,#{dmn_sub_seq_n}
+			,#{kep_dir}
+			,#{clt_dta_tp_cd}
+			,#{algo_nm}
+			,#{algo_ver}			
+			,#{use_f_cd}
+			,#{del_f_cd}
+			,#{rg_k_seq_n}
+			,TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,TO_CHAR(SYSDATE, 'HH24MISS')
+			,#{rg_ip}
+			,#{mdf_k_seq_n}
+			,#{mdf_d}
+			,#{mdf_tm}
+			,#{mdf_ip}
+			,#{prog_path}
+			,#{prog_file_nm}
+			,#{mstr_nm}
+			,#{frct_mdl_svr_ip}
+		) 
+	</select>
+	
+	<select id="Update" parameterType="DataMasterDTO">
+		UPDATE SMT_CLT_DTA_MSTR_T SET 
+			 CLT_DTA_SV_TP_CD        = 	#{clt_dta_sv_tp_cd}                                                                     
+			,COVERAGE_SEQ_N          = 	#{coverage_seq_n}                                                                  
+			,CLT_TAR_GRP_SEQ_N       = 	(SELECT CLT_TAR_GRP_SEQ_N FROM SMT_CLT_TAR_T WHERE CLT_TAR_SEQ_N = #{clt_tar_seq_n} )
+			,CLT_TAR_SEQ_N           = 	#{clt_tar_seq_n}                                                                   
+			,METADATASEQN            = 	#{metadataseqn}                                                                    
+			,DMN_SEQ_N               = 	#{dmn_seq_n}                                                                       
+			,DMN_LAYER_SEQ_N         = 	#{dmn_layer_seq_n}                                                                 
+			,DTA_KND_INSIDE_SEQ_N    = 	#{dta_knd_inside_seq_n}                                                            
+			,DTA_KND_SEQ_N           = 	#{dta_knd_seq_n}                                                                   
+			,DMN_SUB_SEQ_N           = 	#{dmn_sub_seq_n}                                                                   
+			,KEP_DIR                 = 	#{kep_dir}                                                                         
+			,CLT_DTA_TP_CD           = 	#{clt_dta_tp_cd}                                                                   
+			,ALGO_NM                 = 	#{algo_nm}                                                                         
+			,ALGO_VER                = 	#{algo_ver}			
+			,USE_F_CD = #{use_f_cd}
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+			,PROG_PATH = #{prog_path}
+			,PROG_FILE_NM = #{prog_file_nm}
+			,MSTR_NM = #{mstr_nm}
+			,FRCT_MDL_SVR_IP = #{frct_mdl_svr_ip}
+		WHERE CLT_DTA_MSTR_SEQ_N = #{clt_dta_mstr_seq_n}
+	</select>
+
+	<select id="Delete" parameterType="MapperParam">
+		UPDATE SMT_CLT_DTA_MSTR_T SET 
+			 USE_F_CD = 'N'
+			,DEL_F_CD = 'Y' 
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+		WHERE CLT_DTA_MSTR_SEQ_N = #{clt_dta_mstr_seq_n}
+	</select>
+</mapper>

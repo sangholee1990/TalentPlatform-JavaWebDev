@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="url">http://biz.netshot.co.kr/corp/send_nmsc.php</entry>
+	<entry key="userName">nmsc</entry>
+	<entry key="uesrPw">nmsc</entry>
+	<entry key="fromNumber">010-8830-3508</entry>
+	<entry key="mergeUse">N</entry>
+	<entry key="returnURL">http://dev.indisystem.co.kr:8080/home/ko/sms/send_result.do</entry>
+	<entry key="etc1"></entry>
+	<entry key="etc2"></entry>
+	<entry key="etc3"></entry>
+</properties>

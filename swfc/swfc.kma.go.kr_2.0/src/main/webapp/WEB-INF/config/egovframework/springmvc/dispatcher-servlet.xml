@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- @(#)dispatcher-servlet.xml 1.0 2012/08/01                               -->
+<!--                                                                         -->
+<!-- COPYRIGHT (C) 2008 GALLOPSYS CO., LTD.                                  -->
+<!-- ALL RIGHTS RESERVED.                                                    -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- Spring Framework 설정을 정의하는 파일이다.                              -->
+<!--                                                                         -->
+<!-- @author 김은삼                                                          -->
+<!-- @version 1.0 2012/08/01                                                 -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/aop 
+                           http://www.springframework.org/schema/aop/spring-aop.xsd">
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Context Component Scan                                              -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <context:component-scan base-package="egovframework">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service" />
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository" />
+    </context:component-scan>
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Context Annotation Config                                           -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <context:annotation-config />
+    
+    <context:property-placeholder location="/WEB-INF/config/egovframework/springmvc/*.properties" /> 
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Annotation Handler Mapping                                          -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+        <property name="interceptors">
+            <list>
+                <ref bean="securityInterceptor" />
+            </list>
+        </property>
+    </bean>
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Interceptor                                                         -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Security Interceptor -->
+    <bean id="securityInterceptor" class="egovframework.rte.swfc.interceptor.SecurityInterceptor" />
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Multipart Resolver                                                  -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="-1" />
+        <property name="maxInMemorySize" value="1024" />
+        <property name="uploadTempDir" ref="temporaryDirectory" />
+    </bean>
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Upload Temporary Directory                                          -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <bean id="temporaryDirectory" class="org.springframework.core.io.FileSystemResource">
+        <constructor-arg>
+            <!-- CHANGEME: 김은삼 -->
+            <!--
+            <value>/data/apphome/nmsc2012/jsp/upload_files/temporary</value>
+            -->
+            <value>/data/webapps/home/temporary</value>
+            
+        </constructor-arg>
+    </bean>
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- View Resolver                                                       -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Bean Name -->
+    <bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+        <property name="order" value="0" />
+    </bean>
+    <!-- URL Based -->
+    <bean class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+        <property name="prefix" value="/WEB-INF/views/" />
+        <property name="suffix" value=".jsp" />
+        <property name="order" value="1" />
+    </bean>
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- View                                                                -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- JSON View -->
+    <bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJacksonJsonView">
+        <property name="contentType" value="text/json; charset=UTF-8" />
+    </bean>
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Exception Resolver                                                  -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="warnLogCategory" value="egovframework" />
+        <property name="exceptionAttribute" value="exception" />
+        <property name="defaultErrorView" value="common/error/systemError"/>
+        <property name="exceptionMappings">
+            <props>
+                <prop key="egovframework.rte.fdl.cmmn.exception.EgovBizException">common/error/serviceError</prop>
+                <prop key="egovframework.rte.error.SessionException">common/error/sessionError</prop>
+                <prop key="egovframework.rte.error.AuthorityException">common/error/authorityError</prop>
+                <prop key="egovframework.rte.error.ServiceException">common/error/serviceError</prop>
+                <prop key="egovframework.rte.error.SystemException">common/error/systemError</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="ForecastReportLocationResource" class="org.springframework.core.io.FileSystemResource" >
+        <constructor-arg>
+            <value>${location.ForecastReport}</value>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="ForecastReportLocationImageResource" class="org.springframework.core.io.FileSystemResource" >
+        <constructor-arg>
+            <value>${location.Alerts}</value>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="PDSLocationResource" class="org.springframework.core.io.FileSystemResource" >
+        <constructor-arg>
+            <value>${location.PDS}</value>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="DownloadLocationResource" class="org.springframework.core.io.FileSystemResource" >
+        <constructor-arg>
+            <value>${location.Download}</value>
+        </constructor-arg>
+    </bean>
+    
+    
+     <bean id="imageLocationResource" class="egovframework.rte.swfc.util.ImageLocationResource">
+    	<property name="sdoBrowseLocation" value="${location.sdo.browse}"/>
+    	<property name="sdoThumbnailLocation" value="${location.sdo.thumbnail}"/>
+    	<property name="sohoBrowseLocation" value="${location.soho.browse}"/>
+    	<property name="sohoThumbnailLocation" value="${location.soho.thumbnail}"/>
+    	<property name="stereoBrowseLocation" value="${location.stereo.browse}"/>
+    	<property name="stereoThumbnailLocation" value="${location.stereo.thumbnail}"/>
+    </bean>
+    
+  
+</beans>

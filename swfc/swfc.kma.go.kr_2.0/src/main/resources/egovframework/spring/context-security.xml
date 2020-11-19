@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+	
+	<bean id="userPasswordSaltSource" class="org.springframework.security.authentication.dao.SystemWideSaltSource">
+		<property name="systemWideSalt" value="--#swfc2013#--"/>
+	</bean>
+	
+	<bean id="userPasswordEncoder" class="org.springframework.security.authentication.encoding.ShaPasswordEncoder">
+		<constructor-arg value="256"/>
+	 	<property name="iterations" value="1000"/>
+	 	<property name="encodeHashAsBase64" value="true"/>
+	</bean>
+	
+</beans>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.FlarePredicationMapper">
+	<resultMap id="FlarePredicationMap" type="FlarePredication">
+		<id property="create_date" column="CREATE_DATE" />
+		<result property="total_c" column="TOTAL_C"/>
+		<result property="total_m" column="TOTAL_M"/>
+		<result property="total_x" column="TOTAL_X"/>
+		<collection property="details" ofType="FlarePredicationDetail">
+			<id property="id" column="ID" />
+			<result property="create_date" column="CREATE_DATE" />
+			<result property="cls" column="CLS" />
+			<result property="ar" column="AR" />
+			<result property="phase" column="PHASE" />
+			<result property="c" column="C" />
+			<result property="m" column="M" />
+			<result property="x" column="X" />
+		</collection>
+	</resultMap>
+	<select id="SelectMany" parameterType="hashmap" resultMap="FlarePredicationMap">
+	<![CDATA[
+		SELECT 
+			* 
+		FROM TB_FLARE_PREDICATION 
+		LEFT JOIN TB_FLARE_PREDICATION_DETAIL USING(CREATE_DATE)	
+		WHERE CREATE_DATE BETWEEN #{startDate} AND #{endDate} ORDER BY CREATE_DATE DESC
+		
+	]]>
+	</select>
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "doc/dtds/log4j.dtd">
+
+<!-- ==================================
+	-  @filename : WEB-INF/classes/log4j.xml
+	-  ==================================
+-->
+<log4j:configuration xmlns:log4j='http://jakarta.apache.org/log4j/'>
+
+	<!-- Standard output -->
+	<appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="ALL" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{HH:mm:ss.SSS}][%-5p] %l : %m%n" />
+		</layout>
+	</appender>
+	
+	 <appender name="defaultFile" class="org.apache.log4j.DailyRollingFileAppender">
+	 	<param name="File" value="/data1/GNSS/gnssadmin/PROG/JAVA/SmsSender/logs/log4j.log" />
+	  	<param name="DatePattern" value=".yyyy-MM-dd" />
+	  	<layout class="org.apache.log4j.PatternLayout">
+	   	<param name="ConversionPattern" value="[%p] %d{dd MMM hh:mm:ss.SSS aa} %t [%c]%n%m%n%n" />
+	  	</layout>
+	 </appender>
+
+	<category name="kr.pe.anaconda" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="defaultFile" />
+	</category>
+	
+
+	<category name="org.apache" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="defaultFile" />
+	</category>	
+	
+	
+	<!-- root category -->
+	<root>
+		<priority value="INFO" />
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="defaultFile" />
+	</root>
+</log4j:configuration>

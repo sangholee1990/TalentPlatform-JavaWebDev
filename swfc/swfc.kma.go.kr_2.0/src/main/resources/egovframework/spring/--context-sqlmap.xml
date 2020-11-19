@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- @(#)context-sqlmap.xml 1.0 2012/08/01                                   -->
+<!--                                                                         -->
+<!-- COPYRIGHT (C) 2008 GALLOPSYS CO., LTD.                                  -->
+<!-- ALL RIGHTS RESERVED.                                                    -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- Spring Framework 설정을 정의하는 파일이다.                              -->
+<!--                                                                         -->
+<!-- @author 김은삼                                                          -->
+<!-- @version 1.0 2012/08/01                                                 -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- SQL Map Client                                                      -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+        <property name="configLocation" value="classpath:/egovframework/sqlmap/rte/sqlmap-config.xml" />
+        <property name="mappingLocations" value="classpath:/egovframework/sqlmap/rte/query/**/*.xml" />
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    
+    <bean id="sqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
+		<property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+    
+    <!-- 여러 DB를 접속해야 하는 경우 지정  -->
+    <bean id="OtherSqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+        <property name="configLocation" value="classpath:/egovframework/sqlmap/rte/sqlmap-config.xml" />
+        <property name="mappingLocations" value="classpath:/egovframework/sqlmap/rte/other/**/*.xml" />
+        <property name="dataSource" ref="OtherDataSource"/>
+    </bean>
+
+    <!-- 여러 DB를 접속해야 하는 경우 지정  -->
+    <bean id="RealSqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+        <property name="configLocation" value="classpath:/egovframework/sqlmap/rte/sqlmap-config.xml" />
+        <property name="mappingLocations" value="classpath:/egovframework/sqlmap/rte/real/**/*.xml" />
+        <property name="dataSource" ref="RealDataSource"/>
+    </bean>
+             
+</beans>

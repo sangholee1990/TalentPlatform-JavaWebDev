@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.rte.swfc.mapper.CMEReportMapper">
+ 	<resultMap id="CMEReportDTOMap" type="CMEReportDTO">
+        <result property="analysisReportPath" column="ANALYSIS_RPT_PATH" typeHandler="egovframework.rte.swfc.mapper.handler.Base64Handler"/>
+    </resultMap>
+	<select id="SelectMany" parameterType="hashmap" resultMap="CMEReportDTOMap">
+	<![CDATA[
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+     			SELECT * FROM (
+				SELECT
+				  ID,
+				  ANALYST,
+				  CREATE_TIME AS CREATETIME,
+				  CASE WHEN TARGET1_START_OBS_TIME < TARGET2_START_OBS_TIME THEN TARGET1_START_OBS_TIME ELSE TARGET2_START_OBS_TIME END STARTOBSTIME,
+				  CASE 
+				    WHEN RSLT_SPEED_AVG < 500000 THEN 'S'
+				    WHEN RSLT_SPEED_AVG >= 500000 AND RSLT_SPEED_AVG < 1000000 THEN 'C'
+				    WHEN RSLT_SPEED_AVG >= 1000000 AND RSLT_SPEED_AVG < 2000000 THEN 'O'
+				    WHEN RSLT_SPEED_AVG >= 2000000 AND RSLT_SPEED_AVG < 3000000 THEN 'R'
+				    WHEN RSLT_SPEED_AVG >= 3000000 THEN 'ER'
+				  END SPEEDCLASS,
+				  ANALYSIS_RPT_PATH
+				FROM TB_ANALYSIS_RESULT
+	]]>
+				<include refid="wherePhrase"/>			
+				) BASE ORDER BY STARTOBSTIME 
+    		) A WHERE ROWNUM &lt;= #{endRow}
+		) WHERE RNUM &gt;= #{startRow}
+	</select>
+	
+	<sql id="wherePhrase">
+		WHERE
+			CASE WHEN TARGET1_START_OBS_TIME &lt; TARGET2_START_OBS_TIME THEN TARGET1_START_OBS_TIME ELSE TARGET2_START_OBS_TIME END BETWEEN #{startDate} AND #{endDate}
+		<choose>
+			<when test='type == "S"'><![CDATA[AND RSLT_SPEED_AVG < 500000]]></when>
+			<when test='type == "C"'><![CDATA[AND RSLT_SPEED_AVG >= 500000 AND RSLT_SPEED_AVG < 1000000]]></when>
+			<when test='type == "O"'><![CDATA[AND RSLT_SPEED_AVG >= 1000000 AND RSLT_SPEED_AVG < 2000000]]></when>
+			<when test='type == "R"'><![CDATA[AND RSLT_SPEED_AVG >= 2000000 AND RSLT_SPEED_AVG < 3000000]]></when>
+			<when test='type == "ER"'><![CDATA[AND RSLT_SPEED_AVG >= 3000000]]></when>
+		</choose>	
+	</sql>
+	
+	<select id="SelectOne" parameterType="hashmap" resultType="CMEReportDTO">
+		SELECT * 
+		FROM TB_ANALYSIS_RESULT
+		WHERE ID=#{id}
+	</select>
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM TB_ANALYSIS_RESULT <include refid="wherePhrase"/>
+	</select>
+</mapper>

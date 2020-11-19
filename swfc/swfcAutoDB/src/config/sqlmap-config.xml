@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMapConfig
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<!--
+    =========================================================
+    * Description : iBatis SqlMap 설정 파일
+    * Version     :
+    * Created     :
+    * Modified    :
+    =========================================================
+-->
+
+<sqlMapConfig>
+
+	<settings useStatementNamespaces="true" />
+
+    <!--
+    SQL Map XML 파일 목록 정의.
+    Classpath에서 로드되니 WEB-INF/classes 하위 경로부터 지정해 줄 것.
+    -->
+    <sqlMap resource="config/sqlmap-dummy-config.xml"/>
+</sqlMapConfig>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing 
+		infrastructure -->
+
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+	
+	<context:component-scan base-package="com.gaia3d.web" use-default-filters="false">
+   		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan> 
+	
+	<context:property-placeholder location="/WEB-INF/config/appServlet/config.properties" /> 
+	<!-- 
+	<beans:bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <beans:property name="location">
+            <beans:value>config.properties</beans:value>
+        </beans:property>
+    </beans:bean>
+	 -->
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving 
+		up static resources in the ${webappRoot}/resources directory -->
+	<resources mapping="/resources/**" location="/resources/" />
+	<resources mapping="/css/**" location="/css/" />
+	<resources mapping="/images/**" location="/images/" />
+	<resources mapping="/js/**" location="/js/" />
+	<resources mapping="/favicon.ico" location="/favicon.ico" />
+	
+	 <!-- Configure the file upload directory-->
+    <beans:bean id="SolarMaximumLocationResource" class="org.springframework.core.io.FileSystemResource" >
+        <beans:constructor-arg>
+            <beans:value>${location.SolarMaximum}</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+    
+    <beans:bean id="TECLocationResource" class="org.springframework.core.io.FileSystemResource" >
+        <beans:constructor-arg>
+            <beans:value>${location.TEC}</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+	 
+    <beans:bean id="ForecastReportLocationResource" class="org.springframework.core.io.FileSystemResource" >
+        <beans:constructor-arg>
+            <beans:value>${location.ForecastReport}</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+    
+    <beans:bean id="CMEReportLocationResource" class="org.springframework.core.io.FileSystemResource" >
+        <beans:constructor-arg>
+            <beans:value>${location.CMEReport}</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+    
+    <beans:bean id="programLocationResource" class="org.springframework.core.io.FileSystemResource" >
+        <beans:constructor-arg>
+            <beans:value>${location.CMEProgram}</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+    
+    <!-- 자료실 -->
+	<beans:bean id="PDSLocationResource" class="org.springframework.core.io.FileSystemResource">
+        <beans:constructor-arg>
+            <beans:value>${location.PDS}</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+    
+    <!-- 자료실 -->
+	<beans:bean id="DownloadLocationResource" class="org.springframework.core.io.FileSystemResource">
+        <beans:constructor-arg>
+            <beans:value>${location.Download}</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+    
+	<beans:bean id="FigureLocationResource" class="org.springframework.core.io.FileSystemResource">
+        <beans:constructor-arg>
+            <beans:value>${location.figure}</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+    
+	<beans:bean id="DailyReportLocationResource" class="org.springframework.core.io.FileSystemResource">
+        <beans:constructor-arg>
+            <beans:value>${location.DailyReport}</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+	
+	<beans:bean id="DefaultLocationResource" class="org.springframework.core.io.FileSystemResource">
+        <beans:constructor-arg>
+            <beans:value>${location.default}</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+    
+    <beans:bean id="imageLocationResource" class="com.gaia3d.web.util.ImageLocationResource">
+    	<beans:property name="sdoBrowseLocation" value="${location.sdo.browse}"/>
+    	<beans:property name="sdoThumbnailLocation" value="${location.sdo.thumbnail}"/>
+    	<beans:property name="sohoBrowseLocation" value="${location.soho.browse}"/>
+    	<beans:property name="sohoThumbnailLocation" value="${location.soho.thumbnail}"/>
+    	<beans:property name="stereoBrowseLocation" value="${location.stereo.browse}"/>
+    	<beans:property name="stereoThumbnailLocation" value="${location.stereo.thumbnail}"/>
+    </beans:bean>
+    
+    <!-- 
+    <beans:bean id="downloadView" class="com.gaia3d.web.view.DownloadView"/>
+     -->
+    
+	<!--  ViewResolver  -->
+	<beans:bean class="org.springframework.web.servlet.view.BeanNameViewResolver" p:order="1"/>
+	
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<beans:bean class="org.springframework.context.support.ReloadableResourceBundleMessageSource" id="messageSource">
+		<beans:property name="defaultEncoding" value="UTF-8"/>
+		<beans:property name="basename" value="/WEB-INF/messages/messages" />
+		<beans:property name="cacheSeconds" value="60"/>
+	</beans:bean>
+	
+	<beans:bean id="messageSourceAccessor" class="org.springframework.context.support.MessageSourceAccessor">
+        <beans:constructor-arg ref="messageSource"/>
+    </beans:bean>
+
+	<beans:bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<beans:property name="maxUploadSize" value="104857600" />
+	</beans:bean>
+	
+	<beans:bean id="springApplicationContext" class="com.gaia3d.web.util.SpringApplicationContext"/>
+	
+	<!-- Ajax View -->
+	<beans:bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+		<beans:property name="messageConverters">
+	    	<beans:list>
+	        	<beans:bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"/>
+			</beans:list>
+		</beans:property>
+	</beans:bean> 
+	
+	
+	<beans:bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+	  <beans:property name="exceptionMappings">
+		<beans:props>
+			<beans:prop key="java.lang.Exception">error/exception_error</beans:prop>
+		</beans:props>
+	  </beans:property>
+	</beans:bean>
+	
+</beans:beans>

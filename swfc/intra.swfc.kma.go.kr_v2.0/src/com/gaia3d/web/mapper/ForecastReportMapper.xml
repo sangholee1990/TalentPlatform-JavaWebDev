@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.ForecastReportMapper">
+	<resultMap id="ReportDaoMap" type="ForecastReportDTO">
+		<result property="not1_desc" column="not1_desc" typeHandler="com.gaia3d.web.mapper.handler.StringArrayHandler"/>
+		<result property="not2_desc" column="not2_desc" typeHandler="com.gaia3d.web.mapper.handler.StringArrayHandler"/>
+		<result property="not3_desc" column="not3_desc" typeHandler="com.gaia3d.web.mapper.handler.StringArrayHandler"/>
+	</resultMap>
+
+	<sql id="whereQuery">
+		<if test="rpt_types != null">
+			<foreach item="item" collection="rpt_types" index="index" open=" AND rpt_type in (" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		<if test="isAdmin == -1">
+			AND submit_dt IS NOT NULL
+		</if>
+		<if test="!@org.apache.commons.lang.StringUtils@isBlank(startDate)">
+			AND write_dt >= TO_DATE(#{startDate} || #{startHour} || '0000' , 'YYYY-MM-DD HH24MISS')
+		</if>
+		<if test="!@org.apache.commons.lang.StringUtils@isBlank(endDate)">
+			AND write_dt <![CDATA[<=]]>TO_DATE(#{endDate} || #{endHour} || '5959', 'YYYY-MM-DD HH24MISS')
+		</if>
+		<if test="!@org.apache.commons.lang.StringUtils@isBlank(st_publish_seq) or !@org.apache.commons.lang.StringUtils@isBlank(ed_publish_seq)">
+			<choose>
+				<when test="!@org.apache.commons.lang.StringUtils@isBlank(st_publish_seq) and @org.apache.commons.lang.StringUtils@isBlank(ed_publish_seq)">
+				AND publish_seq_n = #{st_publish_seq}
+				</when>
+				<when test="@org.apache.commons.lang.StringUtils@isBlank(st_publish_seq) and !@org.apache.commons.lang.StringUtils@isBlank(ed_publish_seq)">
+				AND publish_seq_n = #{ed_publish_seq}
+				</when>
+				<otherwise>
+				AND publish_seq_n <![CDATA[>=]]> #{st_publish_seq}
+				AND publish_seq_n <![CDATA[<=]]> #{ed_publish_seq}
+				</otherwise>
+			</choose>
+		</if>
+		<if test="!@org.apache.commons.lang.StringUtils@isBlank(search_type)">
+			AND rpt_type = #{search_type}
+		</if>
+		<if test="!@org.apache.commons.lang.StringUtils@isBlank(search_type) and search_type == 'WRN'">
+			<if test="!@org.apache.commons.lang.StringUtils@isBlank(search_kind)">
+				<choose>
+					<when test="!@org.apache.commons.lang.StringUtils@isBlank(search_kind_type)">
+						<choose>
+							<when test="search_kind_type eq 1"> AND not1_type = #{search_kind}</when>
+							<when test="search_kind_type eq 2"> AND not2_type = #{search_kind}</when>
+							<when test="search_kind_type eq 3"> AND not3_type = #{search_kind}</when>
+						</choose>
+					</when>
+					<otherwise>
+						AND ( not1_type = #{search_kind} OR not2_type = #{search_kind} OR not3_type = #{search_kind} )
+					</otherwise>
+				</choose>
+			</if>
+		</if>
+	</sql>
+	
+	<select id="SelectMany" parameterType="hashmap" resultMap="ReportDaoMap">
+			SELECT * FROM (
+		        SELECT ROWNUM as RNUM, A.* FROM (
+		             SELECT 
+		             	sfrt.*
+		             	,sut.user_nm 
+    				 FROM sos_forecast_rpt_t sfrt left outer join sos_user_t sut on sfrt.user_seq_n = sut.user_seq_n
+		            <where>
+		            <include refid="whereQuery"/>
+		            </where>
+		            ORDER BY rpt_seq_n DESC
+		        <![CDATA[
+		        ) A
+		     ) WHERE RNUM <= #{endRow} AND RNUM >= #{startRow}
+		]]>			
+		</select>
+		
+	<sql id="rptColumns">
+		rpt_seq_n,
+		rpt_type,
+		title,
+		contents,
+		rmk1,
+		rmk2,
+		write_dt,
+		submit_dt,
+		publish_dt,
+ 	   		publish_seq_n,
+		WRITER,
+		not1_desc,
+		not1_type,
+		not1_publish,
+		not1_finish,
+		not1_tar,
+		not1_probability1,
+		not1_probability2,
+		not1_max_val1,
+		not1_max_val2,
+		not1_max_val3,
+		not2_desc,
+		not2_type,
+		not2_publish,
+		not2_finish,
+		not2_tar,
+		not2_probability1,
+		not2_probability2,
+		not2_max_val1,
+		not2_max_val2,
+		not2_max_val3,
+		not3_desc,
+		not3_type,
+		not3_publish,
+		not3_finish,
+		not3_tar,
+		not3_probability1,
+		not3_probability2,
+		not3_max_val1,
+		not3_max_val2,
+		not3_max_val3,
+		file_nm1,
+		file_path1,
+		file_title1,
+		file_nm2,
+		file_path2,
+		file_title2,
+		file_nm3,
+		file_path3,
+		file_title3,
+		xray,
+		xray_tm,
+		proton,
+		proton_tm,
+		kp,
+		kp_tm,
+		mp,
+		mp_tm,
+		info1,
+		info2,
+		info3,
+		info4,
+		rpt_kind,
+		rpt_file_path,
+		rpt_file_nm,
+		wrn_flag
+	</sql>
+
+	<select id="SelectOne" parameterType="hashmap" resultMap="ReportDaoMap">
+		SELECT  <include refid="rptColumns" />		
+		  FROM	sos_forecast_rpt_t
+		 WHERE	rpt_seq_n=#{rpt_seq_n}
+	</select>
+	
+	<!-- 3일 이전의 마지막 특보 발령 정보를 가져온다. -->
+	<select id="SelectOnePreviousWrnIssueReport" parameterType="hashmap" resultMap="ReportDaoMap">
+		 SELECT * FROM (
+		 	SELECT <include refid="rptColumns" /> 
+		 	FROM SOS_FORECAST_RPT_T   
+		 	WHERE rpt_type = 'WRN' AND rpt_kind = 'N' 
+		   		AND PUBLISH_DT BETWEEN SYSDATE - 3 AND SYSDATE 
+		  		ORDER BY rpt_seq_n DESC 
+		) A WHERE ROWNUM = 1
+	</select>
+
+	<select id="selectNextPublishSeqN" parameterType="ForecastReportDTO" resultType="int">
+	<![CDATA[
+		SELECT	NVL(MAX(publish_seq_n), 0) + 1 AS publish_seq_n
+		  FROM	sos_forecast_rpt_t
+		 WHERE	submit_dt IS NOT NULL
+		   AND  publish_dt >= TRUNC(#{publish_dt}, 'MONTH')
+		   AND	publish_dt < ADD_MONTHS(TRUNC(#{publish_dt}, 'MONTH'), 1)
+	]]>   
+	</select>	
+	
+	<select id="selectNextWrnPublishSeqN" parameterType="ForecastReportDTO" resultType="string">
+	<![CDATA[
+		SELECT	MAX(TO_NUMBER( NVL(rmk1, 0), '999' )) + 1 AS rmk1
+		  FROM	sos_forecast_rpt_t
+		 WHERE	rpt_type = 'WRN'	
+		   AND  publish_dt >= TRUNC(#{publish_dt}, 'MONTH')
+		   AND	publish_dt < ADD_MONTHS(TRUNC(#{publish_dt}, 'MONTH'), 1)
+	]]>   
+	</select>
+	
+	<select id="duplCheckPublishSeqN" parameterType="ForecastReportDTO" resultType="int">
+	<![CDATA[
+		SELECT	COUNT(publish_seq_n)
+		  FROM	sos_forecast_rpt_t
+		 WHERE	publish_seq_n = #{publish_seq_n}
+		   AND	publish_dt >= TRUNC(#{publish_dt}, 'MONTH')
+		   AND	publish_dt < ADD_MONTHS(TRUNC(#{publish_dt}, 'MONTH'), 1)
+	]]>   
+	</select>
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		select count(rpt_seq_n) from sos_forecast_rpt_t
+		  <where>
+		  	<include refid="whereQuery"/>
+		  </where>
+	</select>
+	
+	<insert id="Insert" parameterType="ForecastReportDTO">
+		<selectKey keyProperty="rpt_seq_n" resultType="Integer" order="BEFORE">
+			SELECT sos_forecast_rpt_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_forecast_rpt_t (
+			rpt_seq_n,
+			rpt_type, 
+			title, 
+			contents, 
+			rmk1, 
+			rmk2, 
+			writer, 
+			write_dt,
+			publish_dt,
+			publish_seq_n, 
+			file_nm1, 
+			file_path1,
+			file_title1,
+			file_nm2, 
+			file_path2, 
+			file_title2,
+			file_nm3, 
+			file_path3, 
+			file_title3,
+			not1_desc, 
+			not1_type, 
+			not1_publish, 
+			not1_finish, 
+			not1_tar, 
+			not1_probability1,
+			not1_probability2,
+			not1_max_val1,
+			not1_max_val2,
+			not1_max_val3,
+			not2_desc, 
+			not2_type, 
+			not2_publish, 
+			not2_finish, 
+			not2_tar,
+			not2_probability1,
+			not2_probability2,
+			not2_max_val1,
+			not2_max_val2,
+			not2_max_val3,
+			not3_desc, 
+			not3_type, 
+			not3_publish, 
+			not3_finish, 
+			not3_tar,
+			not3_probability1,
+			not3_probability2,
+			not3_max_val1,
+			not3_max_val2,
+			not3_max_val3,
+			xray,
+			xray_tm,
+			proton,
+			proton_tm,
+			kp,
+			kp_tm,
+			mp,
+			mp_tm,
+			info1,
+			info2,
+			info3,
+			info4,
+			rpt_kind,
+			wrn_flag,
+			user_seq_n
+		) VALUES (
+			#{rpt_seq_n}, 
+			#{rpt_type}, 
+			#{title}, 
+			#{contents}, 
+			#{rmk1}, 
+			#{rmk2}, 
+			#{writer}, 
+			#{write_dt},
+			#{publish_dt},
+			#{publish_seq_n},
+			#{file_nm1}, 
+			#{file_path1}, 
+			#{file_title1},
+			#{file_nm2}, 
+			#{file_path2},
+			#{file_title2}, 
+			#{file_nm3}, 
+			#{file_path3},
+			#{file_title3}, 
+			#{not1_desc, typeHandler=com.gaia3d.web.mapper.handler.StringArrayHandler}, 
+			#{not1_type}, 
+			#{not1_publish}, 
+			#{not1_finish}, 
+			#{not1_tar}, 
+			#{not1_probability1},
+			#{not1_probability2},
+			#{not1_max_val1},
+			#{not1_max_val2},
+			#{not1_max_val3},
+			#{not2_desc, typeHandler=com.gaia3d.web.mapper.handler.StringArrayHandler}, 
+			#{not2_type}, 
+			#{not2_publish}, 
+			#{not2_finish}, 
+			#{not2_tar}, 
+			#{not2_probability1},
+			#{not2_probability2},
+			#{not2_max_val1},
+			#{not2_max_val2},
+			#{not2_max_val3},
+			#{not3_desc, typeHandler=com.gaia3d.web.mapper.handler.StringArrayHandler}, 
+			#{not3_type}, 
+			#{not3_publish}, 
+			#{not3_finish}, 
+			#{not3_tar}, 
+			#{not3_probability1},
+			#{not3_probability2},
+			#{not3_max_val1},
+			#{not3_max_val2},
+			#{not3_max_val3},
+			#{xray},
+			#{xray_tm},
+			#{proton},
+			#{proton_tm},
+			#{kp},
+			#{kp_tm},
+			#{mp},
+			#{mp_tm},
+			#{info1},				
+			#{info2},				
+			#{info3},				
+			#{info4},				
+			#{rpt_kind},
+			#{wrn_flag},
+			#{user_seq_n}
+		) 
+	</insert>
+	
+	<update id="Update" parameterType="ForecastReportDTO">
+		UPDATE sos_forecast_rpt_t 
+			SET 
+				rpt_type=#{rpt_type}, 
+				title=#{title}, 
+				contents=#{contents}, 
+				rmk1=#{rmk1}, 
+				rmk2=#{rmk2}, 
+				writer=#{writer},
+				<if test="!@org.apache.commons.lang.StringUtils@isBlank(file_nm1)">
+				file_nm1=#{file_nm1}, 
+				</if>
+				<if test="!@org.apache.commons.lang.StringUtils@isBlank(file_path1)">
+				file_path1=#{file_path1},
+				</if>
+				file_title1=#{file_title1},
+				<if test="!@org.apache.commons.lang.StringUtils@isBlank(file_nm2)">
+				file_nm2=#{file_nm2}, 
+				</if>
+				<if test="!@org.apache.commons.lang.StringUtils@isBlank(file_path2)">
+				file_path2=#{file_path2},
+				</if>
+				file_title2=#{file_title2},
+				<if test="!@org.apache.commons.lang.StringUtils@isBlank(file_nm3)">
+				file_nm3=#{file_nm3}, 
+				</if>
+				<if test="!@org.apache.commons.lang.StringUtils@isBlank(file_path3)">
+				file_path3=#{file_path3},
+				</if>
+				file_title3=#{file_title3},
+				publish_dt=#{publish_dt},
+				publish_seq_n=#{publish_seq_n},
+				not1_desc=#{not1_desc, typeHandler=com.gaia3d.web.mapper.handler.StringArrayHandler}, 
+				not1_type=#{not1_type},
+				not1_publish=#{not1_publish},
+				not1_finish=#{not1_finish},
+				not1_tar=#{not1_tar},
+				not1_probability1=#{not1_probability1},
+				not1_probability2=#{not1_probability2},
+				not1_max_val1=#{not1_max_val1},
+				not1_max_val2=#{not1_max_val2},
+				not1_max_val3=#{not1_max_val3},
+				not2_desc=#{not2_desc, typeHandler=com.gaia3d.web.mapper.handler.StringArrayHandler}, 
+				not2_type=#{not2_type},
+				not2_publish=#{not2_publish},
+				not2_finish=#{not2_finish},
+				not2_tar=#{not2_tar},
+				not2_probability1=#{not2_probability1},
+				not2_probability2=#{not2_probability2},
+				not2_max_val1=#{not2_max_val1},
+				not2_max_val2=#{not2_max_val2},
+				not2_max_val3=#{not2_max_val3},			
+				not3_desc=#{not3_desc, typeHandler=com.gaia3d.web.mapper.handler.StringArrayHandler}, 
+				not3_type=#{not3_type},
+				not3_publish=#{not3_publish},
+				not3_finish=#{not3_finish},
+				not3_tar=#{not3_tar},
+				not3_probability1=#{not3_probability1},
+				not3_probability2=#{not3_probability2},
+				not3_max_val1=#{not3_max_val1},
+				not3_max_val2=#{not3_max_val2},
+				not3_max_val3=#{not3_max_val3},
+				xray=#{xray},
+				xray_tm=#{xray_tm},
+				proton=#{proton},
+				proton_tm=#{proton_tm},
+				kp=#{kp},
+				kp_tm=#{kp_tm},
+				mp=#{mp},
+				mp_tm=#{mp_tm},
+				rpt_kind=#{rpt_kind},
+				info1=#{info1},			
+				info2=#{info2},			
+				info3=#{info3},			
+				info4=#{info4},
+				wrn_flag=#{wrn_flag},
+				user_seq_n=#{user_seq_n}
+		WHERE rpt_seq_n=#{rpt_seq_n}
+	</update>
+	
+	<update id="updateAdminReportFileInfo" parameterType="ForecastReportDTO">
+		UPDATE sos_forecast_rpt_t 
+			SET 
+				rpt_file_path=#{rpt_file_path},			
+				rpt_file_nm=#{rpt_file_nm}			
+		WHERE rpt_seq_n=#{rpt_seq_n}
+	</update>
+	
+	<select id="selectAdminReportFileInfo" parameterType="hashmap" resultMap="ReportDaoMap">
+		SELECT	rpt_file_path,
+				rpt_file_nm
+		  FROM	sos_forecast_rpt_t
+		 WHERE	rpt_seq_n=#{rpt_seq_n}
+	</select>
+	
+	<!-- 수정... 현재 사용하지 않음. 
+	<update id="UpdateSubmit">
+	<![CDATA[
+		UPDATE sos_forecast_rpt_t DST
+		SET publish_seq_n=(
+		SELECT 
+			NVL(MAX(B.publish_seq_n) + 1, 1)
+		FROM 
+			sos_forecast_rpt_t A,
+			sos_forecast_rpt_t B
+		WHERE 
+			A.rpt_seq_n=DST.rpt_seq_n	AND A.rpt_seq_n != B.rpt_seq_n
+			AND B.publish_dt >= TRUNC(A.publish_dt, 'MONTH')
+			AND B.publish_dt < ADD_MONTHS(TRUNC(A.publish_dt, 'MONTH'), 1)
+		),
+		submit_dt = SYSDATE
+		WHERE rpt_seq_n =#{rpt_seq_n}
+	]]>
+	</update>
+	 -->
+	 
+	<update id="UpdateSubmit">
+		UPDATE	sos_forecast_rpt_t
+		   SET	submit_dt = SYSDATE
+		 WHERE	rpt_seq_n = #{rpt_seq_n}
+	</update>
+	 
+	<delete id="Delete" parameterType="MapperParam">
+		DELETE FROM sos_forecast_rpt_t WHERE rpt_seq_n=#{rpt_seq_n}
+	</delete>
+</mapper>

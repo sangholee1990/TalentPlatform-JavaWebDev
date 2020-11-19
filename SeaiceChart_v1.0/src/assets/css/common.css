@@ -1,0 +1,46 @@
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+@font-face {
+	fontFamily: HelveticaBold;
+	src: url("assets/font/H2HDRM.TTF");
+	fontWeight: bold;
+}
+
+s|Application {
+	fontFamily : "돋음체";
+}
+.chartTitle {
+	fontFamily : HelveticaBold;
+	fontSize : 14;
+	fontWeight : bold;
+}
+
+s|CheckBox {
+	fontSize : 12;
+}
+
+s|CheckBox {
+	fontSize : 11;
+	fontWeight : normal;
+}
+
+mx|LineChart {
+	fontSize : 13;
+	fontWeight : bold;
+}
+
+.myTabs {
+	backgroundColor: #FF0080;
+	skin:ClassReference('mx.skins.spark.ButtonSkin');
+	chromeColor: #FF0080;  /* this is the tab widget itself, not the content */
+}	
+/*
+mx|ToolTip {
+	backgroundAlpha: 1.0;
+	backgroundColor: black;
+	color: white;
+	cornerRadius: 0;
+	fontSize: 24;
+}
+*/

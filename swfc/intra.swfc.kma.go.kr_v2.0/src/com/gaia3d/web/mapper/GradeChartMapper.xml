@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.GradeChartMapper">
+
+	<sql id="selectRGrade">
+		<![CDATA[
+		SELECT 'R' AS TYPE, TM, LONG_FLUX AS VAL 
+            ,CASE
+                WHEN 2 * POWER(10, -3) <= LONG_FLUX AND LONG_FLUX < POWER(10, -2)     THEN '5'
+                WHEN POWER(10, -3)     <= LONG_FLUX AND LONG_FLUX < 2 * POWER(10, -3) THEN '4'
+                WHEN POWER(10, -4)     <= LONG_FLUX AND LONG_FLUX < POWER(10, -3)     THEN '3'
+                WHEN 5 * POWER(10, -5) <= LONG_FLUX AND LONG_FLUX < POWER(10, -4)     THEN '2'
+                WHEN POWER(10, -7)     <= LONG_FLUX AND LONG_FLUX < 5 * POWER(10, -5) THEN '1'
+            END AS GRADE
+        FROM TB_GOES_XRAY_1M
+        WHERE TM BETWEEN #{startDate} || '000000' AND #{endDate} || '235959'
+        	AND LONG_FLUX != -100000
+        ]]>
+	</sql>
+	
+	<sql id="selectSGrade">
+		<![CDATA[
+		SELECT 'S' AS TYPE, TM, P10 AS VAL
+             ,CASE
+                 WHEN POWER(10, 5) <= P10 AND P10 < POWER(10, 6) THEN '5'
+                 WHEN POWER(10, 4) <= P10 AND P10 < POWER(10, 5) THEN '4'
+                 WHEN POWER(10, 3) <= P10 AND P10 < POWER(10, 4) THEN '3'
+                 WHEN POWER(10, 2) <= P10 AND P10 < POWER(10, 3) THEN '2'
+                 WHEN 0 <= P10            AND P10 < POWER(10, 2) THEN '1'
+             END AS GRADE
+         FROM TB_GOES_PARTICLE_P
+         WHERE TM BETWEEN #{startDate} || '000000' AND #{endDate} || '235959'
+        	AND P10 != -100000
+		]]>
+	</sql>
+	
+	<sql id="selectGGrade">
+		<![CDATA[
+		SELECT 'G' AS TYPE, TM, KP AS VAL
+            ,CASE
+                WHEN (KP = 9 OR KP = 10) THEN '5'
+                WHEN KP = 8 THEN '4'
+                WHEN KP = 7 THEN '3'
+                WHEN KP = 6 THEN '2'
+                WHEN 0 <= KP AND KP < 6 THEN '1'	                            
+            END AS GRADE 
+        FROM TB_KP_INDEX
+        WHERE TM BETWEEN #{startDate} || '000000' AND #{endDate} || '235959'
+        ]]>
+	</sql>
+	
+	<sql id="selectMpGrade">
+		<![CDATA[
+		SELECT 'MP' AS TYPE,  TM, RADIUS AS VAL
+            ,CASE
+                WHEN 4 < RADIUS AND RADIUS <= 4.6 THEN '5'
+                WHEN 4.6 < RADIUS AND RADIUS <= 5.6 THEN '4'
+                WHEN 5.6 < RADIUS AND RADIUS <= 6.6 THEN '3'
+                WHEN 6.6 < RADIUS AND RADIUS <= 8.6 THEN '2'
+                WHEN 8.6 < RADIUS AND RADIUS <= 18 THEN '1'
+                WHEN 18 < RADIUS THEN '1'
+                ELSE '1'
+            END AS GRADE  
+        FROM TB_MAGNETOPAUSE_RADIUS
+        WHERE TM BETWEEN #{startDate} || '000000' AND #{endDate} || '235959'
+        ]]>
+	</sql>
+
+	<sql id="includeWapperSql" >
+		SELECT TYPE
+			,CASE
+				WHEN TYPE = 'R' THEN '태양복사폭풍'
+				WHEN TYPE = 'S' THEN '태양입자폭풍'
+				WHEN TYPE = 'G' THEN '지자기폭풍'
+				WHEN TYPE = 'MP' THEN '자기권계면'
+			END AS TYPE_NM
+	        ,NVL(MAX(GRADE1), 0) AS COLUMN1
+	        ,NVL(MAX(GRADE2), 0) AS COLUMN2
+	        ,NVL(MAX(GRADE3), 0) AS COLUMN3
+	        ,NVL(MAX(GRADE4), 0) AS COLUMN4
+	        ,NVL(MAX(GRADE5), 0) AS COLUMN5
+	    FROM (    
+	        SELECT TYPE, GRADE, COUNT(GRADE) AS GRADE_CNT
+	            , DECODE(GRADE, 1, COUNT(*)) AS GRADE1 
+	            , DECODE(GRADE, 2, COUNT(*)) AS GRADE2
+	            , DECODE(GRADE, 3, COUNT(*)) AS GRADE3
+	            , DECODE(GRADE, 4, COUNT(*)) AS GRADE4
+	            , DECODE(GRADE, 5, COUNT(*)) AS GRADE5
+	        FROM (
+	            SELECT TYPE, GRADE, MIN(TM),MAX(TM) ,COUNT(*) AS GRADE_CNT  FROM (
+	                SELECT TYPE, TM, VAL, GRADE, ROW_NUMBER() OVER(PARTITION BY GRADE ORDER BY TM ASC) RN1  
+	                FROM (
+	                	<if test="item eq 1"> <include refid="selectRGrade"/> </if>
+	                	<if test="item eq 2"> <include refid="selectSGrade"/> </if>
+	                	<if test="item eq 3"> <include refid="selectGGrade"/> </if>
+	                	<if test="item eq 4"> <include refid="selectMpGrade"/> </if>
+	                ) a
+	                ORDER BY TM ASC
+	            ) b
+	            GROUP BY TYPE, GRADE,ROWNUM-RN1 
+	            ORDER BY MIN(TM) ASC 
+	        ) c
+	        GROUP BY TYPE, GRADE 
+	    ) GROUP BY TYPE
+	</sql>	
+	
+	<select id="listGrade" parameterType="hashMap" resultType="hashMap"> 
+		<foreach item="item" collection="datas" separator="UNION ALL">
+			<include refid="includeWapperSql"/>
+		</foreach>	
+	</select>
+	
+</mapper>

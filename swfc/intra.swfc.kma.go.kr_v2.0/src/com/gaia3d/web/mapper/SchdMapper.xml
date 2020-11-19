@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.SchdMapper">
+	<select id="SelectMany" parameterType="hashmap" resultType="SchdDTO">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+     			SELECT 
+					A.CLT_TAR_SCH_SEQ_N      
+				   ,B.CLT_TAR_KOR_NM
+				   ,B.CLT_TAR_ENG_NM
+			       ,A.CLT_TAR_SEQ_N           
+				   ,C.CLT_TAR_GRP_KOR_NM
+			       ,A.CLT_TAR_GRP_SEQ_N       
+			       ,A.RCV_D                   
+			       ,A.RCV_TM                  
+			       ,A.RCV_ND_TM               
+			       ,A.RCV_LINE                
+			       ,A.RCV_FMT                 
+			       ,A.RCV_ST_PGM              
+			       ,A.RCV_CNCL_F_CD           
+			       ,A.MAX_HI                  
+			       ,A.PRTY_RNK                
+			       ,A.USE_F_CD                
+			       ,A.DEL_F_CD                
+			       ,A.RG_K_SEQ_N              
+			       ,A.RG_D                    
+			       ,A.RG_TM                   
+			       ,A.RG_IP                   
+			       ,A.MDF_K_SEQ_N             
+			       ,A.MDF_D                   
+			       ,A.MDF_TM                  
+			       ,A.MDF_IP                  
+				FROM
+			       SMT_CLT_TAR_SCH_T  A, SMT_CLT_TAR_T B, SMT_CLT_TAR_GRP_T C
+				WHERE
+						A.CLT_TAR_SEQ_N = #{clt_tar_seq_n}
+					<if test="search_del != null and search_del != '' ">
+						AND A.DEL_F_CD = #{search_del}
+					</if> 	
+					AND	B.CLT_TAR_SEQ_N = A.CLT_TAR_SEQ_N
+					AND C.CLT_TAR_GRP_SEQ_N = A.CLT_TAR_GRP_SEQ_N
+			ORDER BY
+				A.RG_D DESC, A.RG_TM DESC
+		<![CDATA[		
+				) A
+			) WHERE RNUM >= #{startRow}	AND RNUM <= #{endRow}
+		]]>	
+	</select>
+
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM
+			SMT_CLT_TAR_SCH_T  A, SMT_CLT_TAR_T B, SMT_CLT_TAR_GRP_T C
+		WHERE
+				A.CLT_TAR_SEQ_N = #{clt_tar_seq_n}
+			AND	B.CLT_TAR_SEQ_N = A.CLT_TAR_SEQ_N
+			AND C.CLT_TAR_GRP_SEQ_N = A.CLT_TAR_GRP_SEQ_N
+
+			<if test="search_text != null and search_text != '' and search_target != null ">
+			   <if test="search_target == 'clt_tar_kor_nm' ">
+	   				AND B.CLT_TAR_KOR_NM like '%' ||#{search_text} ||'%'
+			   </if>
+			   <if test="search_target == 'clt_tar_eng_nm'">
+	   				AND B.CLT_TAR_ENG_NM like '%' ||#{search_text} ||'%'
+			   </if>
+			   <if test="search_target == '' ">
+	   				AND ( B.CLT_TAR_KOR_NM like '%' ||#{search_text} ||'%' OR B.CLT_TAR_ENG_NM like '%' ||#{search_text} ||'%' )
+			   </if>
+ 			</if>
+			<if test="search_use != null and search_use != '' ">
+					AND A.USE_F_CD = #{search_use}
+			</if> 
+			<if test="search_del != null and search_del != '' ">
+				AND A.DEL_F_CD = #{search_del}
+			</if> 	
+	</select>
+	
+		
+	<select id="SelectOne" parameterType="hashmap" resultType="SchdDTO">
+		SELECT 
+					A.CLT_TAR_SCH_SEQ_N      
+				   ,B.CLT_TAR_KOR_NM
+				   ,B.CLT_TAR_ENG_NM
+			       ,A.CLT_TAR_SEQ_N          
+				   ,C.CLT_TAR_GRP_KOR_NM
+			       ,A.CLT_TAR_GRP_SEQ_N      
+			       ,A.RCV_D                  
+			       ,A.RCV_TM                 
+			       ,A.RCV_ND_TM              
+			       ,A.RCV_LINE               
+			       ,A.RCV_FMT                
+			       ,A.RCV_ST_PGM             
+			       ,A.RCV_CNCL_F_CD          
+			       ,A.MAX_HI                 
+			       ,A.PRTY_RNK               
+			       ,A.USE_F_CD               
+			       ,A.DEL_F_CD               
+			       ,A.RG_K_SEQ_N             
+			       ,A.RG_D                   
+			       ,A.RG_TM                  
+			       ,A.RG_IP                  
+			       ,A.MDF_K_SEQ_N            
+			       ,A.MDF_D                  
+			       ,A.MDF_TM                 
+			       ,A.MDF_IP                 
+				FROM
+			       SMT_CLT_TAR_SCH_T  A, SMT_CLT_TAR_T B, SMT_CLT_TAR_GRP_T C
+				WHERE
+						A.CLT_TAR_SCH_SEQ_N=#{clt_tar_sch_seq_n}
+					AND	B.CLT_TAR_SEQ_N = A.CLT_TAR_SEQ_N
+					AND C.CLT_TAR_GRP_SEQ_N = A.CLT_TAR_GRP_SEQ_N
+	</select>
+
+	
+	<select id="Insert" parameterType="SchdDTO">
+		INSERT INTO SMT_CLT_TAR_SCH_T (
+			 CLT_TAR_SCH_SEQ_N      
+			,CLT_TAR_SEQ_N          
+			,CLT_TAR_GRP_SEQ_N      
+			,RCV_D                  
+			,RCV_TM                 
+			,RCV_ND_TM              
+			,RCV_LINE               
+			,RCV_FMT                
+			,RCV_ST_PGM             
+			,RCV_CNCL_F_CD          
+			,MAX_HI                 
+			,PRTY_RNK               
+			,USE_F_CD               
+			,DEL_F_CD               
+			,RG_K_SEQ_N             
+			,RG_D                   
+			,RG_TM                  
+			,RG_IP                  
+			,MDF_K_SEQ_N            
+			,MDF_D                  
+			,MDF_TM                 
+			,MDF_IP                 
+		) VALUES (
+			 SMT_CLT_TAR_SCH_T_SQ01.NEXTVAL
+			,#{clt_tar_seq_n}	           
+			,(SELECT CLT_TAR_GRP_SEQ_N FROM SMT_CLT_TAR_T WHERE CLT_TAR_SEQ_N =  #{clt_tar_seq_n}	)
+			,#{rcv_d}
+			,#{rcv_tm}
+			,#{rcv_nd_tm}
+			,#{rcv_line}
+			,#{rcv_fmt}
+			,#{rcv_st_pgm}
+			,#{rcv_cncl_f_cd}
+			,#{max_hi}
+			,#{prty_rnk}
+			,#{use_f_cd}
+			,#{del_f_cd}
+			,#{rg_k_seq_n}
+			,TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,TO_CHAR(SYSDATE, 'HH24MISS')
+			,#{rg_ip}
+			,#{mdf_k_seq_n}
+			,#{mdf_d}
+			,#{mdf_tm}
+			,#{mdf_ip}
+		) 
+	</select>
+	
+	<select id="Update" parameterType="SchdDTO">
+		UPDATE SMT_CLT_TAR_SCH_T SET 
+			 RCV_D              =   #{rcv_d}																												
+			,RCV_TM             =   #{rcv_tm}																												
+			,RCV_ND_TM          =   #{rcv_nd_tm}																												
+			,RCV_LINE           =   #{rcv_line}																												
+			,RCV_FMT            =   #{rcv_fmt}																												
+			,RCV_ST_PGM         =   #{rcv_st_pgm}																												
+			,RCV_CNCL_F_CD      =   #{rcv_cncl_f_cd}																												
+			,MAX_HI             =   #{max_hi}																												
+			,PRTY_RNK           =   #{prty_rnk}			
+			,USE_F_CD = #{use_f_cd}
+			,DEL_F_CD = #{del_f_cd}
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+		WHERE 
+			CLT_TAR_SCH_SEQ_N=#{clt_tar_sch_seq_n}
+	</select>
+
+	<select id="Delete" parameterType="MapperParam">
+		UPDATE SMT_CLT_TAR_SCH_T SET 
+			 USE_F_CD = 'N' 
+			,DEL_F_CD = 'Y' 
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+		WHERE 
+			CLT_TAR_SCH_SEQ_N=#{clt_tar_sch_seq_n}
+	</select>
+</mapper>

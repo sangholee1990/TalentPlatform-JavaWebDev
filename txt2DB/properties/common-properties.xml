@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<comment>common-propertis</comment>
+	<entry key="db.driver">oracle.jdbc.driver.OracleDriver</entry>
+	<entry key="db.urlll">jdbc:oracle:thin:@dev.indisystem.co.kr:1521:ORCL</entry>
+	<entry key="db.url">jdbc:oracle:thin:@(DESCRIPTION =(ADDRESS_LIST =(FAILOVER = ON)(LOAD_BALANCE = ON)(ADDRESS = (PROTOCOL = TCP)(HOST = 172.19.11.72)(PORT = 2525))(ADDRESS = (PROTOCOL = TCP)(HOST = 172.19.11.73)(PORT = 2525)))(CONNECT_DATA =(SERVICE_NAME = COMSDB)(FAILOVER_MODE =(TYPE=SELECT)(METHOD=BASIC))))</entry>
+	<entry key="db.id">testobj</entry>
+	<entry key="db.password">heedong</entry>
+	
+	<entry key="file.separator">,</entry>
+	<entry key="sql.insert.value.count.info">0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7</entry><!-- start index 0 -->
+	<!-- 20161027,noaa19,47122,1000.000000,8,1.002118,2.242795,87.242795 -->
+	<entry key="sql.insert.update">
+	<![CDATA[
+		MERGE INTO TBL_ATOVS_STST_T
+		USING DUAL
+		  ON (DT = ? AND SAT = ?  AND SITE = ? AND HGT = ? AND DATA_CD = '001')
+		  WHEN MATCHED THEN
+		    UPDATE 
+		      SET
+		         CNT = ?
+		        ,BIAS = ?
+		        ,RMSE = ?
+		        ,R = ?
+		  WHEN NOT MATCHED THEN
+		  INSERT (DT,SAT, SITE, HGT, CNT, BIAS, RMSE, R, DATA_CD) 
+		  VALUES (?, ?, ?, ?, ?, ?, ?, ?, '001')
+	]]></entry>
+</properties>

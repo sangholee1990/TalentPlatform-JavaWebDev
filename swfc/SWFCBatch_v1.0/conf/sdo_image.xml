@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<source timeOffset="-1440">
+		<size_list>
+			<size>1024</size>
+		</size_list>
+		<code_list>
+			<code code="SDO__01010" value="0094"/>
+			<code code="SDO__01001" value="0131"/>
+			<code code="SDO__01002" value="0171"/>
+			<code code="SDO__01003" value="0193"/>
+			<code code="SDO__01004" value="0211"/>
+			<code code="SDO__01005" value="0304"/>
+			<code code="SDO__01007" value="0335"/>
+			<code code="SDO__01006" value="1600"/>
+			<code code="SDO__01008" value="1700"/>
+			<code code="SDO__01009" value="4500"/>
+		</code_list>
+	</source>
+	<destination>
+		<browse>D:\test\sdo\browse</browse>
+		<thumbnail width="160" height="160">D:\test\sdo\thumbnail</thumbnail>
+	</destination>
+</configuration>

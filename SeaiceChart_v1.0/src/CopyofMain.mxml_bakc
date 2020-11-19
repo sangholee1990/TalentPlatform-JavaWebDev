@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+* 소스명		: main.mxml
+* 작성자		: Myung jin Hwang (mjhwang@saeasoft.com)
+* 설  명		: 해빙.토양수분 분석 메인 화면
+* 작성일		: 2011.08.24
+* 수정일		:
+*/
+-->
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="955" minHeight="600"
+			   creationComplete="init()"
+			   >
+	<fx:Style source="/assets/css/common.css" />
+	<fx:Script>
+		<![CDATA[
+			import br.com.stimuli.loading.BulkLoader;
+			import br.com.stimuli.loading.BulkProgressEvent;
+			import br.com.stimuli.loading.loadingtypes.LoadingItem;
+			
+			import com.saeasoft.actionscript.components.chart.lines.DotLine01;
+			import com.saeasoft.actionscript.utils.XMLUtils;
+			
+			import mx.charts.HitData;
+			import mx.charts.chartClasses.IAxis;
+			import mx.charts.series.LineSeries;
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.collections.XMLListCollection;
+			import mx.controls.Alert;
+			import mx.graphics.SolidColorStroke;
+			import mx.graphics.Stroke;
+			import mx.utils.ArrayUtil;
+			import mx.utils.ObjectUtil;
+			
+			import spark.components.CheckBox;
+			
+			/**
+			 * 현재 시간
+			 */ 
+			private static var currentDate : Date = new Date();
+			/**
+			 * 초기 데이터를 불러들이기 위한 Loader
+			 */ 
+			private static var loader : BulkLoader;
+			/**
+			 * 색상 정보를 담고 있는 배열 객체
+			 */ 
+			private var colorArray : Array = new Array();
+			/**
+			 * 그래프를 그리기 위한 기본 데이터를 담고 있는 객체
+			 */ 
+			[Bindable]private var baseXML : XML = <items/>;
+			/**
+			 * 그래프를 그리기 위한 기본 데이터를 담고 있는 객체
+			 */ 
+			[Bindable]private var dayXML : XML = <items/>;
+			/**
+			 * 장기 그래프를 보여주기 위한 객체 
+			 */ 
+			[Bindable]private var monthlyXML : XML = <items/>;
+			
+			/**
+			 * 삭제된 차트를 임시로 담기 객체
+			 */ 
+			private var conRemoveBasket : Array = new Array();
+			private var rouRemoveBasket : Array = new Array();
+			private var refRemoveBasket : Array = new Array();
+			
+			
+			/**
+			 * 초기 작업을 수행한다.
+			 **/ 
+			private function init():void{
+				
+				for each(var c:XML in initXML.colors.children() ){
+					colorArray.push(c.@color);
+				}
+				
+				
+				loader = new BulkLoader("loading-file");
+				for each(var file:XML in initXML.files.children() ){
+					var filePath : String =file.@file;
+					var id : String = file.@id;
+					loader.add(filePath, {id:id});
+				}
+				loader.addEventListener(BulkLoader.COMPLETE, onAllFileLoaderComplate);
+				loader.addEventListener(BulkLoader.PROGRESS, onLoadFileProgress);
+				loader.start();
+			}
+			
+			/**
+			 *파일 로딩 상태 처리
+			 */  
+			private function onLoadFileProgress(evt : BulkProgressEvent):void{
+				trace(evt.loadingStatus());
+			}
+			
+			/**
+			 * 파일을 모두 완료했을 경우 처리 
+			 */ 
+			private function onAllFileLoaderComplate(evt:Event):void{
+				var fullYear = currentDate.getFullYear();
+				var item : LoadingItem = loader.get("month");
+				var result : String = item._content;
+				var array : Array = result.split("\r\n");
+				for each (var s : String in array){
+					var ary : Array = s.split("\t");
+					if(ary.length == 5){
+						var dataXML : XML = <data/>;
+						dataXML.@yyyymm = ary[0] +''+ ary[1];
+						dataXML.@con = ary[2];
+						dataXML.@rou = ary[3];
+						dataXML.@ref = ary[4];
+						monthlyXML.appendChild(dataXML);
+					}
+				}
+				
+				var item : LoadingItem = loader.get("day");
+				var result : String = item._content;
+				var array : Array = result.split("\n");
+				var cnt : int = 0;
+				for each (var s : String in array){
+					var ary : Array = s.split(/\s+/g);					
+					if(ary.length == 9){
+						var dataXML : XML = <data/>;
+						dataXML.@yyyymmdd = ary[0] +''+ ary[1] +''+ ary[2];
+						dataXML.@year = ary[0];
+						dataXML.@dd = ary[2];
+						dataXML.@ref = ary[3];
+						dataXML.@dummy1 = ary[4];
+						dataXML.@rou = ary[5];
+						dataXML.@cnt = ary[6];
+						dataXML.@conAvg = ary[7];
+						var con : int = ary[8];
+						dataXML.@con = (con * 25 * 25);
+						//dayXML.prependChild(dataXML);
+						dayXML.appendChild(dataXML);
+					}
+				}
+				
+				//Alert.show(dayXML.toXMLString());
+				//dayXML = XMLUtils.sortXMLByAttribute(dayXML, "yyyymmdd", Array.DESCENDING, true);
+				
+			//	Alert.show(list.toXMLString());
+				//Alert.show(dayXML.toXMLString());
+				grawChart("con");
+				grawChart("rou");
+				grawChart("ref");
+			}	
+				
+			/**
+			 * 차트를 그린다.
+			 */ 
+			private function grawChart(code:String):void{
+				var fullYear : int = currentDate.getFullYear();
+				var chartSeriesTmp : Array = new Array();
+				var cnt : int = 0;
+				
+				for(var year : int = 2003; year <= fullYear; year++){
+					var color : uint = colorArray[cnt++];
+					var series : LineSeries = getNewLineSeries(year, color, code);
+					//if(year == 2002 || year == 2003) addDotteLine(series);
+					chartSeriesTmp.push(series);
+					
+					addCheckBox(year + '', color, code);
+				}
+				
+				var verticalaxis : LinearAxis;
+				var horizontalaxis : DateTimeAxis;
+				
+				var chart : LineChart;
+				if(code == "con") {
+					chart = linechart;
+					verticalaxis = verticalaxisid;
+					horizontalaxis = horizontalaxisid;
+					verticalaxis.labelFunction = linearAxisLabelFunc;
+				}else if(code == "rou"){
+					chart = rouLinechart;
+					verticalaxis = rouVerticalaxisid;
+					horizontalaxis = rouHorizontalaxisid;
+					verticalaxis.minimum = .2;
+					verticalaxis.maximum = .5;
+					verticalaxis.interval = .1;
+					verticalaxis.minorInterval = .02;
+				}else if(code == "ref"){
+					chart = refLinechart;
+					verticalaxis = refVerticalaxisid;
+					horizontalaxis = refHorizontalaxisid;
+					verticalaxis.minimum = 1;
+					verticalaxis.maximum = 1.8;
+					verticalaxis.interval = .1;
+					verticalaxis.minorInterval = .02;
+				}
+				
+				//horizontalaxis.maximum = maxDate;
+				//horizontalaxis.minimum = minDate;
+				//horizontalaxis.displayLocalTime = true;
+				horizontalaxis.dataUnits = "months";
+				horizontalaxis.labelUnits = "months";
+				horizontalaxis.alignLabelsToUnits = true;
+				horizontalaxis.labelFunction = formatDateLabel;
+				//horizontalaxis.labelFunction = formatDateLabel;
+				//horizontalaxis.autoAdjust = true;
+				//horizontalaxis.baseAtZero = true;
+				
+				
+				chart.series = chartSeriesTmp;
+				chart.verticalAxis = verticalaxis;
+				chart.invalidateSeriesStyles();  
+			}
+			
+			private function addCheckBox(txt:String, color:uint, code:String):void{
+				var checkBox : CheckBox = new CheckBox();
+				checkBox.label = txt;
+				checkBox.selected = true;
+				checkBox.setStyle("color", color);
+				
+				var chart : LineChart;
+				var controllerBar : ControlBar;
+				var removeBasket : Array;
+				
+				if(code == "con") {
+					chart = linechart;
+					controllerBar = chartControllerBar; 
+					removeBasket = conRemoveBasket;
+				}else if(code == "rou"){
+					chart = rouLinechart;
+					controllerBar = rouChartControllerBar; 
+					removeBasket = conRemoveBasket;
+				}else if(code == "ref"){
+					chart = refLinechart;
+					controllerBar = refChartControllerBar; 
+					removeBasket = refRemoveBasket;
+				}
+				checkBox.name = txt + ":" + code;
+				checkBox.addEventListener(MouseEvent.CLICK, function(e:MouseEvent):void{
+					var obj : CheckBox = CheckBox(e.target);
+					var label : String = obj.label;
+					var checked : Boolean = obj.selected;
+					var idx : int;
+					var field : String;
+					var cd : String = obj.name.split(":")[1];
+					var tmpLineChart : LineChart;
+					
+					var basket : Array;
+					if(cd == "con"){
+						basket = conRemoveBasket;
+						tmpLineChart = linechart;
+					}else if(cd == "rou"){
+						basket = rouRemoveBasket;
+						tmpLineChart = rouLinechart;
+					}else if(cd == "ref"){
+						basket = refRemoveBasket;
+						tmpLineChart = refLinechart;
+					}
+					
+					var tmp:Array = tmpLineChart.series; 
+					
+					
+					if(checked){
+						for ( var i:int = 0; i < basket.length; i++ ){
+							field = basket[i].dataProvider[0].@year;
+							if ( label == field ){
+								tmp.push(basket[i]);
+								basket.splice(i, 1);
+								break;
+							}									
+						}
+					}else{
+						for ( var i:int = 0; i < tmpLineChart.series.length; i++ ){
+							var x : XMLList = XMLList (tmpLineChart.series[i].dataProvider);
+							field = x[0].@year;
+							if ( label == field ){
+								idx = i;
+								break;
+							}
+						}
+						
+						basket.push(tmp[idx]);
+						tmp.splice(idx, 1);  
+					}
+					tmpLineChart.series = tmp;   
+					tmpLineChart.invalidateSeriesStyles(); 
+					
+				});
+				
+				controllerBar.addChild(checkBox);
+			}
+			
+			
+			[Bindable]private var minDate : Date = new Date(2011, 01, 01);
+			[Bindable]private var maxDate : Date = new Date(2011, 12, 31);
+			
+			/**
+			 * 새로운 라인 시리즈를 만든다.
+			 */ 
+			private function getNewLineSeries(year:int, color:uint, code : String):LineSeries{
+				var series : LineSeries = new LineSeries();
+				var stroke:SolidColorStroke = new SolidColorStroke();  
+				stroke.weight = 1;
+				stroke.color = color;
+				
+				/*
+				var nameSort:Sort = new Sort();
+				nameSort.fields = [new SortField('@yyyymmdd', true)];
+				var tmpXMLList : XMLListCollection = new XMLListCollection(dayXML.data.(@year == year));
+				tmpXMLList.sort = nameSort;
+				tmpXMLList.refresh();
+				series.dataProvider = XMLList(tmpXMLList.toXMLString());
+				*/
+				series.dataProvider = dayXML.data.(@year == year);
+				
+				series.displayName = year+'';
+				series.yField = "@" + code;
+				series.xField = "@yyyymmdd";
+				series.setStyle('form','curve');
+				//series.displayName = yyyy;
+				//series.setStyle("showDataEffect", slideIn);
+				//series.setStyle("hideDataEffect", slideOut);
+				series.setStyle('lineStroke',stroke); 
+				
+				return series;
+			}
+			
+			/**
+			 * 점선으로 변경한다.
+			 */ 
+			private function addDotteLine(series : LineSeries):void{
+				var cf:ClassFactory = new ClassFactory(com.saeasoft.actionscript.components.chart.lines.DotLine01);
+				series.setStyle('lineSegmentRenderer', cf);
+			}
+			
+			private function labelFunction(item:Object, pareValue:Object, axis:IAxis):String{
+				var month : int = int(item);
+				return (month / 100) + "";
+			}
+			
+			private function datePrseFunction(value:String):Date{
+				return new Date(2011, int(value.substring(4, 6))-1, value.substring(6, 8));
+			}
+			
+			private function conDataTipFunction(o:HitData):String{
+				var tip : String = "";
+				tip += "Date : " + o.item.@yyyymmdd + "\n";
+				tip += "Value : " +o.item.@con + "\n";
+				return tip;
+			}
+			private function rouDataTipFunction(o:HitData):String{
+				var tip : String = "";
+				tip += "Date : " + o.item.@yyyymmdd + "\n";
+				tip += "Value : " +o.item.@rou + "\n";
+				return tip;
+			}
+			private function refDataTipFunction(o:HitData):String{
+				var tip : String = "";
+				tip += "Date : " + o.item.@yyyymmdd + "\n";
+				tip += "Value : " +o.item.@ref + "\n";
+				return tip;
+			}
+			
+			private function formatDateLabel(value:Number, prevValue:Number, axis:DateTimeAxis):String{
+				var dateValue:Date = new Date();
+				dateValue.setTime(value + ((dateValue.timezoneOffset + 60) * 60 * 1000));
+				switch(axis.labelUnits){
+					case "months":
+						return df.format(dateValue);
+						break;
+					case "days":
+						return df.format(dateValue);
+					case "hours":
+						return df.format(dateValue);
+						break;
+					case "minutes":
+						return df.format(dateValue);
+					case "seconds":
+						return df.format(dateValue);
+					default:
+						return df.format(dateValue);
+						break;
+				}
+			}
+			
+			private function linearAxisLabelFunc(item:Object, prevValue:Object, axis:IAxis):String {
+				return (int(item) / 25 / 25).toString();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<fx:XML id="initXML" source="assets/xml/data.xml"/>
+		<s:Stroke id="chartLine" weight="1" color="#000000" caps="none"  />
+		<s:Stroke id="chartTicketLine" weight="1" color="#000000" caps="none" />
+		<mx:DateFormatter id="df"  formatString="M"/>
+	</fx:Declarations>
+	
+	
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center" />	
+	</s:layout>
+	
+	<s:Scroller width="100%" height="100%" left="1" right="1" top="1" bottom="1">
+		<s:VGroup width="100%" height="100%" horizontalAlign="center">
+			<mx:Spacer height="20"/>
+			<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+				<s:Label text="Sea Ice Area (x10 Km)" rotation="-90" />
+				<s:VGroup id="conVGrop" horizontalAlign="center">
+					<mx:LineChart id="linechart" width="100%" showDataTips="true" 
+								  dataTipFunction="conDataTipFunction"
+								  >	
+						
+							<!--
+						<mx:backgroundElements>
+							<mx:GridLines gridDirection="horizontal">
+								<mx:horizontalStroke>
+									<s:Stroke color="0x000000" />
+								</mx:horizontalStroke>
+								<mx:horizontalFill>
+									<mx:SolidColor color="haloBlue" alpha="0.6" />
+								</mx:horizontalFill>
+								<mx:horizontalAlternateFill>
+									<mx:SolidColor color="haloSilver" alpha="0.6" />
+								</mx:horizontalAlternateFill>
+							</mx:GridLines>
+						</mx:backgroundElements>
+								-->
+						
+			<!--			<mx:horizontalAxis>
+							<mx:LinearAxis id="horizontalaxisid" labelFunction="labelFunction" minimum="100" maximum="1231" interval="100"/>
+						</mx:horizontalAxis>-->
+						<mx:horizontalAxis>
+							<mx:DateTimeAxis id="horizontalaxisid" parseFunction="datePrseFunction" />
+						</mx:horizontalAxis>
+						
+						<mx:verticalAxis>
+							<mx:LinearAxis id="verticalaxisid" />
+						</mx:verticalAxis>	
+						
+						<mx:verticalAxisRenderers> 
+							<mx:AxisRenderer axis="{verticalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" tickLength="3" tickPlacement="inside" minorTickLength="2" minorTickPlacement="inside" placement="left" /> 
+							<mx:AxisRenderer axis="{verticalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" showLabels="false" tickPlacement="inside" tickLength="3" minorTickLength="2" minorTickPlacement="inside" placement="right"/> 
+						</mx:verticalAxisRenderers>
+						
+						<mx:horizontalAxisRenderers>
+							<mx:AxisRenderer axis="{horizontalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" tickPlacement="inside" tickLength="3" minorTickLength="2" minorTickPlacement="inside" placement="bottom"/> 
+							<mx:AxisRenderer axis="{horizontalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" canDropLabels="true" showLabels="false" tickPlacement="inside" tickLength="3" minorTickLength="2" minorTickPlacement="inside" placement="top"/> 
+						</mx:horizontalAxisRenderers>
+						
+						<mx:seriesFilters>
+							<fx:Array />
+						</mx:seriesFilters>
+						
+					</mx:LineChart>
+					<s:Label text="Months" fontSize="14" fontWeight="bold"/>
+					<mx:ControlBar id="chartControllerBar" width="100%"/>
+				</s:VGroup>
+			</s:HGroup>
+			
+			
+			<mx:Spacer height="40"/>
+			<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+				<s:Label text="Roughness" rotation="-90" />
+				<s:VGroup horizontalAlign="center">
+					<mx:LineChart id="rouLinechart" width="100%" showDataTips="true" dataTipFunction="rouDataTipFunction"
+								  >	
+						
+								<!--
+						<mx:backgroundElements>
+							<mx:GridLines gridDirection="horizontal">
+								<mx:horizontalStroke>
+									<s:Stroke color="0x000000" />
+								</mx:horizontalStroke>
+								<mx:horizontalFill>
+								<mx:SolidColor color="haloBlue" alpha="0.6" />
+								</mx:horizontalFill>
+								<mx:horizontalAlternateFill>
+								<mx:SolidColor color="haloSilver" alpha="0.6" />
+								</mx:horizontalAlternateFill>
+							</mx:GridLines>
+						</mx:backgroundElements>
+								-->
+						
+						<mx:horizontalAxis>
+							<mx:DateTimeAxis id="rouHorizontalaxisid" parseFunction="datePrseFunction" />
+						</mx:horizontalAxis>
+						
+						<mx:verticalAxis>
+							<mx:LinearAxis id="rouVerticalaxisid" />
+						</mx:verticalAxis>	
+						
+						<mx:verticalAxisRenderers> 
+							<mx:AxisRenderer axis="{rouVerticalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" tickLength="3" tickPlacement="inside" minorTickLength="2" minorTickPlacement="inside" placement="left"/> 
+							<mx:AxisRenderer axis="{rouVerticalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" showLabels="false" tickPlacement="inside" tickLength="3" minorTickLength="2" minorTickPlacement="inside"  placement="right"/> 
+						</mx:verticalAxisRenderers>
+						
+						<mx:horizontalAxisRenderers>
+							<mx:AxisRenderer axis="{rouHorizontalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" tickPlacement="inside" tickLength="3" minorTickLength="2" minorTickPlacement="inside"  placement="bottom"/> 
+							<mx:AxisRenderer axis="{horizontalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" canDropLabels="true" showLabels="false" tickPlacement="inside" tickLength="3" minorTickLength="2" minorTickPlacement="inside"  placement="top"/> 
+						</mx:horizontalAxisRenderers>
+						
+						<mx:seriesFilters>
+							<fx:Array />
+						</mx:seriesFilters>
+						
+					</mx:LineChart>
+					<s:Label text="Months" fontSize="14" fontWeight="bold"/>
+					<mx:ControlBar id="rouChartControllerBar" width="100%"/>
+				</s:VGroup>
+			</s:HGroup>
+			
+			<mx:Spacer height="40"/>
+			<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+				<s:Label text="Refractive" rotation="-90" />
+				<s:VGroup horizontalAlign="center">
+					<mx:LineChart id="refLinechart" width="100%" showDataTips="true" dataTipFunction="refDataTipFunction">	
+						
+								<!--
+						<mx:backgroundElements>
+							<mx:GridLines gridDirection="horizontal">
+								<mx:horizontalStroke>
+									<s:Stroke color="0x000000" />
+								</mx:horizontalStroke>
+								<mx:horizontalFill>
+								<mx:SolidColor color="haloBlue" alpha="0.6" />
+								</mx:horizontalFill>
+								<mx:horizontalAlternateFill>
+								<mx:SolidColor color="haloSilver" alpha="0.6" />
+								</mx:horizontalAlternateFill>
+							</mx:GridLines>
+						</mx:backgroundElements>
+						-->
+						
+						<mx:horizontalAxis>
+							<mx:DateTimeAxis id="refHorizontalaxisid" parseFunction="datePrseFunction"/>
+						</mx:horizontalAxis>
+						
+						<mx:verticalAxis>
+							<mx:LinearAxis id="refVerticalaxisid" />
+						</mx:verticalAxis>	
+						
+						<mx:verticalAxisRenderers> 
+							<mx:AxisRenderer axis="{refVerticalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" minorTickLength="2" minorTickPlacement="inside" tickLength="3" tickPlacement="inside"   placement="left"/> 
+							<mx:AxisRenderer axis="{refVerticalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" showLabels="false" tickPlacement="inside" tickLength="3" minorTickLength="2" minorTickPlacement="inside"  placement="right"/> 
+						</mx:verticalAxisRenderers>
+						
+						<mx:horizontalAxisRenderers>
+							<mx:AxisRenderer axis="{refHorizontalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" tickPlacement="inside" tickLength="3" minorTickLength="2" minorTickPlacement="inside"  placement="bottom"/> 
+							<mx:AxisRenderer axis="{refHorizontalaxisid}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" canDropLabels="true" showLabels="false" tickPlacement="inside" tickLength="3" minorTickLength="2" minorTickPlacement="inside"  placement="top"/>
+						</mx:horizontalAxisRenderers>
+						
+						<mx:seriesFilters>
+							<fx:Array />
+						</mx:seriesFilters>
+						
+					</mx:LineChart>
+					<s:Label text="Months" fontSize="14" fontWeight="bold"/>
+					<mx:ControlBar id="refChartControllerBar" width="100%"/>
+				</s:VGroup>
+			</s:HGroup>
+			<!--
+			<mx:Spacer height="40"/>
+			<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+				<s:Label text="해빙 면적 (x 106㎢)" rotation="-90" />
+				<s:VGroup>
+					<mx:LineChart id="yearAvg" width="100%" showDataTips="true" dataProvider="{monthlyXML.data}" >				
+						<mx:horizontalAxis>
+							<mx:DateTimeAxis parseFunction="datePrseFunction" dataUnits="years" displayLocalTime="true" />
+						</mx:horizontalAxis>
+						<mx:verticalAxis>
+							<mx:LinearAxis interval="20"  />
+						</mx:verticalAxis>
+						<mx:series>
+							<mx:LineSeries yField="@con" xField="@yyyymm" lineSegmentRenderer="com.saeasoft.actionscript.components.chart.lines.DotLine01"/>						
+						</mx:series>
+					</mx:LineChart>
+				</s:VGroup>
+			</s:HGroup>
+			<s:Label text="해빙 면적의 장기 변화" fontSize="14" fontWeight="bold"/>
+			-->
+		</s:VGroup>
+	</s:Scroller>
+	
+</s:Application>

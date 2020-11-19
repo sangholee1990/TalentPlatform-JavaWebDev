@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+  <settings>
+  	<setting name="jdbcTypeForNull" value="NULL"/>
+  	<!-- <setting name="defaultExecutorType" value="SIMPLE" /> -->
+  	<!-- 이 설정으로 batch 처리가 가능하다. -->
+  	<!-- 
+  	<setting name="defaultExecutorType" value="BATCH" /> 
+  	 -->
+  </settings>
+</configuration>

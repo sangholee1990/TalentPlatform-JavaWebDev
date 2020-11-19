@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.GnssMapper">
+
+	<resultMap id="gnssStationMap" type="java.util.HashMap">
+	    <id property="id" column="id"/>
+	    <result property="station_id" column="station_id"/>
+	    <result property="organ_id" column="organ_id"/>
+	    <result property="station_lat" column="station_lat"/>
+	    <result property="station_lon" column="station_lon"/>
+	    <result property="station_hgt" column="station_hgt"/>
+	    <result property="station_nm" column="station_nm"/>
+	    <result property="qc_stn" column="qc_stn"/>
+	</resultMap>
+
+
+	<sql id="searchQuery">
+		<if test="search_value != null">
+			<choose>
+				<when test="search_type eq 'station_id'"> AND station_id LIKE '%' ||  #{search_value} || '%'</when>
+				<when test="search_type eq 'station_nm'"> AND station_nm LIKE '%' ||  #{search_value} || '%'</when>
+				<when test="search_type eq 'organ_id'">  AND organ_id LIKE '%' ||  #{search_value} || '%'</when>
+				<otherwise>
+					AND (
+						   station_id LIKE '%' ||  #{search_value} || '%' 
+						OR station_nm LIKE '%' ||  #{search_value} || '%' 
+						OR organ_id LIKE '%' ||  #{search_value} || '%'
+					    )
+				</otherwise>
+			</choose>
+		</if>
+		<if test="search_type != null">
+			
+		</if>
+	</sql>
+	
+
+	<select id="listGnssStation" parameterType="hashmap" resultMap="gnssStationMap">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+				SELECT * 
+				FROM gnss_stn
+				WHERE 1 = 1
+				<include refid="searchQuery"/>
+				ORDER BY ID DESC
+		<![CDATA[		
+				) A
+			) WHERE RNUM >= #{navigation.startRow}	AND RNUM <= #{navigation.endRow}     
+		]]>	
+	</select>
+	
+	<select id="countGnssStation" parameterType="hashmap" resultType="Integer">
+		SELECT COUNT(*) 
+		FROM gnss_stn 
+		WHERE 1=1
+		<include refid="searchQuery"/>
+	</select>
+	
+	<select id="selectGnssStation" parameterType="hashmap" resultMap="gnssStationMap">
+		SELECT * 
+		FROM gnss_stn
+		WHERE id=#{id}
+	</select>
+	
+	<select id="selectMaxSeqNo" resultType="Integer">
+		SELECT MAX(id) + 1 
+		FROM gnss_stn
+	</select>
+	
+	<insert id="insertGnssStation" parameterType="hashmap">
+		INSERT INTO gnss_stn (	 
+			id        
+			,station_id   
+			,organ_id     
+			,station_lat  
+			,station_lon  
+			,station_hgt  
+			,station_nm   
+			,qc_stn 
+		)VALUES(
+			#{id}        
+			,#{station_id}   
+			,#{organ_id}     
+			,#{station_lat}  
+			,#{station_lon}  
+			,#{station_hgt}  
+			,#{station_nm}   
+			,#{qc_stn} 
+		)
+	</insert>
+	
+	<update id="updateGnssStation" parameterType="hashmap">
+		UPDATE gnss_stn
+			<trim prefix="SET" prefixOverrides=",">
+		        <if test="station_id != null">,station_id = #{station_id}</if>
+		        <if test="organ_id != null">,organ_id = #{organ_id}</if>
+		        <if test="station_lat != null">,station_lat = #{station_lat}</if>
+		        <if test="station_lon != null">,station_lon = #{station_lon}</if>
+		        <if test="station_hgt != null">,station_hgt = #{station_hgt}</if>
+		        <if test="station_nm != null">,station_nm = #{station_nm}</if>
+		        <if test="qc_stn != null">,qc_stn = #{qc_stn}</if>
+			</trim>
+		WHERE id=#{id}
+	</update>
+	
+	<delete id="deleteGnssStation" parameterType="hashmap">
+		DELETE FROM gnss_stn WHERE id = #{id}
+	</delete>
+	
+	<delete id="deleteGnssStationMappingInfo" parameterType="hashmap">
+		DELETE FROM sos_gnss_stn_mnp_t 
+		WHERE gnss_stn_seq_n = #{id}
+	</delete>
+	
+	<insert id="insertGnssStationMappingInfo" parameterType="hashmap">
+		INSERT INTO sos_gnss_stn_mnp_t ( gnss_stn_seq_n , code ) VALUES (#{id}, #{code})
+	</insert>
+	
+	<select id="listGnssStationMappingInfo" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM sos_code_t sct 
+		<if test="id != null">
+		LEFT JOIN (SELECT * FROM sos_gnss_stn_mnp_t WHERE gnss_stn_seq_n = #{id}) sgsmt ON sct.code = sgsmt.code 
+		</if>
+		WHERE use_yn = 'Y' AND parent_code_seq_n = ( SELECT code_seq_n FROM sos_code_t WHERE code = 'GNSS_TYPE_CD')  
+	</select>
+	
+</mapper>

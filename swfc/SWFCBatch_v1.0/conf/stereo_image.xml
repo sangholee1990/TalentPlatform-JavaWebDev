@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<source timeOffset="-1440">
+		<ftp>
+			<host>stereoftp.nascom.nasa.gov</host>
+			<port>21</port>
+		</ftp>
+		<code_list>
+			<code code="STA__01001" spacecraft="ahead" instrument="cor1"/>  
+			<code code="STA__01002" spacecraft="ahead" instrument="cor2"/>
+			<code code="STB__01001" spacecraft="behind" instrument="cor1"/>
+			<code code="STB__01002" spacecraft="behind" instrument="cor2"/>
+		</code_list>
+		<resolution>1024</resolution>
+	</source>
+	<destination>
+		<browse>D:\test\stereo\browse</browse>
+		<thumbnail width="160" height="160">D:\test\stereo\thumbnail</thumbnail>
+	</destination>
+</configuration>

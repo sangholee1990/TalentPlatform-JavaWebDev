@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.SatGroupMapper">
+	<select id="SelectMany" parameterType="hashmap" resultType="SatGroupDTO">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+     		
+				SELECT 
+					 CLT_TAR_GRP_SEQ_N      
+    		   		,CLT_TAR_GRP_KOR_NM     
+    		   		,CLT_TAR_GRP_ENG_NM     
+    		   		,CLT_TAR_GRP_DESC       
+    		   		,USE_F_CD               
+    		   		,DEL_F_CD               
+    		   		,RG_K_SEQ_N             
+    		   		,RG_D                   
+    		   		,RG_TM                  
+    		   		,RG_IP                  
+    		   		,MDF_K_SEQ_N            
+    		   		,MDF_D                  
+    		   		,MDF_TM                 
+    		   		,MDF_IP                 
+    		   		,CLT_TAR_GRP_CD                 
+				 FROM 
+				 	SMT_CLT_TAR_GRP_T 
+				WHERE
+					DEL_F_CD = 'N' 
+				<if test="search_text != null and search_text != '' and search_target != null ">
+				   <if test="search_target == 'clt_tar_band_kor_nm' ">
+	    				AND CLT_TAR_GRP_KOR_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'clt_tar_band_eng_nm'">
+	    				AND CLT_TAR_GRP_ENG_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'all' ">
+	    				AND ( CLT_TAR_GRP_KOR_NM like '%' ||#{search_text} ||'%' OR CLT_TAR_GRP_ENG_NM like '%' ||#{search_text} ||'%' )
+				   </if>
+	  			</if>
+	 			<if test="search_use != null and search_use != '' ">
+	 					AND USE_F_CD = #{search_use}
+	 			</if> 
+			ORDER BY
+				RG_D DESC, RG_TM DESC
+				
+		<![CDATA[		
+				) A
+			) WHERE RNUM >= #{startRow}	AND RNUM <= #{endRow}
+		]]>		 	
+	</select>
+
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM 
+			SMT_CLT_TAR_GRP_T
+		WHERE
+				DEL_F_CD = 'N'
+				<if test="search_text != null and search_text != '' and search_target != null ">
+				   <if test="search_target == 'clt_tar_band_kor_nm' ">
+	    				AND CLT_TAR_GRP_KOR_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'clt_tar_band_eng_nm'">
+	    				AND CLT_TAR_GRP_ENG_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'all' ">
+	    				AND ( CLT_TAR_GRP_KOR_NM like '%' ||#{search_text} ||'%' OR CLT_TAR_GRP_ENG_NM like '%' ||#{search_text} ||'%' )
+				   </if>
+	  			</if>
+	 			<if test="search_use != null and search_use != '' ">
+	 					AND USE_F_CD = #{search_use}
+	 			</if> 
+	</select>
+	
+		
+	<select id="SelectOne" parameterType="hashmap" resultType="SatGroupDTO">
+		SELECT 
+			 CLT_TAR_GRP_SEQ_N      
+   	   		,CLT_TAR_GRP_KOR_NM     
+   	   		,CLT_TAR_GRP_ENG_NM     
+   	   		,CLT_TAR_GRP_DESC       
+   	   		,USE_F_CD               
+   	   		,DEL_F_CD               
+   	   		,RG_K_SEQ_N             
+   	   		,RG_D                   
+   	   		,RG_TM                  
+   	   		,RG_IP                  
+   	   		,MDF_K_SEQ_N            
+   	   		,MDF_D                  
+   	   		,MDF_TM                 
+   	   		,MDF_IP                 
+   	   		,CLT_TAR_GRP_CD                 
+		FROM 
+			SMT_CLT_TAR_GRP_T 
+		WHERE 
+			CLT_TAR_GRP_SEQ_N=#{clt_tar_grp_seq_n}
+	</select>
+
+	
+	<select id="Insert" parameterType="SatGroupDTO">
+		INSERT INTO SMT_CLT_TAR_GRP_T (
+			 CLT_TAR_GRP_SEQ_N      
+   	   		,CLT_TAR_GRP_KOR_NM     
+   	   		,CLT_TAR_GRP_ENG_NM     
+   	   		,CLT_TAR_GRP_DESC       
+   	   		,USE_F_CD               
+   	   		,DEL_F_CD               
+   	   		,RG_K_SEQ_N             
+   	   		,RG_D                   
+   	   		,RG_TM                  
+   	   		,RG_IP                  
+   	   		,MDF_K_SEQ_N            
+   	   		,MDF_D                  
+   	   		,MDF_TM                 
+   	   		,MDF_IP                 
+   	   		,CLT_TAR_GRP_CD                 
+		) VALUES (
+			 SMT_CLT_TAR_GRP_T_SQ01.NEXTVAL
+			,#{clt_tar_grp_kor_nm}
+			,#{clt_tar_grp_eng_nm}
+			,#{clt_tar_grp_desc}
+			,#{use_f_cd}
+			,#{del_f_cd}
+			,#{rg_k_seq_n}
+			,TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,TO_CHAR(SYSDATE, 'HH24MISS')
+			,#{rg_ip}
+			,#{mdf_k_seq_n}
+			,#{mdf_d}
+			,#{mdf_tm}
+			,#{mdf_ip}
+			,#{clt_tar_grp_cd}
+		) 
+	</select>
+	
+	<select id="Update" parameterType="SatGroupDTO">
+		UPDATE SMT_CLT_TAR_GRP_T SET 
+			 CLT_TAR_GRP_KOR_NM =#{clt_tar_grp_kor_nm} 
+			,CLT_TAR_GRP_ENG_NM =#{clt_tar_grp_eng_nm} 
+			,CLT_TAR_GRP_DESC =#{clt_tar_grp_desc} 
+			,USE_F_CD = #{use_f_cd}
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+			,CLT_TAR_GRP_CD = #{clt_tar_grp_cd}
+		WHERE CLT_TAR_GRP_SEQ_N=#{clt_tar_grp_seq_n}
+	</select>
+
+	<select id="Delete" parameterType="MapperParam">
+		UPDATE SMT_CLT_TAR_GRP_T SET 
+		     USE_F_CD = 'N'
+			,DEL_F_CD = 'Y' 
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+		WHERE CLT_TAR_GRP_SEQ_N=#{clt_tar_grp_seq_n}
+	</select>
+</mapper>

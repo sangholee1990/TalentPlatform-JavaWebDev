@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="euc-kr" ?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<!--
+	=========================================================
+	* Description : global 공통 sqlmap 정의 파일
+	* Version     : 2010.05.28
+	* Created     : Hwang Myung jin
+	* Modified    :
+	* $Id: global-common-sqlmap.xml,v 1.1 2011/09/21 10:03:14 nmsc Exp $
+	=========================================================
+-->
+
+<sqlMap namespace="global.common">
+
+	<!-- pagingYn 값이 Y 일경우 쿼리 최 상위에 <include refid="paging.head" />  -->
+	<sql id="paging.head">
+	SELECT pagingY.* FROM ( 
+		SELECT ROWNUM CNT, pagingX.*
+			FROM (
+	</sql>
+	<!-- paging_yn 값이 Y 일경우 쿼리 맨아래에 <include refid="paging.tail" />  -->
+	<sql id="paging.tail">
+					) pagingX
+				WHERE ROWNUM &lt;= #rowPerPage# * #currentPage# 
+			) pagingY
+		WHERE CNT &gt; (#currentPage# - 1) * #rowPerPage#
+	</sql>
+	
+	
+	<sql id="toDateTime4Oracle" >
+		to_char(sysdate, 'yyyymmddhhmiss')
+	</sql>
+	
+	<sql id="toDateTime4Mysql">
+		date_format(CURRENT_TIMESTAMP, '%Y%m%d%H%i%s')
+	</sql>
+	<sql id="searchWhere">
+		<dynamic prepend="WHERE">		
+			<isNotEmpty property="search_key">
+				<isNotEmpty property="search_value" >
+					$search_key$ LIKE '%'||#search_value#||'%'
+				</isNotEmpty>
+			</isNotEmpty>
+		</dynamic>
+	</sql>
+	<sql id="searchAnd">
+		<isNotEmpty property="search_key">
+			<isNotEmpty property="search_value" >
+				AND $search_key$ LIKE '%'||#search_value#||'%'
+			</isNotEmpty>
+		</isNotEmpty>
+	</sql>
+</sqlMap>

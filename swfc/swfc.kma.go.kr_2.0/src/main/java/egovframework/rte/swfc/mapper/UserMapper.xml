@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.rte.swfc.mapper.UserMapper">
+	
+	<resultMap id="UserDaoMap" type="UserDTO">
+		<result property="id" column="user_seq_n"/>
+		<result property="userId" column="user_id"/>
+		<result property="name" column="user_nm"/>
+		<result property="password" column="user_pw"/>
+		<result property="groupCd" column="group_code"/>
+		<result property="groupName" column="group_name"/>
+	</resultMap>	
+		
+		
+	<select id="selectById" parameterType="hashmap" resultMap="UserDaoMap">
+		  SELECT 
+              user_seq_n
+              ,user_id
+              ,user_pw
+              ,user_nm
+              ,email
+              ,role
+              ,phone
+              ,department
+              ,position
+              ,sut.group_code
+              ,a.code_ko_nm group_name
+          FROM sos_user_t sut
+          LEFT JOIN (
+              SELECT * FROM sos_code_t 
+              WHERE parent_code_seq_n IN (
+                SELECT code_seq_n 
+                FROM sos_code_t 
+                WHERE code = 'USER_GROUP_ID'
+              )
+          ) a ON(sut.group_code=a.code)
+		  WHERE user_id = #{user_id} 
+		  	AND user_pw = #{user_pw} 
+	</select>
+	
+</mapper>

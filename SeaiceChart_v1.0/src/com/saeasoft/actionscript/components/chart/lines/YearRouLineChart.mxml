@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:LineChart xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			  xmlns:s="library://ns.adobe.com/flex/spark" 
+			  xmlns:mx="library://ns.adobe.com/flex/mx"
+			  showDataTips="true" 
+			  dataTipFunction="dataTipFunctionHandler"
+			  seriesFilters="{null}"
+			  >
+	<fx:Script>
+		<![CDATA[
+			import mx.charts.HitData;
+			
+			[Bindable]private var tickLength : Number = 6;
+			[Bindable]private var minorTickLength : Number = 3;
+			
+			[Bindable]private var yearMaxDate : Date = new Date();
+			[Bindable]private var yearMinDate : Date = new Date(2003, 0, 1);
+			
+			
+			public function set minDate(value : Date):void{
+				horizontalaxis.minimum = value;
+			}
+			
+			public function set maxDate(value : Date):void{
+				horizontalaxis.maximum = value;
+			}
+			
+			
+			private function formatDateLabel(value:Number, prevValue:Number, axis:DateTimeAxis):String{
+				var dateValue:Date = new Date();
+				dateValue.setTime(value + ((dateValue.timezoneOffset + 60) * 60 * 1000));
+				switch(axis.labelUnits){
+					case "months":
+						return df.format(dateValue);
+						break;
+					case "days":
+						return df.format(dateValue);
+					case "hours":
+						return df.format(dateValue);
+						break;
+					case "minutes":
+						return df.format(dateValue);
+					case "seconds":
+						return df.format(dateValue);
+					default:
+						return df.format(dateValue);
+						break;
+				}
+			}
+			
+			private function datePrseFunction(value:String):Date{
+				var toDay:Date = new Date();
+				var mm : int = int(value.substring(4, 6))-1;
+				var dd : int = int(value.substring(6, 8));
+				toDay.month = mm;
+				toDay.date = dd;
+				return toDay;
+			}
+			
+			
+			private function dataTipFunctionHandler(o:HitData):String{
+				var tip : String = "";
+				var date : String = o.item.@yyyymmdd;
+				var yyyy : String = date.substring(0, 4);
+				var mm : String = date.substring(4, 6);
+				var dd : String = date.substring(6, 8);
+				tip += "Date : " + yyyy + "/" + mm + "/" + dd + "\n";
+				tip += "Value : " +Number( o.item.@rou ).toFixed(2) + "\n";
+				return tip;
+			}
+			
+			private function yearDatePrseFunction(value:String):Date{
+				var year : int = int(value.substring(0, 4));
+				var mm : int = int(value.substring(4, 6))-1;
+				var dd : int = int(value.substring(6, 8));
+				return new Date(year, mm, dd);
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:SolidColorStroke id="chartLine" weight="1" color="#000000" caps="none"  />
+		<s:SolidColorStroke id="chartTicketLine" weight="1" color="#000000" caps="none" />
+		<s:SolidColorStroke id="conColorStroke" weight="1.4" color="black"/>
+		<mx:DateFormatter id="df"  formatString="M"/>
+	</fx:Declarations>
+	<mx:verticalAxis>
+		<mx:LinearAxis id="verticalaxis" minimum=".25" maximum=".5" interval=".1" minorInterval=".02"/>
+	</mx:verticalAxis>
+	<mx:horizontalAxis>
+		<mx:DateTimeAxis id="horizontalaxis" parseFunction="yearDatePrseFunction" dataUnits="years" minorTickUnits="years" disabledDays="[]" maximum="{yearMaxDate}" minimum="{yearMinDate}" />
+	</mx:horizontalAxis>
+	<mx:verticalAxisRenderers> 
+		<mx:AxisRenderer axis="{verticalaxis}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" tickLength="{tickLength}" tickPlacement="inside" minorTickLength="2" minorTickPlacement="inside" placement="left" /> 
+		<mx:AxisRenderer axis="{verticalaxis}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" tickLength="{tickLength}" tickPlacement="inside" minorTickLength="2" minorTickPlacement="inside" placement="right" showLabels="false"/> 
+	</mx:verticalAxisRenderers>
+	<mx:horizontalAxisRenderers>
+		<mx:AxisRenderer axis="{horizontalaxis}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" tickPlacement="inside" tickLength="{tickLength}" minorTickPlacement="inside" placement="bottom" canDropLabels="true"/> 
+		<mx:AxisRenderer axis="{horizontalaxis}" axisStroke="{chartLine}" minorTickStroke="{chartTicketLine}" tickStroke="{chartTicketLine}" tickPlacement="inside" tickLength="{tickLength}" minorTickPlacement="inside" placement="top"  showLabels="false" canDropLabels="false"/> 
+	</mx:horizontalAxisRenderers>
+	<mx:series>
+		<mx:LineSeries yField="@rou" xField="@yyyymmdd" lineStroke="{conColorStroke}" />						
+	</mx:series>
+</mx:LineChart>

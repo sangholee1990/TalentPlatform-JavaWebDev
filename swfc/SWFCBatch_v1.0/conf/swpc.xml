@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<source>
+		<swpc_list>
+			<swpc type="STA_PLASTIC">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/stereo/sta_plastic_1m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/stereo/sta_plastic_1m.txt"/>
+			</swpc>
+			<swpc type="STB_PLASTIC">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/stereo/stb_plastic_1m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/stereo/stb_plastic_1m.txt"/>
+			</swpc>
+			<swpc type="STA_MAG">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/stereo/sta_mag_1m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/stereo/sta_mag_1m.txt"/>
+			</swpc>
+			<swpc type="STB_MAG">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/stereo/stb_mag_1m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/stereo/stb_mag_1m.txt"/>
+			</swpc>									
+			<swpc type="STA_IMPACT">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/stereo/sta_impact_5m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/stereo/sta_impact_5m.txt"/>
+			</swpc>									
+			<swpc type="STB_IMPACT">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/stereo/stb_impact_5m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/stereo/stb_impact_5m.txt"/>
+			</swpc>									
+			<swpc type="STA_HET">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/stereo/sta_het_5m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/stereo/sta_het_5m.txt"/>
+			</swpc>									
+			<swpc type="STB_HET">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/stereo/stb_het_5m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/stereo/stb_het_5m.txt"/>
+			</swpc>									
+			<swpc type="ACE_SIS">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/ace/ace_sis_5m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/ace/ace_sis_5m.txt"/>
+			</swpc>									
+			<swpc type="ACE_EPAM">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/ace/ace_epam_5m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/ace/ace_epam_5m.txt"/>
+			</swpc>
+			<swpc type="ACE_SWEPAM">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/ace/ace_swepam_1m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/ace/ace_swepam_1m.txt"/>
+			</swpc>														
+			<swpc type="ACE_MAG">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/ace/ace_mag_1m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/ace/ace_mag_1m.txt"/>
+			</swpc>
+			<swpc type="GOES_XRAY_1M">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/xray/Gp_xr_1m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/xray/Gp_xr_1m.txt"/>
+			</swpc>
+			<swpc type="GOES_XRAY_5M">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/xray/Gp_xr_5m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/xray/Gp_xr_5m.txt"/>
+			</swpc>
+			<swpc type="GOES_PARTICLE_P">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/particle/Gp_part_5m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/particle/Gp_part_5m.txt"/>
+			</swpc>
+			<swpc type="GOES_PARTICLE_S">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/particle/Gs_part_5m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/particle/Gs_part_5m.txt"/>
+			</swpc>
+			<swpc type="GOES_MAG_P">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/geomag/Gp_mag_1m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/geomag/Gp_mag_1m.txt"/>
+			</swpc>						
+			<swpc type="GOES_MAG_S">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/geomag/Gs_mag_1m.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/geomag/Gs_mag_1m.txt"/>
+			</swpc>
+			<swpc type="KP_INDEX">
+				<file url="http://www.swpc.noaa.gov/ftpdir/lists/geomag/AK.txt"/>
+				<file url="ftp://ftp.swpc.noaa.gov/pub/lists/geomag/AK.txt"/>
+			</swpc>						
+		</swpc_list>
+	</source>
+</configuration>

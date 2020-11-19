@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.UserMapper">
+	<resultMap id="UserDaoMap" type="UserDTO">
+		<result property="id" column="user_seq_n"/>
+		<result property="userId" column="user_id"/>
+		<result property="name" column="user_nm"/>
+		<result property="password" column="user_pw"/>
+		<result property="groupCd" column="group_code"/>
+		<result property="groupName" column="group_name"/>
+	</resultMap>
+
+	<select id="SelectMany" parameterType="hashmap" resultMap="UserDaoMap">
+	<![CDATA[
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+          		SELECT * FROM sos_user_t ORDER BY user_id
+    		) A WHERE ROWNUM <= #{endRow}
+		) WHERE RNUM >= #{startRow}	    
+	]]>			
+	</select>
+	
+	<select id="SelectById" parameterType="hashmap" resultMap="UserDaoMap">
+		SELECT sos_user_t.*, a.code_ko_nm group_name 
+		FROM sos_user_t
+		LEFT JOIN (SELECT * FROM sos_code_t where parent_code_seq_n IN (
+		    SELECT code_seq_n FROM sos_code_t WHERE code = 'USER_GROUP_ID'
+		)) a ON(sos_user_t.group_code=a.code)
+	 	WHERE user_id=#{userId}
+	</select>
+	
+	<select id="SelectOne" parameterType="hashmap" resultMap="UserDaoMap">
+		SELECT sos_user_t.*, a.code_ko_nm group_name 
+		FROM sos_user_t
+		LEFT JOIN (SELECT * FROM sos_code_t where parent_code_seq_n IN (
+		    SELECT code_seq_n FROM sos_code_t WHERE code = 'USER_GROUP_ID'
+		)) a ON(sos_user_t.group_code=a.code)
+	 	WHERE user_seq_n=#{id}
+	</select>
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT COUNT(user_id) 
+		FROM sos_user_t
+	</select>
+	
+	<select id="Insert" parameterType="UserDTO">
+		INSERT INTO sos_user_t (user_seq_n, user_id, user_pw, user_nm, email, role, phone, department, position, group_code) 
+		VALUES (sos_user_sq01.nextval, #{userId}, #{password}, #{name}, #{email}, #{role}, #{phone}, #{department}, #{position}, #{groupCd}) 
+	</select>
+	
+	<select id="Update" parameterType="UserDTO">
+		UPDATE sos_user_t 
+			SET 
+				user_nm=#{name}, 
+				email=#{email}, 
+				role=#{role}, 
+				phone=#{phone}, 
+				department=#{department}, 
+				position=#{position},
+				group_code=#{groupCd}
+			<if test="!@org.apache.commons.lang.StringUtils@isBlank(password)">,user_pw=#{password}</if>
+		WHERE user_seq_n=#{id}
+	</select>
+
+	<select id="Delete" parameterType="MapperParam">
+		DELETE FROM sos_user_t WHERE user_seq_n=#{id}
+	</select>
+</mapper>

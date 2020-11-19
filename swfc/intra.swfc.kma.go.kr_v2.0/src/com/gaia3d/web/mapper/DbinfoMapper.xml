@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.DbinfoMapper">
+
+	<sql id="whereQuery">
+		B.TABLE_NAME = C.OBJECT_NAME
+		AND B.TABLE_NAME = D.TABLE_NAME
+		AND C.OBJECT_TYPE = 'TABLE'
+		<if test="search_target != null" >
+			<choose>
+				<when test="search_target == ''">
+					<![CDATA[		
+					AND (B.TABLE_NAME LIKE '%' ||#{search_text} ||'%' OR D.COMMENTS LIKE '%' ||#{search_text} ||'%')
+					]]>
+				</when>
+				<when test="search_target == 1">
+				<![CDATA[		
+					AND B.TABLE_NAME LIKE '%' ||#{search_text} ||'%'
+				]]>
+				</when>
+			</choose>
+		</if>
+	</sql>
+
+	<select id="SelectMany" parameterType="hashmap" resultType="DbinfoDTO">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+          		SELECT 
+          			B.TABLE_NAME
+          			,D.COMMENTS
+          			,B.NUM_ROWS
+					,C.CREATED
+					,C.LAST_DDL_TIME
+          		FROM TABS B, USER_OBJECTS C, ALL_TAB_COMMENTS D 
+          		<where>
+					<include refid="whereQuery"/>
+				</where>
+          <![CDATA[		
+          		ORDER BY NUM_ROWS DESC
+    		) A WHERE ROWNUM <= #{endRow}
+		) WHERE RNUM >= #{startRow}	    
+		]]>			
+	</select>
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) 
+		  FROM TABS B, USER_OBJECTS C, ALL_TAB_COMMENTS D 
+		<where>
+			<include refid="whereQuery"/>
+		</where>
+	</select>
+	
+	<select id="SelectOne" parameterType="hashmap" resultType="DbinfoDTO">
+		SELECT 
+	     b.file_name AS file_name
+	    ,b.tablespace_name AS tablespace_name 
+	    ,ROUND(b.bytes / (1024 * 1024)) AS total
+	    ,ROUND(((b.bytes - SUM(NVL(a.bytes,0)))) / (1024 * 1024)) AS used
+	    ,ROUND((SUM(NVL(a.bytes,0))) / (1024 * 1024)) AS free
+	    ,ROUND((NVL(b.bytes, 0) - SUM(NVL(a.bytes,0))) * 100/b.bytes, 0) AS used_percent
+	    ,'MB' AS unit
+	    --,TO_CHAR(TO_DATE(#search_date#,'yyyy-mm-dd'), 'yyyy-mm-dd') AS search_date
+		FROM DBA_FREE_SPACE a, DBA_DATA_FILES b
+		WHERE a.file_id(+) = b.file_id
+		AND b.tablespace_name = 'SWPCDATA'
+		GROUP BY b.tablespace_name, b.file_name, b.bytes
+		ORDER BY b.tablespace_name
+	</select>
+	
+	<select id="SelectTableSpaceInfo" parameterType="hashmap" resultType="DbinfoDTO">
+		SELECT 
+	     b.file_name AS file_name
+	    ,b.tablespace_name AS tablespace_name 
+	    ,ROUND(b.bytes / (1024 * 1024)) AS total
+	    ,ROUND(((b.bytes - SUM(NVL(a.bytes,0)))) / (1024 * 1024)) AS used
+	    ,ROUND((SUM(NVL(a.bytes,0))) / (1024 * 1024)) AS free
+	    ,ROUND((NVL(b.bytes, 0) - SUM(NVL(a.bytes,0))) * 100/b.bytes, 0) AS used_percent
+	    ,'MB' AS unit
+	    --,TO_CHAR(TO_DATE(#search_date#,'yyyy-mm-dd'), 'yyyy-mm-dd') AS search_date
+		FROM DBA_FREE_SPACE a, DBA_DATA_FILES b
+		WHERE a.file_id(+) = b.file_id
+		AND b.tablespace_name = 'SWPCDATA'
+		GROUP BY b.tablespace_name, b.file_name, b.bytes
+		ORDER BY b.tablespace_name
+	</select>
+</mapper>

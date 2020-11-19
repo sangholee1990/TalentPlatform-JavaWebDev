@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.StatMapper">
+
+	<select id="SelectXrayStat" parameterType="hashmap" resultType="SWPCGoesXray1M">
+		SELECT data_t.*, TO_CHAR(to_date(dt, 'YYYY-MM-DD'), 'YYYY-MM-DD') as tm FROM (
+			SELECT TO_CHAR(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM')+LEVEL-1), 'YYYYMMDD') AS dt FROM DUAL
+			  CONNECT BY LEVEL <![CDATA[<=]]> SUBSTR(TO_CHAR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'),'MM')), 'YYYYMMDD'),7,2)
+		) date_t left join (
+		  SELECT
+		    SUBSTR(TM,0,8) as yyyymmdd,
+		    ROUND(AVG(LONG_FLUX), 8) as avg_long_flux,
+		    MAX(LONG_FLUX) as max_long_flux
+		  FROM SMT_GOES_XRAY_1M_T
+		  WHERE TM BETWEEN TO_CHAR(#{startYear} || #{startMonth} || '01000000') AND TO_CHAR(#{startYear} || #{startMonth} || SUBSTR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'),'MM')),7,2) || '235959')
+		  AND LONG_FLUX != -100000
+		  GROUP BY SUBSTR(TM,0,8)
+		) data_t on date_t.dt = data_t.yyyymmdd
+		ORDER BY date_t.dt asc
+	</select>
+		
+	<select id="SelectProtonStat" parameterType="hashmap" resultType="SWPCGoesProtonFlux">
+		SELECT data_t.*, TO_CHAR(to_date(dt, 'YYYY-MM-DD'), 'YYYY-MM-DD') as tm FROM (
+			SELECT TO_CHAR(TRUNC(TO_DATE(#{startYear}||#{startMonth}, 'YYYYMM')+LEVEL-1), 'YYYYMMDD') AS dt FROM DUAL
+			  CONNECT BY LEVEL <![CDATA[<=]]> SUBSTR(TO_CHAR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'),'MM')), 'YYYYMMDD'),7,2)
+		) date_t left join (
+		  SELECT
+		    SUBSTR(TM,0,8) AS yyyymmdd,
+			ROUND(AVG(P5), 2) AS avg_p5,
+			MAX(P5) AS max_p5
+			FROM SMT_GOES_PARTICLE_P_T
+		    WHERE TM BETWEEN TO_CHAR(#{startYear} || #{startMonth} || '01000000') AND TO_CHAR(#{startYear} || #{startMonth} || SUBSTR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'),'MM')),7,2) || '235959')
+		    AND P5 != -100000
+		  GROUP BY SUBSTR(TM,0,8) 
+		) data_t on date_t.dt = data_t.yyyymmdd
+		ORDER BY date_t.dt asc 
+	</select>
+	
+	<select id="SelectKpStat" parameterType="hashmap" resultType="SimpleIntegerValueChartData">
+		SELECT data_t.*, TO_CHAR(to_date(dt, 'YYYY-MM-DD'), 'YYYY-MM-DD') as tm FROM (
+			SELECT TO_CHAR(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM')+LEVEL-1), 'YYYYMMDD') AS dt FROM DUAL
+			  CONNECT BY LEVEL <![CDATA[<=]]> SUBSTR(TO_CHAR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'),'MM')), 'YYYYMMDD'),7,2)
+		) date_t left join (
+		   SELECT
+				SUBSTR(TM,0,8) AS yyyymmdd,
+				AVG(KP) AS avg_value,
+				MAX(KP) AS max_value
+			FROM SMT_KP_INDEX_T
+		   WHERE TM BETWEEN TO_CHAR(#{startYear} || #{startMonth} || '01000000') AND TO_CHAR(#{startYear} || #{startMonth} || SUBSTR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'),'MM')),7,2) || '235959')
+		  GROUP BY SUBSTR(TM,0,8) 
+		) data_t on date_t.dt = data_t.yyyymmdd
+		ORDER BY date_t.dt asc
+	</select>
+	
+	<select id="SelectMpStat" parameterType="hashmap" resultType="SimpleDoubleValueChartData">
+		SELECT data_t.*, TO_CHAR(to_date(dt, 'YYYY-MM-DD'), 'YYYY-MM-DD') as tm FROM (
+			SELECT TO_CHAR(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM')+LEVEL-1), 'YYYYMMDD') AS dt FROM DUAL
+			  CONNECT BY LEVEL <![CDATA[<=]]> SUBSTR(TO_CHAR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'),'MM')), 'YYYYMMDD'),7,2)
+		) date_t left join (
+		  SELECT
+		   	SUBSTR(TM,0,8) AS yyyymmdd,
+			ROUND(AVG(RADIUS), 2) AS avg_value,
+			MAX(RADIUS) AS max_value
+			FROM SMT_MAGNETOPAUSE_RADIUS_T
+		   WHERE TM BETWEEN TO_CHAR(#{startYear} || #{startMonth} || '01000000') AND TO_CHAR(#{startYear} || #{startMonth} || SUBSTR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'),'MM')),7,2) || '235959')
+		   AND RADIUS != -100000
+		  GROUP BY SUBSTR(TM,0,8) 
+		) data_t on date_t.dt = data_t.yyyymmdd
+		ORDER BY date_t.dt asc	
+	</select>
+	
+	<select id="SelectBtStat" parameterType="hashmap" resultType="SWPCAceMag">
+		SELECT data_t.*, TO_CHAR(to_date(dt, 'YYYY-MM-DD'), 'YYYY-MM-DD') as tm FROM (
+			SELECT TO_CHAR(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM')+LEVEL-1), 'YYYYMMDD') AS dt FROM DUAL
+				CONNECT BY LEVEL <![CDATA[<=]]> SUBSTR(TO_CHAR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'), 'MM')), 'YYYYMMDD'),7,2)
+		) date_t left join (
+			SELECT
+			 SUBSTR(TM,0,8) AS yyyymmdd,
+			 ROUND(AVG(BT), 2) AS avg_bt,
+			 MAX(BT) AS max_bt
+			FROM SMT_ACE_MAG_T
+			WHERE TM BETWEEN TO_CHAR(#{startYear} || #{startMonth} || '01000000') AND TO_CHAR(#{startYear} || #{startMonth} || SUBSTR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'), 'MM')),7,2) || '235959')
+			GROUP BY SUBSTR(TM,0,8)
+		) data_t on date_t.dt = data_t.yyyymmdd
+		ORDER BY date_t.dt asc	 
+	</select>
+	
+	<select id="SelectBulk_SpdStat" parameterType="hashmap" resultType="SimpleDoubleValueChartData">
+		SELECT data_t.*, TO_CHAR(to_date(dt, 'YYYY-MM-DD'), 'YYYY-MM-DD') as tm FROM (
+			SELECT TO_CHAR(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM')+LEVEL-1), 'YYYYMMDD') AS dt FROM DUAL
+				CONNECT BY LEVEL <![CDATA[<=]]> SUBSTR(TO_CHAR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'), 'MM')), 'YYYYMMDD'),7,2)
+		) date_t left join (
+			SELECT
+			 SUBSTR(TM,0,8) AS yyyymmdd,
+			 ROUND(AVG(BULK_SPD), 2) AS avg_value,
+			 MAX(BULK_SPD) AS max_value
+			FROM SMT_ACE_SWEPAM_T
+			WHERE TM BETWEEN TO_CHAR(#{startYear} || #{startMonth} || '01000000') AND TO_CHAR(#{startYear} || #{startMonth} || SUBSTR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'), 'MM')),7,2) || '235959')
+			GROUP BY SUBSTR(TM,0,8)
+		) data_t on date_t.dt = data_t.yyyymmdd
+		ORDER BY date_t.dt asc
+	</select>
+	
+	<select id="SelectPro_DensStat" parameterType="hashmap" resultType="SimpleDoubleValueChartData">
+		SELECT data_t.*, TO_CHAR(to_date(dt, 'YYYY-MM-DD'), 'YYYY-MM-DD') as tm FROM (
+			SELECT TO_CHAR(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM')+LEVEL-1), 'YYYYMMDD') AS dt FROM DUAL
+				CONNECT BY LEVEL <![CDATA[<=]]> SUBSTR(TO_CHAR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'), 'MM')), 'YYYYMMDD'),7,2)
+		) date_t left join (
+			SELECT
+			 SUBSTR(TM,0,8) AS yyyymmdd,
+			 ROUND(AVG(PRO_DENS), 2) AS avg_value,
+			 MAX(PRO_DENS) AS max_value
+		    FROM SMT_ACE_SWEPAM_T
+		    WHERE TM BETWEEN TO_CHAR(#{startYear} || #{startMonth} || '01000000') AND TO_CHAR(#{startYear} || #{startMonth} || SUBSTR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'), 'MM')),7,2) || '235959')
+		    GROUP BY SUBSTR(TM,0,8)
+		) data_t on date_t.dt = data_t.yyyymmdd
+		ORDER BY date_t.dt asc
+	</select>
+	
+	<select id="SelectIon_TempStat" parameterType="hashmap" resultType="SimpleDoubleValueChartData">
+		SELECT data_t.*, TO_CHAR(to_date(dt, 'YYYY-MM-DD'), 'YYYY-MM-DD') as tm FROM (
+			SELECT TO_CHAR(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM')+LEVEL-1), 'YYYYMMDD') AS dt FROM DUAL
+				CONNECT BY LEVEL <![CDATA[<=]]> SUBSTR(TO_CHAR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'), 'MM')), 'YYYYMMDD'),7,2)
+		) date_t left join (
+			SELECT
+			 SUBSTR(TM,0,8) AS yyyymmdd,
+			 ROUND(AVG(ION_TEMP), 2) AS avg_value,
+			 MAX(ION_TEMP) AS max_value
+		    FROM SMT_ACE_SWEPAM_T
+		    WHERE TM BETWEEN TO_CHAR(#{startYear} || #{startMonth} || '01000000') AND TO_CHAR(#{startYear} || #{startMonth} || SUBSTR(LAST_DAY(TRUNC(TO_DATE(#{startYear} || #{startMonth}, 'YYYYMM'), 'MM')),7,2) || '235959')
+		    GROUP BY SUBSTR(TM,0,8)
+		) data_t on date_t.dt = data_t.yyyymmdd
+		ORDER BY date_t.dt asc
+	</select>
+</mapper>

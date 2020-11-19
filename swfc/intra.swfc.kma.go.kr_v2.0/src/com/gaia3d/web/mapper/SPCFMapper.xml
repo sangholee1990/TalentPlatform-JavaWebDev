@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.SPCFMapper">
+
+	<!-- 특정수요자용 컨텐츠관리 Map -->
+	<resultMap id="spcfContentsMap" type="java.util.HashMap">
+	    <id property="spcf_seq_n" column="spcf_seq_n"/>
+	    <result property="spcf_nm" column="spcf_nm"/>
+	    <result property="spcf_uri" column="spcf_uri"/>
+	    <result property="use_yn" column="use_yn"/>
+	    <result property="rg_date" column="rg_date"/>
+	    <result property="up_date" column="up_date"/>
+	</resultMap>
+	
+	<resultMap id="spcfContentsMappingMap" type="java.util.HashMap">
+	    <id property="spcf_seq_n" column="spcf_seq_n"/>
+	    <result property="spcf_nm" column="spcf_nm"/>
+	    <result property="spcf_uri" column="spcf_uri"/>
+	    <result property="rg_date" column="rg_date"/>
+	    <result property="status" column="status"/>
+	</resultMap>
+
+	
+
+	<!-- 특정수요자용 컨텐츠 사용자 Mapping Map -->
+
+	<!-- ######## 특정수요자용 컨텐츠 관리 start ######## -->
+	<!-- 특정수요자용 컨텐츠 목록 -->	
+	<select id="listSPCFContents" parameterType="hashmap" resultMap="spcfContentsMap">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+				SELECT * 
+				FROM sos_spcf_t 
+				<include refid="spcfContentsWhere" />
+				ORDER BY rg_date DESC
+		<![CDATA[		
+				) A
+			) WHERE RNUM >= #{navigation.startRow}	AND RNUM <= #{navigation.endRow}     
+		]]>	
+	</select>
+	
+	<!-- 특정수요자용 컨텐츠 목록 카운트 -->
+	<select id="countSPCFContents" parameterType="hashmap" resultType="Integer">
+		SELECT COUNT(*)
+		  FROM sos_spcf_t
+		  <include refid="spcfContentsWhere" />
+	</select>
+
+	<!-- 특정수요자용 컨텐츠 조회 -->
+	<select id="selectSPCFContents" parameterType="hashmap" resultMap="spcfContentsMap">
+		SELECT spcf_seq_n
+		       ,spcf_nm
+		       ,spcf_uri
+		       ,use_yn
+		       ,rg_date
+		  	   ,up_date
+		  FROM sos_spcf_t
+		 WHERE spcf_seq_n = #{spcf_seq_n}
+	</select>
+
+	<!-- 특정수요자용 컨텐츠 등록 -->
+	<insert id="insertSPCFContents" parameterType="hashmap">
+		<selectKey keyProperty="spcf_seq_n" resultType="Integer" order="BEFORE">
+			SELECT sos_spcf_contents_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT
+		  INTO sos_spcf_t
+		  	   (spcf_seq_n
+		  	   ,spcf_nm
+		  	   ,spcf_uri
+		  	   ,use_yn
+		  	   ,rg_date
+		  	   ,up_date)
+		VALUES (#{spcf_seq_n}
+			   ,#{spcf_nm}
+			   ,#{spcf_uri}
+			   ,#{use_yn}
+			   ,SYSDATE
+			   ,SYSDATE)
+	</insert>
+
+	<!-- 특정수요자용 컨텐츠 수정 -->
+	<update id="updateSPCFContents" parameterType="hashmap">
+		UPDATE sos_spcf_t
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="spcf_nm != null">
+				spcf_nm = #{spcf_nm},
+			</if>
+			<if test="spcf_uri != null">
+				spcf_uri = #{spcf_uri},
+			</if>
+			<if test="use_yn != null">
+				use_yn = #{use_yn},
+			</if>
+			up_date = SYSDATE,
+		</trim>
+		WHERE spcf_seq_n = #{spcf_seq_n}
+	</update>
+
+	<!-- 특정수요자용 컨텐츠 삭제 -->
+	<delete id="deleteSPCFContents" parameterType="hashmap">
+		DELETE
+		  FROM sos_spcf_t
+		 WHERE spcf_seq_n = #{spcf_seq_n}
+	</delete>
+	<!-- ######## 특정수요자용 컨텐츠 관리 end ######## -->
+
+
+	<!-- ######## 특정수요자용 컨텐츠 사용자 Mapping start ######## -->
+	<!-- 특정수요자에게 등록된 컨텐츠를 검색한다. -->
+	<select id="searchSPCFContents" parameterType="hashmap" resultMap="spcfContentsMappingMap">
+		SELECT spcf_seq_n			AS spcf_seq_n,
+  			   spcf_nm				AS spcf_nm,
+			   spcf_uri				AS spcf_uri,
+			   rg_date				AS rg_date,
+			   CASE
+			   WHEN status != 0
+			   THEN 'Y'
+			   ELSE 'N'
+			   END					AS status
+		  FROM (
+				SELECT A.*,
+					   NVL2(B.spcf_user_mapping_seq_n, B.spcf_user_mapping_seq_n, 0) AS status
+				  FROM sos_spcf_t A
+			 LEFT JOIN sos_spcf_user_mapping_t B
+					ON B.user_seq_n	= #{user_seq_n}
+				   AND B.spcf_seq_n = A.spcf_seq_n
+				   AND B.use_yn		= 'Y'
+				 WHERE A.use_yn		= 'Y'
+		 )
+		 ORDER BY status DESC, rg_date DESC
+	</select>
+	
+	<select id="selectSPCFContentsUserMappingDataCnt" parameterType="hashmap" resultType="Integer">
+		SELECT count(*)
+		  FROM sos_spcf_user_mapping_t
+		 WHERE user_seq_n = #{user_seq_n}
+		   AND spcf_seq_n = #{spcf_seq_n}
+	</select>
+	
+	<!-- 특정수요자에게 컨텐츠를 등록한다. -->
+	<insert id="insertSPCFContentsUserMappingData" parameterType="hashmap">
+		<selectKey keyProperty="spcf_user_mapping_seq_n" resultType="Integer" order="BEFORE">
+			SELECT spcf_user_mapping_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_spcf_user_mapping_t
+			   (
+					spcf_user_mapping_seq_n
+					,user_seq_n
+					,spcf_seq_n
+					,use_yn
+			   )
+		VALUES
+			   (
+					#{spcf_user_mapping_seq_n}
+					,#{user_seq_n}
+					,#{spcf_seq_n}
+					,'Y'
+			   )
+	</insert>
+	
+	<!-- 특정수요자게에 등록된 컨텐츠를 삭제한다. -->
+	<delete id="deleteSPCFContentsUserMappingData" parameterType="hashmap">
+		DELETE
+		  FROM sos_spcf_user_mapping_t
+		 WHERE user_seq_n = #{user_seq_n}
+		 <if test="spcf_seq_list != null">
+			<foreach item="item" collection="spcf_seq_list" index="index" open=" AND spcf_seq_n not in (" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</delete>
+	<!-- ######## 특정수요자용 컨텐츠 사용자 Mapping end ######## -->
+
+	<!-- where절 시작 -->
+	<!-- 특정수요자용 컨텐츠 목록용 조건절 -->
+	<sql id="spcfContentsWhere">
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="search_value != null and search_value != ''">
+				<choose>
+					<when test="search_type == 'spcf_nm'">
+						spcf_nm like '%' ||#{search_value}|| '%'
+					</when>
+					<when test="search_type == 'spcf_uri'">
+						spcf_uri like '%' ||#{search_value}|| '%'
+					</when>
+					<otherwise>
+						(spcf_nm like '%' ||#{search_value}|| '%' OR spcf_uri like '%' ||#{search_value}|| '%')
+					</otherwise>
+				</choose>
+			</if>
+			<if test="use_yn != null and use_yn != ''">
+				AND use_yn = #{use_yn}
+			</if>
+		</trim>
+	</sql>
+	<!-- where절 끝 -->
+	
+</mapper>

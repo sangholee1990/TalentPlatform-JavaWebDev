@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items>
+	<colors>
+		<color id="red" color="0xff0000"/>
+		<color id="black" color="0x000000"/>
+		<color id="orange" color="0xffa500"/>
+		<color id="green" color="0x008000"/>
+		<color id="gold" color="0xffd700"/>
+		<color id="brown" color="0xa52a2a"/>
+		<color id="navy" color="0x000080"/>
+		<color id="blue" color="0x0000ff"/>
+		<color id="aqua" color="0x00ffff"/>
+		<color id="gray" color="0x808080"/>
+		<color id="peru" color="0xcd853f"/>
+		<color id="dodgerblue" color="0x1e90ff"/>
+		<color id="magenta" color="0xff00ff"/>
+		<color id="chocolate" color="0xd2691e"/>
+		<color id="chartreuse" color="0x7fff00"/>
+		<color id="mediumseagreen" color="0x3cb371"/>
+		<color id="darkgreen" color="0x006400"/>
+		<color id="purple" color="0x800080"/>
+		<color id="deeppink" color="0xff1493"/>
+		<color id="skyblue" color="0x87ceeb"/>
+		<color id="royalblue" color="0x4169e1"/>
+	</colors>
+	<files>
+		<!--
+		<file code="day/avg" id="shDay" file="assets/bin/sh_day_mean_result.out"/>
+		<file code="day/avg" id="nhDay" file="assets/bin/nh_day_mean_result.out"/>
+		<file code="month/avg" id="month" file="assets/bin/sh_month_mean_result.out"/>
+		-->
+		<file code="day/avg" id="shDay" file="/ibmsan/nas5/AQUA/IMG/AMSR-E/L2/SI/STATS/sh_day_mean_result.out"/>
+		<file code="day/avg" id="nhDay" file="/ibmsan/nas5/AQUA/IMG/AMSR-E/L2/SI/STATS/nh_day_mean_result.out"/>
+		<file code="month/avg" id="month" file="/ibmsan/nas5/AQUA/IMG/AMSR-E/L2/SI/STATS/sh_month_mean_result.out"/>
+	</files>
+</items>

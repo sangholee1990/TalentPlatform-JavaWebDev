@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<!--
+    =========================================================
+    * Description : common
+    * Version     :
+    * Created     : 2011-02-15
+    * Modified    :
+    * $Id: monitor-sqlmap.xml
+    =========================================================
+-->
+<sqlMap namespace="swfcDao">
+	
+    
+    <insert id="insertXray" parameterClass="java.util.HashMap">
+        INSERT INTO TB_GOES_XRAY_1M
+		SELECT #toDate# AS TM, MJD, SECOFDAY, SHORT_FLUX, LONG_FLUX 
+		FROM TB_GOES_XRAY_1M
+		WHERE TM = #tm#
+    </insert>
+    
+    <insert id="insertProton" parameterClass="java.util.HashMap">
+		INSERT INTO TB_GOES_PARTICLE_P
+		SELECT #toDate# AS TM, MJD, SECOFDAY, P1, P5, P10, P30, P50, P100, E8, E20, E40 
+		FROM TB_GOES_PARTICLE_P
+		WHERE TM = #tm#
+    </insert>
+    
+    <insert id="insertKp" parameterClass="java.util.HashMap">
+		INSERT INTO TB_KP_INDEX
+		SELECT #toDate# AS TM, KP
+		FROM TB_KP_INDEX
+		WHERE TM = #tm#
+    </insert>
+    
+    <insert id="insertMp" parameterClass="java.util.HashMap">
+		INSERT INTO TB_MAGNETOPAUSE_RADIUS
+		SELECT #toDate# AS TM, RADIUS
+		FROM TB_MAGNETOPAUSE_RADIUS
+		WHERE TM = #tm#
+    </insert>
+    
+    <insert id="insertAceMag" parameterClass="java.util.HashMap">
+		 INSERT INTO TB_ACE_MAG
+	     SELECT #toDate# AS TM, MJD, SECOFDAY, S, "BX", "BY", BZ, BT, LAT, LON
+	     FROM TB_ACE_MAG
+		WHERE TM = #tm#
+    </insert>
+    
+    <insert id="insertAceSwepam" parameterClass="java.util.HashMap">
+	 	INSERT INTO TB_ACE_SWEPAM
+	 	SELECT #toDate# AS TM, MJD, SECOFDAY, S, PRO_DENS, BULK_SPD, ION_TEMP
+	 	FROM TB_ACE_SWEPAM
+		WHERE TM = #tm#
+    </insert>
+    
+    <insert id="insertDist" parameterClass="java.util.HashMap">
+		INSERT INTO TB_DST_INDEX
+	    SELECT #toDate# AS TM, DST
+	    FROM TB_DST_INDEX
+		WHERE TM = #tm#
+    </insert>
+    
+    <insert id="insertDistKHU" parameterClass="java.util.HashMap">
+		INSERT INTO TB_DST_INDEX_KHU
+	    SELECT #toDate# AS TM, DST
+	    FROM TB_DST_INDEX_KHU
+		WHERE TM = #tm#
+    </insert>
+    
+    <insert id="insertFlarePredication" parameterClass="java.util.HashMap">
+		 INSERT INTO TB_FLARE_PREDICATION
+		 SELECT #toDate# AS CREATE_DATE, TOTAL_C, TOTAL_M, TOTAL_X 
+		 FROM TB_FLARE_PREDICATION 
+		 WHERE CREATE_DATE = TO_DATE(#tm#, 'YYYY-MM-DD') 
+    </insert>
+	
+</sqlMap>

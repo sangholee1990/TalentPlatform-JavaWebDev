@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.rte.swfc.mapper.SWFCImageMetaMapper">
+	<select id="SelectMany" parameterType="hashmap" resultType="SWFCImageMetaDTO">
+		SELECT 
+			ID,
+			CODE,
+			CREATEDATE,
+			SYS.UTL_ENCODE.TEXT_ENCODE(FILEPATH, NULL, 1) FILEPATH
+		FROM SMT_IMAGE_META_T
+		<where>
+			<if test="startDate != null"><![CDATA[AND CREATEDATE >= #{startDate}]]></if>
+			<if test="endDate != null"><![CDATA[AND CREATEDATE < #{endDate}]]></if>
+			<if test="codes != null">
+			AND CODE IN 
+			<foreach collection="codes" item="item" index="index" separator="," open="(" close=")">
+			    #{item}
+			</foreach>			
+			</if>
+		</where>
+		ORDER BY CREATEDATE
+	</select>
+	
+	
+	<select id="SelectManyWithHour" parameterType="hashmap" resultType="SWFCImageMetaDTO">
+	<![CDATA[
+		SELECT 
+			B.ID, 
+			B.CREATEDATE
+		FROM SMT_IMAGE_META_T A,	SMT_IMAGE_META_T B 
+		WHERE 
+		A.ID=#{id}
+		AND A.CODE=B.CODE
+		AND B.CREATEDATE >= TRUNC(#{createDate}, 'HH24') AND B.CREATEDATE < TRUNC(#{createDate}, 'HH24')+1/24
+		ORDER BY 2
+	]]>
+	</select>
+	
+	<select id="SelectManyIntertemporalByCode" parameterType="hashmap" resultType="SWFCImageMetaDTO">
+		SELECT 
+			META.* 
+		FROM 
+			(SELECT * FROM (SELECT CODE, TRUNC(CREATEDATE, 'HH24') CREATEHOUR from SMT_IMAGE_META_T WHERE CODE=#{code}
+			<if test="createDate != null">AND CREATEDATE <![CDATA[>=]]> TRUNC(#{createDate}, 'HH24') AND CREATEDATE <![CDATA[<]]> TRUNC(#{createDate}, 'HH24')+1/24</if>
+			ORDER BY CREATEDATE DESC) WHERE ROWNUM = 1) DATA_RANGE,
+			SMT_IMAGE_META_T META 
+		WHERE DATA_RANGE.CODE=META.CODE	AND META.CREATEDATE <![CDATA[>=]]> DATA_RANGE.CREATEHOUR AND META.CREATEDATE <![CDATA[<]]> DATA_RANGE.CREATEHOUR + NUMTODSINTERVAL(1,'HOUR')
+		ORDER BY CREATEDATE
+	</select>	
+	
+	
+	<select id="SelectManyMovie" parameterType="hashmap" resultType="SWFCImageMetaDTO">
+	<![CDATA[
+		SELECT ROWNUM AS RNUM, A.* FROM (
+			SELECT B.*  FROM SMT_IMAGE_META_T A, SMT_IMAGE_META_T B
+			WHERE
+				A.CODE = B.CODE
+				AND A.CREATEDATE >= B.CREATEDATE
+				AND A.ID = #{id}
+			ORDER BY B.CREATEDATE DESC 
+		) A WHERE ROWNUM <= #{cnt} ORDER BY ROWNUM DESC
+	]]>
+	</select>
+	
+	<select id="SelectLastOneByType" parameterType="string" resultType="SWFCImageMetaDTO">
+		SELECT * FROM (
+			SELECT
+				ID,
+				CODE,
+				CREATEDATE,
+				SYS.UTL_ENCODE.TEXT_ENCODE(FILEPATH, NULL, 1) FILEPATH
+			FROM SMT_IMAGE_META_T
+			WHERE CODE=#{code}
+			ORDER BY CREATEDATE DESC
+		) WHERE ROWNUM = 1
+	</select>
+	
+	<select id="SelectOne" parameterType="hashmap" resultType="SWFCImageMetaDTO">
+		SELECT
+			ID,
+			CODE,
+			CREATEDATE,
+			SYS.UTL_ENCODE.TEXT_ENCODE(FILEPATH, NULL, 1) FILEPATH
+		FROM SMT_IMAGE_META_T
+		WHERE ID=#{id}
+	</select>
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT COUNT(ID) FROM SMT_IMAGE_META_T
+	</select>
+	
+	<insert id="Insert" parameterType="SWFCImageMetaDTO">
+		INSERT INTO SMT_IMAGE_META_T (CODE, CREATEDATE, FILEPATH) VALUES (#{code}, #{createDate}, #{filePath}) 
+	</insert>
+	
+	<update id="Update" parameterType="SWFCImageMetaDTO">
+		UPDATE SMT_IMAGE_META_T SET 
+			CODE=#{code}, 
+			CREATEDATE=#{createDate}, 
+			FILEPATH=#{filePath} 
+			SUBMITDATE=#{submitDate}
+		WHERE ID=#{id}
+	</update>
+	
+	<select id="SelectRecentOneForEach" resultType="SWFCImageMetaDTO">
+		SELECT
+			CODE,
+			CREATEDATE,
+			SYS.UTL_ENCODE.TEXT_ENCODE(FILEPATH, NULL, 1) FILEPATH
+		FROM (
+			SELECT
+				ID,
+				CODE,
+				CREATEDATE,
+				FILEPATH, 
+				ROW_NUMBER() OVER (PARTITION BY CODE ORDER BY CREATEDATE DESC) RN 
+			FROM SMT_IMAGE_META_T
+			WHERE CREATEDATE BETWEEN SYSDATE-10 AND SYSDATE
+		)
+		WHERE RN = 1
+	</select>
+</mapper>

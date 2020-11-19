@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.SolarEventReportMapper">
+
+	<resultMap id="EventMap" type="SolarEventReportDTO">
+		<result property="fileDate" column="DT"/>
+		<result property="eventTime" column="EVENT"/>
+		<result property="eventSign" column="EVENT_SIGN"/>
+		<result property="beginTime" column="BEGIN"/>
+		<result property="beginCode" column="BEGIN_CODE"/>
+		<result property="maxTime" column="MAX"/>
+		<result property="maxCode" column="MAX_CODE"/>
+		<result property="endTime" column="END"/>
+		<result property="endCode" column="END_CODE"/>
+		<result property="observatory" column="OBS"/>
+		<result property="quality" column="Q"/>
+		<result property="type" column="TYPE"/>
+		<result property="locOrfrq" column="LOC_FRQ"/>
+		<result property="particulars" column="PARTICULARS"/>
+		<result property="particularsEtc" column="PARTICULARS_ETC"/>
+		<result property="regTime" column="REG"/>
+		<result property="line" column="LINE"/>
+	</resultMap>
+	
+	<!-- 등급표 -->
+	<select id="selectGrade" resultType="hashMap">
+		<![CDATA[
+		SELECT
+			 TYPE AS TYPE_NM, 
+		     COUNT(DECODE(GRADE, 1 ,1)) AS COLUMN1,
+		     COUNT(DECODE(GRADE, 2 ,1)) AS COLUMN2,
+		     COUNT(DECODE(GRADE, 3 ,1)) AS COLUMN3,
+		     COUNT(DECODE(GRADE, 4 ,1)) AS COLUMN4,
+		     COUNT(DECODE(GRADE, 5 ,1)) AS COLUMN5
+		  FROM (
+		        SELECT 
+		          'X-ray' AS TYPE, 
+		          DECODE(
+		         	   SUBSTR(PARTICULARS, 0, 1), 'M'
+		         	   ,
+		               CASE
+		                    WHEN TO_NUMBER(REPLACE(PARTICULARS, SUBSTR(PARTICULARS,0,1),'')) >= 1 AND TO_NUMBER(REPLACE(PARTICULARS, SUBSTR(PARTICULARS,0,1),'')) < 5 THEN '1'
+		                    WHEN TO_NUMBER(REPLACE(PARTICULARS, SUBSTR(PARTICULARS,0,1),'')) >= 5 THEN '2'
+		               END
+		               ,
+		               CASE
+		                    WHEN TO_NUMBER(REPLACE(PARTICULARS, SUBSTR(PARTICULARS,0,1),'')) >= 1 AND TO_NUMBER(REPLACE(PARTICULARS, SUBSTR(PARTICULARS,0,1),'')) < 10 THEN '3'
+		                    WHEN TO_NUMBER(REPLACE(PARTICULARS, SUBSTR(PARTICULARS,0,1),'')) >= 10 AND TO_NUMBER(REPLACE(PARTICULARS, SUBSTR(PARTICULARS,0,1),'')) < 20 THEN '4'
+		                    WHEN TO_NUMBER(REPLACE(PARTICULARS, SUBSTR(PARTICULARS,0,1),'')) >= 20 THEN '5'
+		               END
+		          )  AS GRADE  
+		         FROM 
+		         	SMT_INDICES_EVENTS_T
+		         WHERE 
+		            TYPE = 'XRA' 
+		         AND 
+		            LOC_FRQ = '1-8A' 
+		         AND 
+		            (PARTICULARS LIKE 'X%' OR PARTICULARS LIKE 'M%')
+		         AND 
+		            DT BETWEEN #{startDate} AND #{endDate}
+		 		)
+		 GROUP BY 
+		 	TYPE
+		 ]]>
+	</select>
+	
+	<!-- 파일 타입  -->
+	<select id="selectType" resultType="hashmap" >
+		SELECT DISTINCT TYPE
+		FROM 
+			SMT_INDICES_EVENTS_T 
+		WHERE
+			DT = #{searchDate}
+		ORDER BY TYPE
+	</select>
+	
+	<!-- 파일 조회 -->
+	<select id="selectLine" parameterType="hashmap" resultMap="EventMap">
+		SELECT DECODE(EVENT,'////', NULL, EVENT) AS EVENT, EVENT_SIGN, DECODE(BEGIN,'////', NULL, BEGIN) AS BEGIN, BEGIN_CODE,  DECODE(MAX,'////', NULL, MAX) AS MAX, MAX_CODE, END, END_CODE, OBS, Q, TYPE, DECODE(LOC_FRQ,'////', NULL, LOC_FRQ) AS LOC_FRQ, PARTICULARS, PARTICULARS_ETC, REG, LINE
+		FROM 
+			SMT_INDICES_EVENTS_T 
+		WHERE
+			DT = #{searchDate}
+		ORDER BY LINE
+	</select>
+
+	<!-- 태양발현 정보 입력 -->
+	<insert id="insert" parameterType="SolarEventReportDTO">	
+		INSERT 
+			INTO SMT_INDICES_EVENTS_T 
+		VALUES
+		(
+			#{fileDate}, 
+			#{eventTime}, 
+			#{eventSign},
+			#{beginTime}, 
+			#{beginCode},
+			#{maxTime}, 
+			#{maxCode},
+			#{endTime}, 
+			#{endCode},
+			#{observatory},
+			#{quality},
+			#{type},
+	    	#{locOrfrq},
+	    	#{particulars},
+	    	#{particularsEtc},
+	    	#{regTime},
+	    	#{line}
+	    )
+	</insert>
+	
+	<!-- 파일별 최대 라인 -->
+	<select id="selectMaxLine" resultType="int">
+		SELECT 
+		    NVL(MAX(LINE), 12) AS MAX_LINE 
+		FROM 
+		    SMT_INDICES_EVENTS_T 
+		WHERE 
+		    DT = #{fileDate}
+	</select>
+</mapper>

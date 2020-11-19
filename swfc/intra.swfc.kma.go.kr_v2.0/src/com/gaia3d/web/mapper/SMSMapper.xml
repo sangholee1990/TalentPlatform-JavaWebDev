@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.SMSMapper">
+	
+	<resultMap id="smsUserMap" type="java.util.HashMap">
+	    <id property="user_seq_n" column="user_seq_n"/>
+	    <result property="user_nm" column="user_nm"/>
+	    <result property="user_org" column="user_org"/>
+	    <result property="user_hdp" column="user_hdp"/>
+	    <result property="rg_date" column="rg_date"/>
+	    <result property="use_yn" column="use_yn"/>
+	    <result property="sms_seq_n" column="sms_seq_n"/>
+	</resultMap>
+	
+	<resultMap id="smsMap" type="java.util.HashMap">
+	    <id property="sms_seq_n" column="sms_seq_n"/>
+	    <result property="subject" column="subject"/>
+	    <result property="message" column="message"/>
+	    <result property="rg_date" column="rg_date"/>
+	    <result property="up_date" column="up_date"/>
+	</resultMap>
+	
+	<resultMap id="smsThresholdMap" type="java.util.HashMap">
+	    <id property="sms_threshold_seq_n" column="sms_threshold_seq_n" typeHandler="com.gaia3d.web.mapper.handler.BigDecimalTypeHandler"/>
+	    <result property="table_nm" column="table_nm" />
+	    <result property="column_nm" column="column_nm"/>
+	    <result property="date_column_nm" column="date_column_nm"/>
+	    <result property="rg_date" column="rg_date"/>
+	    <result property="up_date" column="up_date"/>
+	    <result property="threshold_nm" column="threshold_nm"/>
+	    <result property="use_yn" column="use_yn"/>
+	    <result property="grade_no" column="grade_no"/>
+	    <result property="msg1" column="msg1"/>
+	    <result property="msg2" column="msg2"/>
+	    <result property="send_yn" column="send_yn"/>
+	    <result property="send_date" column="send_date"/>
+	    <result property="send_date_hour" column="send_date_hour"/>
+	    <result property="send_date_min" column="send_date_min"/>
+	</resultMap>
+	
+	<resultMap id="smsThresholdGradeMap" type="java.util.HashMap">
+	    <id property="sms_threshold_seq_n" column="sms_threshold_seq_n"/>
+	    <id property="grade_no" column="grade_no"/>
+	    <result property="pre_val" column="pre_val"/>
+	    <result property="pre_flag" column="pre_flag"/>
+	    <result property="next_val" column="next_val"/>
+	    <result property="next_flag" column="next_flag"/>
+	</resultMap>
+	
+	
+	<resultMap id="smsThresholdLogMap" type="java.util.HashMap">
+		<result property="diff_min" column="diff_min" typeHandler="com.gaia3d.web.mapper.handler.BigDecimalTypeHandler"/>
+	</resultMap>
+	
+	<!-- 하나의 사용자 정보를 등록한다. -->
+	<insert id="insertSmsUser" parameterType="hashmap">
+		<selectKey keyProperty="user_seq_n" resultType="Integer" order="BEFORE">
+		SELECT sos_sms_user_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_sms_user_t (user_seq_n, user_nm, user_hdp, rg_date, use_yn, user_org)
+		VALUES (#{user_seq_n}, #{user_nm}, #{user_hdp}, SYSDATE, #{use_yn}, #{user_org})
+	</insert>
+	
+	
+	<select id="listSmsAllUser" resultMap="smsUserMap">
+		SELECT * FROM sos_sms_user_t ORDER BY user_seq_n DESC
+	</select>
+	
+	<!-- 사용자 정로 리스트를 조회한다. -->
+	<select id="listSmsUser" parameterType="hashmap" resultMap="smsUserMap">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+				SELECT * 
+				FROM sos_sms_user_t 
+				<include refid="smsUserWhere"/>
+				ORDER BY user_seq_n DESC
+		<![CDATA[		
+				) A
+			) WHERE RNUM >= #{navigation.startRow}	AND RNUM <= #{navigation.endRow}     
+		]]>	
+	</select>
+	<select id="countSmsUser" parameterType="hashmap" resultType="Integer">
+		SELECT COUNT(*) 
+		FROM sos_sms_user_t 
+		<include refid="smsUserWhere"/>
+	</select>
+	
+	<select id="selectSmsUser" parameterType="hashmap" resultMap="smsUserMap">
+		SELECT * 
+		FROM sos_sms_user_t 
+		WHERE user_seq_n = #{user_seq_n}
+	</select>
+	
+	<select id="selectUniqueSmsUser" parameterType="hashmap" resultMap="smsUserMap">
+		SELECT * 
+		FROM sos_sms_user_t 
+		WHERE user_hdp = #{user_hdp}
+	</select>
+	
+	<select id="listSmsUserMappingList" parameterType="hashmap" resultMap="smsUserMap">
+	    SELECT 
+	    	smut.user_seq_n
+	    	,user_nm
+	    	,user_hdp
+	    	,user_org
+	    	,rg_date
+	    	,use_yn
+	    	,sms_seq_n 
+		FROM sos_sms_user_t smut LEFT JOIN (
+				SELECT user_seq_n, sms_seq_n 
+				FROM sos_sms_user_mapping_t
+				WHERE sms_seq_n = #{sms_seq_n} 
+			) B ON smut.user_seq_n = b.user_seq_n
+		WHERE smut.use_yn = 'Y'
+		ORDER BY sms_seq_n ASC, user_nm ASC
+	</select>
+	
+	<!-- 사용자 정보를 삭제한다. -->
+	<delete id="deleteSmsUser" parameterType="hashmap">
+		DELETE FROM sos_sms_user_t 
+		WHERE user_seq_n = #{user_seq_n}
+	</delete>
+	
+	<update id="updateSmsUser" parameterType="hashmap">
+		UPDATE sos_sms_user_t 
+			<trim prefix="SET" suffixOverrides=",">
+		        <if test="user_nm != null">
+		            user_nm = #{user_nm},
+		        </if>
+		        <if test="user_hdp != null">
+		            user_hdp = #{user_hdp},
+		        </if>
+		        <if test="use_yn != null">
+		            use_yn = #{use_yn},
+		        </if>
+		        <if test="user_org != null">
+		            user_org = #{user_org},
+		        </if>
+		    </trim>
+			WHERE user_seq_n = #{user_seq_n}
+	</update>
+	
+	<!-- 신규 sms를 등록한다. -->
+	<insert id="insertSms" parameterType="hashmap">
+		<selectKey keyProperty="sms_seq_n" resultType="Integer" order="BEFORE">
+		SELECT sos_sms_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_sms_t (sms_seq_n, subject, message, rg_date)
+		VALUES (#{sms_seq_n}, #{subject}, #{message}, SYSDATE)
+	</insert>
+	
+	<!-- sms와 사용자정보를 매핑한다. -->
+	<insert id="insertSmsUserMapping" parameterType="hashmap">
+		INSERT INTO sos_sms_user_mapping_t (sms_seq_n, user_seq_n) 
+		VALUES (#{sms_seq_n}, #{user_seq_n})
+	</insert>
+	<!-- 사용자 정로 리스트를 조회한다. -->
+	<select id="listSms" parameterType="hashmap" resultMap="smsMap">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+				SELECT * 
+				FROM sos_sms_t
+				<include refid="smsWhere"/>
+				ORDER BY sms_seq_n DESC
+		<![CDATA[		
+				) A
+			) WHERE RNUM >= #{navigation.startRow}	AND RNUM <= #{navigation.endRow}     
+		]]>	
+	</select>
+	
+	<select id="countSms" parameterType="hashmap" resultType="Integer">
+		SELECT COUNT(*) 
+		FROM sos_sms_t 
+		<include refid="smsWhere"/>
+	</select>
+	
+	<select id="selectSms" parameterType="hashmap" resultMap="smsMap">
+		SELECT * 
+		FROM sos_sms_t 
+		WHERE sms_seq_n = #{sms_seq_n}
+	</select>
+	
+	<delete id="deleteSms" parameterType="hashmap">
+		DELETE FROM sos_sms_t 
+		WHERE sms_seq_n = #{sms_seq_n} 
+	</delete>
+	
+	<delete id="deleteSmsUserMapping" parameterType="hashmap"> 
+		DELETE FROM sos_sms_user_mapping_t 
+		WHERE sms_seq_n = #{sms_seq_n} 
+	</delete>
+	
+	<!-- SMS 정보를 수정한다. -->
+	<update id="updateSms" parameterType="hashmap">
+		UPDATE sos_sms_t 
+			SET up_date = SYSDATE
+	        <if test="subject != null">
+	           , subject = #{subject}
+	        </if>
+	        <if test="message != null">
+	           , message = #{message}
+	        </if>
+			WHERE sms_seq_n = #{sms_seq_n}
+	</update>
+	
+	
+	<!-- SMS 임계값 정보를 등록한다. -->
+	<insert id="insertSmsThreshold" parameterType="hashmap">
+		<selectKey keyProperty="sms_threshold_seq_n" resultType="Integer" order="BEFORE">
+		SELECT sos_sms_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_sms_threshold_t (sms_threshold_seq_n, table_nm, column_nm, threshold_nm, use_yn, rg_date, grade_no, msg1, send_date, date_column_nm, msg2)
+		VALUES (#{sms_threshold_seq_n}, #{table_nm}, #{column_nm}, #{threshold_nm}, #{use_yn}, sysdate, #{grade_no}, #{msg1}, sysdate, #{date_column_nm}, #{msg2})
+	</insert>
+	
+	<!-- SMS 임계값 정보를 수정한다. -->
+	<update id="updateSmsThreshold" parameterType="hashmap">
+		UPDATE sos_sms_threshold_t
+		 SET 
+		 	up_date = sysdate	
+		 	<if test="table_nm != null and table_nm != ''">,table_nm=#{table_nm}</if>
+		 	<if test="column_nm != null and column_nm != ''">,column_nm=#{column_nm}</if>
+		 	<if test="date_column_nm != null and date_column_nm != ''">,date_column_nm=#{date_column_nm}</if>
+		 	<if test="threshold_nm != null and threshold_nm != ''">,threshold_nm=#{threshold_nm}</if>
+		 	<if test="use_yn != null and use_yn != ''">,use_yn=#{use_yn}</if>
+		 	<if test="grade_no != null and grade_no != ''">,grade_no=#{grade_no}</if>
+		 	<if test="msg1 != null and msg1 != ''">,msg1=#{msg1}</if>
+		 	<if test="msg2 != null and msg2 != ''">,msg2=#{msg2}</if>
+		WHERE sms_threshold_seq_n = #{sms_threshold_seq_n}
+	</update>
+	
+	<!-- SMS 임계값 정보를 삭제한다. -->
+	<delete id="deleteSmsThreshold" parameterType="hashmap">
+		DELETE FROM sos_sms_threshold_t 
+		WHERE sms_threshold_seq_n = #{sms_threshold_seq_n}
+	</delete>
+	
+	<!-- 하나의 임계값 정보를 가져온다. -->
+	<select id="selectSmsThreshold" parameterType="hashmap" resultMap="smsThresholdMap">
+		SELECT * 
+		FROM sos_sms_threshold_t
+		WHERE sms_threshold_seq_n = #{sms_threshold_seq_n}
+	</select>
+	
+	<delete id="deleteSmsThresholdUserMapping" parameterType="hashmap"> 
+		DELETE FROM sos_sms_user_mapping_t 
+		WHERE sms_seq_n = #{sms_threshold_seq_n} 
+	</delete>
+	
+	<insert id="insertSmsThresholdUserMapping" parameterType="hashmap">
+		INSERT INTO sos_sms_user_mapping_t (sms_seq_n, user_seq_n) 
+		VALUES (#{sms_threshold_seq_n}, #{user_seq_n})
+	</insert>
+	
+	<!-- 다수의 임계값 정보 목록을 가져온다. -->
+	<select id="listSmsThreshold" parameterType="hashmap" resultMap="smsThresholdMap">
+		SELECT subt.*
+      		,ROUND ( (SYSDATE - send_date_diff) * 24 ) AS send_date_hour
+			,ROUND ( (SYSDATE - send_date_diff )* 24 * 60 ) AS send_date_min
+		FROM (
+			SELECT 
+		        a.sms_threshold_seq_n
+		        ,a.table_nm
+		        ,a.column_nm
+		        ,a.threshold_nm
+		        ,a.use_yn
+		        ,a.rg_date
+		        ,a.grade_no
+		        ,a.msg1
+		        ,a.date_column_nm
+		        ,a.msg2
+		        ,b.send_dt as send_date_diff
+		        ,b.send_yn
+		        ,b.up_dt
+			FROM sos_sms_threshold_t a LEFT OUTER JOIN sos_sms_threshold_log_t b ON a.sms_threshold_seq_n = b.sms_threshold_seq_n and a.grade_no = b.grade_no
+			<trim prefix="WHERE" prefixOverrides="AND |OR">
+				<if test="use_yn != null and use_yn != ''">
+					use_yn = #{use_yn}
+				</if>
+			</trim>	
+		) subt    
+		ORDER BY sms_threshold_seq_n DESC
+	</select>
+	
+	<update id="updateSmsThresholdGrade" parameterType="hashmap">
+		MERGE INTO sos_sms_threshold_grade_t
+        USING DUAL
+        ON (sms_threshold_seq_n = #{sms_threshold_seq_n} AND grade_no = #{grade_no} )
+        WHEN MATCHED THEN
+        UPDATE 
+        	SET
+	         pre_val = #{pre_val}
+	        ,pre_flag =#{pre_flag}
+	        ,next_val =#{next_val}
+	        ,next_flag =#{next_flag}
+        WHEN NOT MATCHED THEN
+        INSERT (sms_threshold_seq_n, grade_no, pre_val, pre_flag, next_val, next_flag)
+        VALUES (#{sms_threshold_seq_n}, #{grade_no}, #{pre_val}, #{pre_flag}, #{next_val}, #{next_flag})
+	</update>
+	
+	<select id="listSmsThresholdGrade" parameterType="hashmap" resultMap="smsThresholdGradeMap">
+		SELECT * 
+		FROM sos_sms_threshold_grade_t 
+		WHERE sms_threshold_seq_n = #{sms_threshold_seq_n}
+		<if test="grade_no != null and grade_no != ''">
+			AND grade_no >= #{grade_no}
+		</if>
+		<choose>
+			<when test="orderBy != null">
+			ORDER BY ${orderKey} ${orderBy}
+			</when>
+			<otherwise>
+			ORDER BY grade_no DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="selectSmsThresholdData" parameterType="hashmap" resultType="double">
+		SELECT "${column_nm}" FROM (SELECT * FROM ${table_nm} ORDER BY ${date_column_nm} DESC) WHERE ROWNUM = 1
+	</select>
+	
+	
+	<!--============================== sms 로그  시작 =========================-->
+	<!-- 사용자 정로 리스트를 조회한다. -->
+	<select id="listSmsLog" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+				SELECT * 
+				FROM sos_sms_log_t sslt LEFT JOIN sos_code_t sct on sslt.SRSLT_CD = sct.CODE  			
+				WHERE sct.PARENT_CODE_SEQ_N = (select CODE_SEQ_N from sos_code_t where code = 'SMS_ERROR_CD')
+				<include refid="smsLogWhere"/>
+				ORDER BY rg_dt DESC
+		<![CDATA[		
+				) A
+			) WHERE RNUM >= #{navigation.startRow}	AND RNUM <= #{navigation.endRow}     
+		]]>	
+	</select>
+	<select id="countSmsLog" parameterType="hashmap" resultType="Integer">
+		SELECT COUNT(*) FROM sos_sms_log_t 
+		<include refid="smsLogWhere"/>
+	</select>
+	
+	<sql id="smsLogWhere">
+		<trim prefixOverrides="AND |OR">
+			<if test="search_value != null and search_value != ''">
+				<choose>
+					<when test="search_type == 'subject'">
+						subject LIKE '%' ||#{search_value} ||'%'
+					</when>
+					<when test="to_nm == 'to_nm'">
+						to_nm LIKE '%' ||#{search_value} ||'%'
+					</when>
+					<otherwise>
+						(subject LIKE '%' ||#{search_value} ||'%' OR to_nm LIKE '%' ||#{search_value} ||'%') 
+					</otherwise>
+				</choose>
+			</if>
+		</trim>
+	</sql>
+	<!--============================== sms 로그 종료 =========================-->
+	
+	<!--============================== sms 발송 스케줄에 관한 쿼리 START =========================-->
+	<!-- SMS 발송 여부 태그르 수정한다. -->
+	<update id="updateSmsThresholdSendSatusChange" parameterType="hashmap" >
+		UPDATE sos_sms_threshold_t
+        	SET send_yn = #{send_yn}
+       		<if test="sendDt != null">
+       			,send_date = SYSDATE
+       		</if>
+        WHERE sms_threshold_seq_n = #{sms_threshold_seq_n}
+	</update>
+	
+	<update id="updateSmsThresholdLog" parameterType="hashmap">
+		MERGE INTO sos_sms_threshold_log_t
+		USING DUAL
+			ON (sms_threshold_seq_n = #{sms_threshold_seq_n} AND grade_no = #{grade_no} )
+		WHEN MATCHED THEN
+		UPDATE 
+		    SET
+		     send_yn = #{send_yn}
+		     ,up_dt = SYSDATE
+		     <if test="send_dt != null">
+		    	,send_dt = SYSDATE    
+	       	</if>
+		WHEN NOT MATCHED THEN
+		INSERT (sms_threshold_seq_n, grade_no, send_yn, send_dt, up_dt)
+		VALUES (#{sms_threshold_seq_n}, #{grade_no}, #{send_yn}, SYSDATE, SYSDATE)
+	</update>
+	
+	<update id="updateSmsSendFlagAllReset" parameterType="hashmap">
+		<![CDATA[
+		UPDATE sos_sms_threshold_log_t 
+			SET 
+				send_yn = 'N'
+				,up_dt = SYSDATE
+		WHERE send_yn = 'Y' AND send_dt <= sysdate - 4/24
+		]]>
+	</update>
+	
+	<select id="selectSmsThresholdLog" parameterType="hashmap" resultMap="smsThresholdLogMap">
+		SELECT 
+			sms_threshold_seq_n
+			, grade_no
+			, send_yn
+			, send_dt
+			,TRUNC(((SYSDATE - send_dt) * 24 * 60), 0) as diff_min
+		FROM sos_sms_threshold_log_t
+		WHERE sms_threshold_seq_n = #{sms_threshold_seq_n} 
+			AND grade_no = #{grade_no}
+	</select>
+	
+	<!-- 발송후 3시간이 넘은 임계치 정보값을 가져온다. -->
+	<select id="selectSendingSmsThresholdLog" resultMap="smsThresholdLogMap">
+	<![CDATA[
+		SELECT 
+			sstlt.sms_threshold_seq_n
+		  	,sstlt.grade_no
+		  	,sstlt.send_yn
+		  	,sstlt.send_dt
+		  	,sstt.table_nm
+		  	,sstt.column_nm
+		  	,sstt.threshold_nm
+		  	,sstt.msg1
+		  	,sstt.msg2
+		  	,sstt.date_column_nm
+		  	,sstt.rg_date
+		  	,sstt.use_yn
+		FROM sos_sms_threshold_log_t sstlt LEFT OUTER JOIN sos_sms_threshold_grade_t sstgt 
+        		ON sstlt.sms_threshold_seq_n = sstgt.sms_threshold_seq_n AND sstlt.grade_no = sstgt.grade_no
+      		LEFT OUTER JOIN sos_sms_threshold_t sstt 
+        		ON sstt.sms_threshold_seq_n = sstlt.sms_threshold_seq_n
+		WHERE sstlt.send_yn = 'Y'			
+			AND sstlt.send_dt <= (SYSDATE - 3/24)
+			AND sstt.use_yn = 'Y'
+	]]>
+	</select>
+	
+	
+	<delete id="deleteSmsThresholdGrade" parameterType="hashmap">
+		DELETE FROM sos_sms_threshold_grade_t 
+		WHERE sms_threshold_seq_n = #{sms_threshold_seq_n}
+	</delete>
+	
+	<!--============================== sms 발송 스케줄에 관한 쿼리 END =========================-->
+	
+	<sql id="smsUserWhere">
+		<trim prefix="WHERE" prefixOverrides="AND |OR">
+			<if test="search_value != null and search_value != ''">
+				<choose>
+					<when test="search_type == 'user_nm'">
+						user_nm LIKE '%' ||#{search_value} ||'%'
+					</when>
+					<when test="search_type == 'user_hdp'">
+						user_hdp LIKE '%' ||#{search_value} ||'%'
+					</when>
+					<when test="search_type == 'user_org'">
+						user_org LIKE '%' ||#{search_value} ||'%'
+					</when>
+					<otherwise>
+						(user_nm LIKE '%' ||#{search_value} ||'%' OR user_hdp LIKE '%' ||#{search_value} ||'%' OR user_org LIKE '%' ||#{search_value} ||'%' ) 
+					</otherwise>
+				</choose>
+			</if>
+			<if test="sms_seq_n != null and sms_seq_n != ''">
+			</if>
+			<if test="use_yn != null and use_yn != ''">
+				AND use_yn = #{use_yn}
+			</if>
+		</trim>
+	</sql>
+	
+	<sql id="smsWhere">
+		<trim prefix="WHERE" prefixOverrides="AND |OR">
+			<if test="search_value != null and search_value != ''">
+				<choose>
+					<when test="search_type == 'subject'">
+						subject LIKE '%' ||#{search_value} ||'%'
+					</when>
+					<when test="search_type == 'message'">
+						message LIKE '%' ||#{search_value} ||'%'
+					</when>
+					<otherwise>
+						(subject LIKE '%' ||#{search_value} ||'%' OR message LIKE '%' ||#{search_value} ||'%' ) 
+					</otherwise>
+				</choose>
+			</if>
+			<if test="sms_seq_n != null and sms_seq_n != ''">
+			</if>
+		</trim>
+	</sql>
+	    
+</mapper>

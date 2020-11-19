@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 30초마다 설정 파일의 변경을 확인한다. 파일이 변경되면 다시 로딩한다 -->
+<configuration scan="true" scanPeriod="30 seconds">
+ 
+    <!-- 외부 설정파일을 사용할 수 있다. -->
+    <property resource="application.properties"/>
+
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>
+                ${logback.pattern.console}
+            </pattern>
+        </encoder>
+    </appender>
+    
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logback.logFile}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 파일이 하루에 한개씩 생성된다 -->
+            <fileNamePattern>${logback.logRollingFile}</fileNamePattern>
+            <!-- 30일이 지난 파일은 삭제가 된다.-->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern> ${logback.pattern.file}</pattern>
+        </encoder>
+    </appender>
+    
+    <logger name="org.springframework" level="info"/>
+    <logger name="org.mybatis" level="info" additivity="false"/>
+    <logger name="org.apache.ibatis" level="info" additivity="false"/>
+    <logger name="kr.co.indisystem" level="debug"/>
+    <root level="info">
+        <appender-ref ref="console"/>
+         <!-- appender-ref ref="file"/ -->
+    </root>
+    <root level="debug">
+        <appender-ref ref="console"/>
+        <!-- appender-ref ref="file"/ -->
+    </root>
+
+    
+</configuration>

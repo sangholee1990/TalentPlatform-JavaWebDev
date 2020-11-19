@@ -1,0 +1,107 @@
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'eclipse'
+apply plugin: 'eclipse-wtp'
+
+version = '1.0'
+
+// Uses JDK 7
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+//Default Output Dir
+eclipse {
+    classpath {
+        defaultOutputDir = file("/src/main/webapp/WEB-INF/classes")
+    }
+}
+
+eclipse {
+    wtp {
+        facet {
+            facet name: 'jst.web', version: '3.0'
+            facet name: 'java', version: '1.6'
+            facet name: 'wst.jsdt.web', version: '1.0'
+        }
+    }
+}
+
+repositories {
+	mavenLocal()	//Maven local repository
+    mavenCentral()	//Maven central repository
+}
+
+ext {
+  jacksonVersion="2.2.3"
+  springVersion="4.0.1.RELEASE"
+  tomcatVersion="7.0.62"
+}
+
+//Project dependencies http://mvnrepository.com/
+dependencies {
+	compile 'org.springframework:spring-webmvc:4.1.6.RELEASE'
+	compile 'org.springframework:spring-jdbc:4.1.6.RELEASE'
+	compile 'org.springframework.security:spring-security-config:4.0.1.RELEASE'
+	compile 'org.springframework.security:spring-security-web:4.0.1.RELEASE'
+	compile 'org.springframework.security:spring-security-core:4.0.1.RELEASE'
+	compile 'org.springframework.security:spring-security-taglibs:4.0.1.RELEASE'
+//	compile 'org.thymeleaf:thymeleaf-spring4:2.1.4.RELEASE'
+	compile 'mysql:mysql-connector-java:5.1.35'
+	compile 'org.mybatis:mybatis:3.3.0'
+	compile 'org.mybatis:mybatis-spring:1.2.2'
+	compile 'ch.qos.logback:logback-classic:1.1.3'
+	compile 'ch.qos.logback:logback-access:1.1.3'
+	compile 'commons-fileupload:commons-fileupload:1.3.1'
+	compile 'com.fasterxml.jackson.core:jackson-core:2.5.3'
+	compile 'com.fasterxml.jackson.core:jackson-databind:2.5.3'
+	compile 'jstl:jstl:1.2'
+	compile 'javax.validation:validation-api:1.1.0.Final'
+	compile 'org.hibernate:hibernate-validator:5.1.3.Final'
+	compile 'joda-time:joda-time:2.8.1'
+	
+	//include in compile only, exclude in the war
+	providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+}
+
+// logback(slf4j)를 사용하기 때문에 모든 의존성에서 commons-logging는 제외
+//[configurations.runtime, configurations.default]*.exclude(module: 'commons-logging')
+
+
+// JAVA 컴파일시 인코딩 설정
+[compileJava]*.options*.encoding = 'UTF-8'
+
+
+// 프로젝트 초기화
+// 1. java source directory 생성 : src/main/java, src/test/java
+// 2. resource directory 생성    : src/main/resource, src/test/resource
+// 3. web source directory 생성  : src/main/webapp, src/main/webapp/WEB-INF
+task initProject(description: 'initialize project') << {
+    createDir = {
+        println "create source directory: $it"
+        it.mkdirs()
+    }
+    sourceSets*.java.srcDirs*.each createDir
+    sourceSets*.resources.srcDirs*.each createDir
+    createDir webAppDir
+    createDir new File(webAppDir, '/WEB-INF')
+}
+
+//project.webAppDirName = 'WebContent'   // Default 값은 src/main/webapp 임.
+
+
+//war {
+//    exclude 'WEB-INF/lib/**'
+//    exclude 'WEB-INF/classes/**'
+
+    // copy properties file in classes so that
+    // they may be loaded from classpath
+//    from('resources')    {
+//        include '*.properties'
+//        into 'WEB-INF/classes/'
+//   }
+
+    //webInf { from 'src/additionalWebInf' } // adds a file-set to the WEB-INF dir.
+    //classpath fileTree('additionalLibs') // adds a file-set to the WEB-INF/lib dir.
+//    webXml = file('src/main/webapp/WEB-INF/web.xml') // copies a file to WEB-INF/web.xml
+//}
+

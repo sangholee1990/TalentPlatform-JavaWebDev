@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.BoardFileMapper">
+	<select id="SelectMany" parameterType="hashmap" resultType="BoardsFileDTO">
+		SELECT
+			BOARD_FILE_SEQ			
+			, FILENAME				
+			, FILEPATH				
+		FROM SOS_BOARD_FILE_T
+		WHERE 
+			BOARD_SEQ=#{board_seq}
+	</select>
+	
+	<select id="SelectOne" parameterType="hashmap" resultType="BoardsFileDTO">
+		SELECT
+			BOARD_FILE_SEQ			
+			, FILENAME				
+			, FILEPATH				
+		FROM SOS_BOARD_FILE_T
+		WHERE board_file_seq=#{board_file_seq}
+	</select>
+	
+	<insert id="InsertFile" parameterType="BoardsFileDTO">
+		INSERT INTO SOS_BOARD_FILE_T (
+			BOARD_FILE_SEQ			
+			, FILEPATH				
+			, FILENAME				
+			, BOARD_SEQ				
+			, RG_DATE
+		) VALUES (
+			SOS_BOARD_FILE_SQ01.NEXTVAL
+			, #{filepath}
+			, #{filename}
+			, #{board_seq}
+			, SYSDATE
+		)
+	</insert>
+	
+	<delete id="Delete" parameterType="BoardsFileDTO">
+		DELETE FROM SOS_BOARD_FILE_T WHERE BOARD_SEQ=#{board_seq}
+	</delete>
+	
+	<delete id="DeleteFile" parameterType="BoardsFileDTO">
+		DELETE FROM SOS_BOARD_FILE_T WHERE BOARD_FILE_SEQ=#{board_file_seq}
+	</delete>
+</mapper>

@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/**
+* 소스명		: main.mxml
+* 작성자		: Myung jin Hwang (mjhwang@saeasoft.com)
+* 설  명		: 해빙.토양수분 분석 메인 화면
+* 작성일		: 2011.08.24
+* 수정일		:
+*/
+-->
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   minWidth="600" minHeight="600"
+			   width="100%"
+			   creationComplete="init()" height="100%" xmlns:lines="com.saeasoft.actionscript.components.chart.lines.*">
+	<fx:Style source="assets/css/common.css" />
+	<fx:Script>
+		<![CDATA[
+			import br.com.stimuli.loading.BulkLoader;
+			import br.com.stimuli.loading.BulkProgressEvent;
+			import br.com.stimuli.loading.loadingtypes.LoadingItem;
+			
+			import com.saeasoft.actionscript.common.Area;
+			import com.saeasoft.actionscript.common.ChartKind;
+			import com.saeasoft.actionscript.components.chart.lines.CosCheckBox;
+			import com.saeasoft.actionscript.components.chart.lines.DotLine01;
+			import com.saeasoft.actionscript.components.chart.lines.MonthRefLineChart;
+			import com.saeasoft.actionscript.utils.XMLUtils;
+			
+			import mx.charts.HitData;
+			import mx.charts.LineChart;
+			import mx.charts.chartClasses.IAxis;
+			import mx.charts.series.LineSeries;
+			import mx.collections.ArrayCollection;
+			import mx.collections.Sort;
+			import mx.collections.SortField;
+			import mx.collections.XMLListCollection;
+			import mx.controls.Alert;
+			import mx.events.IndexChangedEvent;
+			import mx.graphics.SolidColorStroke;
+			import mx.graphics.Stroke;
+			import mx.utils.ArrayUtil;
+			import mx.utils.ObjectUtil;
+			
+			import spark.components.CheckBox;
+			import spark.events.IndexChangeEvent;
+			
+			[Bindable]private var areaInfo : ArrayCollection = new ArrayCollection([{label:'남반구', data:'sh'}, {label:'북반구', data:'nh'} ]);
+			
+			/**
+			 * 현재 시간
+			 */ 
+			private static var currentDate : Date = new Date();
+			/**
+			 * 초기 데이터를 불러들이기 위한 Loader
+			 */ 
+			private static var loader : BulkLoader;
+			/**
+			 * 색상 정보를 담고 있는 배열 객체
+			 */ 
+			private var colorArray : Array = new Array();
+			/**
+			 * 그래프를 그리기 위한 기본 데이터를 담고 있는 객체
+			 */ 
+			[Bindable]private var baseXML : XML = <items/>;
+			/**
+			 * 그래프를 그리기 위한 기본 데이터를 담고 있는 객체
+			 */ 
+			[Bindable]private var shDayXML : XML = <items/>;
+			[Bindable]private var nhDayXML : XML = <items/>;
+			/**
+			 * 장기 그래프를 보여주기 위한 객체 
+			 */ 
+			[Bindable]private var monthlyXML : XML = <items/>;
+			[Bindable]private var chartWidth: int = 550;
+			
+			/**
+			 * 삭제된 차트를 임시로 담기 객체
+			 */ 
+			private var shConRemoveBasket : Array = new Array();
+			private var shRouRemoveBasket : Array = new Array();
+			private var shRefRemoveBasket : Array = new Array();
+			private var nhConRemoveBasket : Array = new Array();
+			private var nhRouRemoveBasket : Array = new Array();
+			private var nhRefRemoveBasket : Array = new Array();
+			[Bindable]private var yearMaxDate : Date = new Date();
+			[Bindable]private var yearMinDate : Date = new Date(2003, 0, 1);
+			[Bindable]private var minDate : Date = new Date(2011, 0, 1);
+			[Bindable]private var maxDate : Date = new Date(2011, 11, 31);
+			[Bindable]private static var tickLength : Number = 6;
+			[Bindable]private static var minorTickLength : Number = 3;
+			
+			
+			/**
+			 * 초기 작업을 수행한다.
+			 **/ 
+			private function init():void{
+				yearMaxDate.year += 1; 
+				minDate.fullYear = yearMaxDate.fullYear;
+				maxDate.fullYear = yearMaxDate.fullYear;
+				
+				for each(var c:XML in initXML.colors.children() ){
+					colorArray.push(c.@color);
+				}
+				
+				
+				loader = new BulkLoader("loading-file");
+				for each(var file:XML in initXML.files.children() ){
+					var filePath : String =file.@file;
+					var id : String = file.@id;
+					loader.add(filePath, {id:id});
+				}
+				loader.addEventListener(BulkLoader.COMPLETE, onAllFileLoaderComplate);
+				loader.addEventListener(BulkLoader.PROGRESS, onLoadFileProgress);
+				loader.start();
+				
+				btnColorChange();
+			}
+			
+			/**
+			 *파일 로딩 상태 처리
+			 */  
+			private function onLoadFileProgress(evt : BulkProgressEvent):void{
+				trace(evt.loadingStatus());
+			}
+			
+			private var nhDraw : Boolean = false;
+			private var shDraw : Boolean = false;
+			
+			
+			/**
+			 * 파일을 모두 완료했을 경우 처리 
+			 */ 
+			private function onAllFileLoaderComplate(evt:Event):void{
+				trace("file load success");
+				/*
+				var item : LoadingItem = loader.get("month");
+				var result : String = item._content;
+				var array : Array = result.split("\n");
+				for each (var s : String in array){
+				var ary : Array = s.split(/\s+/g);
+				if(ary.length == 9){
+				var dataXML : XML = <data/>;
+				dataXML.@yyyymm = ary[0] +''+ ary[1];
+				dataXML.@year = ary[0];
+				dataXML.@ref = ary[3];
+				dataXML.@rou = ary[5];
+				dataXML.@cnt = ary[6];
+				var con : int = ary[8];
+				dataXML.@con = (con * 25 * 25);
+				monthlyXML.appendChild(dataXML);
+				}					
+				}
+				*/
+				
+				var area : String = areaCombo.selectedItem.data;
+				
+				trace(area);
+				
+				drawAreaChart(area);
+				
+				
+			}
+			
+			private function drawAreaChart(area:String):void{
+				if(area == Area.SH){ //남반구
+					var shItem : LoadingItem = loader.get("shDay");
+					var shResult : String = shItem._content;
+					initXMLSetting(shResult, shDayXML);	
+					
+					drawChart(ChartKind.CON, Area.SH);
+					drawChart(ChartKind.ROU, Area.SH);
+					drawChart(ChartKind.REF, Area.SH);
+					shDraw = true;
+				}else{
+					var nhItem : LoadingItem = loader.get("nhDay");
+					var nhResult : String = nhItem._content;
+					initXMLSetting(nhResult, nhDayXML);		
+					drawChart(ChartKind.CON, Area.NH);
+					drawChart(ChartKind.ROU, Area.NH);
+					drawChart(ChartKind.REF, Area.NH);
+					nhDraw = true;
+				}
+			}
+			
+			
+			private function initXMLSetting(result: String, targetXML:XML):void{
+				var array : Array = result.split("\n");
+				var cnt : int = 0;
+				var isFirst : Boolean = true;
+				for each (var s : String in array){
+					var ary : Array = s.split(/\s+/g);					
+					if(ary.length == 9){
+						if(isFirst){
+							yearMinDate = new Date(ary[0], int(ary[1]) - 1, ary[2])
+							isFirst = false;
+						}
+						var dataXML : XML = <data/>;
+						dataXML.@yyyymmdd = ary[0] +''+ ary[1] +''+ ary[2];
+						dataXML.@year = ary[0];
+						dataXML.@dd = ary[2];
+						dataXML.@ref = ary[3];
+						dataXML.@dummy1 = ary[4];
+						dataXML.@rou = ary[5];
+						dataXML.@cnt = ary[6];
+						dataXML.@conAvg = ary[7];
+						var con : int = ary[8];
+						dataXML.@con = (con * 25 * 25) / Math.pow(10, 6) ;
+						//dayXML.prependChild(dataXML);
+						targetXML.appendChild(dataXML);
+						
+					}
+				}	
+			}
+			
+			/**
+			 * 차트를 그린다.
+			 */ 
+			private function drawChart(code:String, area:String):void{
+				var fullYear : int = currentDate.getFullYear();
+				var chartSeriesTmp : Array = new Array();
+				var cnt : int = 0;
+				for(var year : int = 2003; year <= fullYear; year++){
+					var color : uint = colorArray[cnt++];
+					var series : LineSeries = getNewLineSeries(year, color, code, area);
+					chartSeriesTmp.push(series);
+					addCheckBox(year + '', color, code, area);
+				}
+				
+				var chart : LineChart;
+				if(code == ChartKind.CON) {
+					if(area == Area.SH)chart = shConLinechart;
+					else chart = nhConLinechart;
+					MonthConLineChart(chart).minDate = minDate;
+					MonthConLineChart(chart).maxDate = maxDate;
+				}else if(code == ChartKind.ROU){
+					if(area == Area.SH)chart = shRouLinechart;
+					else chart = nhRouLinechart;
+					MonthRouLineChart(chart).minDate = minDate;
+					MonthRouLineChart(chart).maxDate = maxDate;
+				}else if(code == ChartKind.REF){
+					if(area == Area.SH)chart = shRefLinechart;
+					else chart = nhRefLinechart;
+					MonthRefLineChart(chart).minDate = minDate;
+					MonthRefLineChart(chart).maxDate = maxDate;
+				}
+				chart.series = chartSeriesTmp;
+				chart.invalidateSeriesStyles();  
+			}
+			
+			
+			
+			private function addCheckBox(txt:String, color:uint, code:String, area : String):void{
+				var checkBox : CosCheckBox = new CosCheckBox();
+				checkBox.label = txt;
+				checkBox.code = code;
+				checkBox.area = area;
+				checkBox.selected = true;
+				checkBox.setStyle("color", color);
+				
+				var chart : LineChart;
+				var controllerBar : ControlBar;
+				var removeBasket : Array;
+				if(area == Area.SH){
+					if(code == ChartKind.CON) {
+						chart = shConLinechart;
+						controllerBar = shConChartControllerBar; 
+						removeBasket = shConRemoveBasket;
+					}else if(code == ChartKind.ROU){
+						chart = shRouLinechart;
+						controllerBar = shRouChartControllerBar; 
+						removeBasket = shRouRemoveBasket;
+					}else if(code == ChartKind.REF){
+						chart = shRefLinechart;
+						controllerBar = shRefChartControllerBar; 
+						removeBasket = shRefRemoveBasket;
+					}
+				}else{
+					if(code == ChartKind.CON) {
+						chart = nhConLinechart;
+						controllerBar = nhConChartControllerBar; 
+						removeBasket = nhConRemoveBasket;
+					}else if(code == ChartKind.ROU){
+						chart = nhRouLinechart;
+						controllerBar = nhRouChartControllerBar; 
+						removeBasket = nhRouRemoveBasket;
+					}else if(code == ChartKind.REF){
+						chart = nhRefLinechart;
+						controllerBar = nhRefChartControllerBar; 
+						removeBasket = nhRouRemoveBasket;
+					}
+				}
+				
+				checkBox.addEventListener(MouseEvent.CLICK, function(e:MouseEvent):void{
+					var obj : CosCheckBox = CosCheckBox(e.target);
+					var label : String = obj.label;
+					var checked : Boolean = obj.selected;
+					var idx : int;
+					var field : String;
+					var cd : String = obj.code
+					var tmpLineChart : LineChart;
+					
+					var basket : Array;
+					if(area == Area.SH){
+						if(cd == ChartKind.CON){
+							basket = shConRemoveBasket;
+							tmpLineChart = shConLinechart;
+						}else if(cd == ChartKind.ROU){
+							basket = shRouRemoveBasket;
+							tmpLineChart = shRouLinechart;
+						}else if(cd == ChartKind.REF){
+							basket = shRefRemoveBasket;
+							tmpLineChart = shRefLinechart;
+						}
+					}else{
+						if(cd == ChartKind.CON){
+							basket = nhConRemoveBasket;
+							tmpLineChart = nhConLinechart;
+						}else if(cd == ChartKind.ROU){
+							basket = nhRouRemoveBasket;
+							tmpLineChart = nhRouLinechart;
+						}else if(cd == ChartKind.REF){
+							basket = nhRefRemoveBasket;
+							tmpLineChart = nhRefLinechart;
+						}
+					}
+					
+					var tmp:Array = tmpLineChart.series; 
+					if(checked){
+						for ( var i:int = 0; i < basket.length; i++ ){
+							field = basket[i].dataProvider[0].@year;
+							if ( label == field ){
+								tmp.push(basket[i]);
+								basket.splice(i, 1);
+								break;
+							}									
+						}
+					}else{
+						for ( var i:int = 0; i < tmpLineChart.series.length; i++ ){
+							var x : XMLList = XMLList (tmpLineChart.series[i].dataProvider);
+							field = x[0].@year;
+							if ( label == field ){
+								idx = i;
+								break;
+							}
+						}
+						
+						basket.push(tmp[idx]);
+						tmp.splice(idx, 1);  
+					}
+					tmpLineChart.series = tmp;   
+					tmpLineChart.invalidateSeriesStyles(); 
+					
+				});
+				
+				controllerBar.addChild(checkBox);
+			}
+			
+			/**
+			 * 새로운 라인 시리즈를 만든다.
+			 */ 
+			private function getNewLineSeries(year:int, color:uint, code : String, area:String):LineSeries{
+				var series : LineSeries = new LineSeries();
+				if(area == Area.SH)series.dataProvider = shDayXML.data.(@year == year);
+				else series.dataProvider = nhDayXML.data.(@year == year);
+				series.displayName = year+'';
+				series.yField = "@" + code;
+				series.xField = "@yyyymmdd";
+				series.setStyle('form','curve');
+				series.setStyle('lineStroke',new SolidColorStroke(color, 1.4));
+				return series;
+			}
+			
+			/**
+			 * 점선으로 변경한다.
+			 */ 
+			private function addDotteLine(series : LineSeries):void{
+				var cf:ClassFactory = new ClassFactory(com.saeasoft.actionscript.components.chart.lines.DotLine01);
+				series.setStyle('lineSegmentRenderer', cf);
+			}
+			
+			private var currnetStatus : String = "MONTH";
+			
+			protected function monthBtn_clickHandler():void
+			{
+				currnetStatus = "MONTH";
+				var area : String = areaCombo.selectedItem.data;
+				if(area == Area.NH){ //뷱반구
+					vs.selectedChild = nhMonthArea;
+				}else{
+					vs.selectedChild = shMonthArea;
+				}
+				
+				btnColorChange(currnetStatus);
+			}
+			
+			protected function yearBtn_clickHandler():void
+			{
+				currnetStatus = "YEAR";
+				var area : String = areaCombo.selectedItem.data;
+				if(area == Area.NH){ //뷱반구
+					vs.selectedChild = nhYearArea;
+				}else{
+					vs.selectedChild = shYearArea;
+				}
+				btnColorChange(currnetStatus);
+			}
+			
+			protected function vs_changeHandler(event:IndexChangedEvent):void
+			{
+				var idx : int = event.newIndex;
+				if(idx == 0 || idx == 2){ 
+					if(!shDraw)drawAreaChart( Area.SH );
+				}else{ if(!nhDraw) drawAreaChart(Area.NH); }
+			}			
+			
+			protected function areaCombo_changeHandler(event:IndexChangeEvent):void
+			{
+				var area : String = areaCombo.selectedItem.data;
+				if(currnetStatus == "MONTH"){
+					monthBtn_clickHandler();
+				}else{
+					yearBtn_clickHandler();
+				}
+			}
+			
+			private function btnColorChange(code:String="MONTH"):void{
+				if(code == "MONTH"){
+					monthBtn.setStyle("color", "blue");
+					monthBtn.setStyle("fontWeight", "bold");
+					yearBtn.setStyle("color", "0x000000");
+					yearBtn.setStyle("fontWeight", "normal");
+				}else{
+					monthBtn.setStyle("color", "0x000000");
+					monthBtn.setStyle("fontWeight", "normal");
+					yearBtn.setStyle("color", "blue");
+					yearBtn.setStyle("fontWeight", "bold");
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<fx:XML id="initXML" source="assets/xml/data.xml"/>
+		<mx:DateFormatter id="df"  formatString="M"/>
+		<s:SolidColorStroke id="conColorStroke" weight="1.4" color="black"/>
+	</fx:Declarations>
+	
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center" />	
+	</s:layout>
+	<!--s:Scroller width="100%" height="100%" left="1" right="1" top="1" bottom="1">-->
+		<s:VGroup width="100%" height="100%" horizontalAlign="center">
+			<mx:Spacer height="20"/>
+			<s:HGroup width="100%" horizontalAlign="left">
+				<mx:Spacer width="100"/>
+				<s:ComboBox id="areaCombo" dataProvider="{areaInfo}" selectedIndex="0" change="areaCombo_changeHandler(event)" styleName="dotumclass"/> 
+				<s:Button id="monthBtn" label="월별" click="monthBtn_clickHandler()" styleName="dotumclass"/>
+				<s:Button id="yearBtn" label="년별" click="yearBtn_clickHandler()" styleName="dotumclass"/>
+			</s:HGroup>		
+			<mx:Spacer height="20"/>
+			<mx:ViewStack id="vs" width="100%" borderVisible="false" change="vs_changeHandler(event)">
+				<s:NavigatorContent id="shMonthArea" label="남반구 월별" height="100%">
+					<s:VGroup width="100%" height="100%" horizontalAlign="center">
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:VGroup horizontalAlign="center">
+								<s:HGroup width="100%" verticalAlign="middle">
+									<s:Label text="Sea Ice Area (x10^6 km²)" rotation="-90" styleName="chartTitle"/>
+									<lines:MonthConLineChart id="shConLinechart" width="{chartWidth}"/>
+								</s:HGroup>
+								<s:Label text="Month" styleName="chartTitle"/>
+								<mx:ControlBar id="shConChartControllerBar" width="100%" horizontalAlign="center"/>
+							</s:VGroup>
+						</s:HGroup>
+						<mx:Spacer height="40"/>
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:VGroup horizontalAlign="center">
+								<s:HGroup width="100%" verticalAlign="middle">
+									<s:Label text="Roughness(σ)" rotation="-90" styleName="chartTitle"/>
+									<lines:MonthRouLineChart id="shRouLinechart" width="{chartWidth}"/>
+								</s:HGroup>
+								<s:Label text="Month" styleName="chartTitle"/>
+								<mx:ControlBar id="shRouChartControllerBar" width="100%" horizontalAlign="center"/>
+							</s:VGroup>
+						</s:HGroup>						
+						<mx:Spacer height="40"/>
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:VGroup horizontalAlign="center">
+								<s:HGroup width="100%" verticalAlign="middle">
+									<s:Label text="Refractive Index (n)" rotation="-90" styleName="chartTitle"/>
+									<lines:MonthRefLineChart id="shRefLinechart" width="{chartWidth}"/>
+								</s:HGroup>
+								<s:Label text="Month" styleName="chartTitle"/>
+								<mx:ControlBar id="shRefChartControllerBar" width="100%" horizontalAlign="center"/>
+							</s:VGroup>
+						</s:HGroup>	
+					</s:VGroup>
+				</s:NavigatorContent>
+				<s:NavigatorContent id="nhMonthArea" label="북반구 월별" height="100%">
+					<s:VGroup width="100%" height="100%" horizontalAlign="center">
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:VGroup horizontalAlign="center">
+								<s:HGroup width="100%" verticalAlign="middle">
+									<s:Label text="Sea Ice Area (x10^6 km²)" rotation="-90" styleName="chartTitle"/>
+									<lines:MonthConLineChart id="nhConLinechart" width="{chartWidth}"/>
+								</s:HGroup>
+								<s:Label text="Month" styleName="chartTitle"/>
+								<mx:ControlBar id="nhConChartControllerBar" width="100%" horizontalAlign="center"/>
+							</s:VGroup>
+						</s:HGroup>
+						<mx:Spacer height="40"/>
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:VGroup horizontalAlign="center">
+								<s:HGroup width="100%" verticalAlign="middle">
+									<s:Label text="Roughness(σ)" rotation="-90" styleName="chartTitle"/>
+									<lines:MonthRouLineChart id="nhRouLinechart" width="{chartWidth}"/>
+								</s:HGroup>
+								<s:Label text="Month" styleName="chartTitle"/>
+								<mx:ControlBar id="nhRouChartControllerBar" width="100%" horizontalAlign="center"/>
+							</s:VGroup>
+						</s:HGroup>						
+						<mx:Spacer height="40"/>
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:VGroup horizontalAlign="center">
+								<s:HGroup width="100%" verticalAlign="middle">
+									<s:Label text="Refractive Index (n)" rotation="-90" styleName="chartTitle"/>
+									<lines:MonthRefLineChart id="nhRefLinechart" width="{chartWidth}"/>
+								</s:HGroup>
+								<s:Label text="Month" styleName="chartTitle"/>
+								<mx:ControlBar id="nhRefChartControllerBar" width="100%" horizontalAlign="center"/>
+							</s:VGroup>
+						</s:HGroup>	
+					</s:VGroup>
+				</s:NavigatorContent>
+				<s:NavigatorContent label="남반구 년별" id="shYearArea">
+					<s:VGroup width="100%" height="100%" horizontalAlign="center">
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:Label text="Sea Ice Area (x10^6 km²)" rotation="-90" styleName="chartTitle"/>
+							<s:VGroup horizontalAlign="center">
+								<lines:YearConLineChart width="{chartWidth}" dataProvider="{shDayXML.data}" minDate="{yearMinDate}"/>
+								<s:Label text="Year" styleName="chartTitle"/>
+							</s:VGroup>
+						</s:HGroup>
+						<mx:Spacer height="20"/>
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:Label text="Roughness(σ)" rotation="-90" styleName="chartTitle"/>
+							<s:VGroup horizontalAlign="center">
+								<lines:YearRouLineChart width="{chartWidth}" dataProvider="{shDayXML.data}" minDate="{yearMinDate}"/>
+								<s:Label text="Year" styleName="chartTitle"/>
+							</s:VGroup>
+						</s:HGroup>
+						<mx:Spacer height="20"/>
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:Label text="Refractive Index (n)" rotation="-90" styleName="chartTitle"/>
+							<s:VGroup horizontalAlign="center">
+								<lines:YearRefLineChart id="yearRefAvg" width="{chartWidth}" dataProvider="{shDayXML.data}" minDate="{yearMinDate}"/>
+								<s:Label text="Year" styleName="chartTitle"/>
+							</s:VGroup>
+						</s:HGroup>
+					</s:VGroup>					
+				</s:NavigatorContent>
+				<s:NavigatorContent label="북반구 년별" id="nhYearArea">
+					<s:VGroup width="100%" height="100%" horizontalAlign="center">
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:Label text="Sea Ice Area (x10^6 km²)" rotation="-90" styleName="chartTitle"/>
+							<s:VGroup horizontalAlign="center">
+								<lines:YearConLineChart width="{chartWidth}" dataProvider="{nhDayXML.data}" minDate="{yearMinDate}"/>
+								<s:Label text="Year" styleName="chartTitle"/>
+							</s:VGroup>
+						</s:HGroup>
+						<mx:Spacer height="20"/>
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:Label text="Roughness(σ)" rotation="-90" styleName="chartTitle"/>
+							<s:VGroup horizontalAlign="center">
+								<lines:YearRouLineChart width="{chartWidth}" dataProvider="{nhDayXML.data}" minDate="{yearMinDate}"/>
+								<s:Label text="Year" styleName="chartTitle"/>
+							</s:VGroup>
+						</s:HGroup>
+						<mx:Spacer height="20"/>
+						<s:HGroup verticalAlign="middle" width="100%" horizontalAlign="center">
+							<s:Label text="Refractive Index (n)" rotation="-90" styleName="chartTitle"/>
+							<s:VGroup horizontalAlign="center">
+								<lines:YearRefLineChart width="{chartWidth}" dataProvider="{nhDayXML.data}" minDate="{yearMinDate}"/>
+								<s:Label text="Year" styleName="chartTitle"/>
+							</s:VGroup>
+						</s:HGroup>
+					</s:VGroup>					
+				</s:NavigatorContent>
+			</mx:ViewStack>
+			<!--<mx:Spacer height="100"/>-->
+		</s:VGroup>
+	<!--</s:Scroller>	-->
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@namespace lines "com.saeasoft.actionscript.components.chart.lines.*";
+		.dotumclass {
+			fontFamily : "굴림체";
+		}
+	</fx:Style>
+</s:Application>

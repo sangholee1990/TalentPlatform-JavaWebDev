@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.DataExportMapper">
+	
+	<sql id="includeWhereSql">
+		<trim prefix="WHERE" prefixOverrides="AND">
+			<if test="startDate != null and startDate != ''">
+				AND tm <![CDATA[>=]]> #{startDate}
+			</if>
+			<if test="endDate != null and endDate != ''">
+				AND tm <![CDATA[<=]]> #{endDate}
+			</if>
+		</trim>
+	</sql>
+	
+	<select id="listExportData" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+		SELECT 
+			*
+		FROM ${search_type}
+		<include refid="includeWhereSql"/>
+	</select>
+</mapper>

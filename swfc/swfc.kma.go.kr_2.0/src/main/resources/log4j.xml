@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- @(#)log4j.xml 1.0 2012/08/01                                            -->
+<!--                                                                         -->
+<!-- COPYRIGHT (C) 2008 GALLOPSYS CO., LTD.                                  -->
+<!-- ALL RIGHTS RESERVED.                                                    -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- Log4j Framework 설정을 정의하는 파일이다.                               -->
+<!--                                                                         -->
+<!-- @author 김은삼                                                          -->
+<!-- @version 1.0 2012/08/01                                                 -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Appender                                                            -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %5p [%c] %m%n" />
+        </layout>   
+    </appender>
+    
+    <appender name="defaultFile" class="org.apache.log4j.DailyRollingFileAppender">
+	 	<param name="File" value="/data/webapps/logs/homepage.log" />
+	  	<param name="DatePattern" value=".yyyy-MM-dd" />
+	  	<layout class="org.apache.log4j.PatternLayout">
+	   	<param name="ConversionPattern" value="[%p] %d{dd MMM hh:mm:ss.SSS aa} %t [%c]%n%m%n%n" />
+	  	</layout>
+	 </appender>
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Logger                                                              -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- eGoverment Framework -->
+    <logger name="egovframework" additivity="false">
+        <level value="info" />
+        <appender-ref ref="console" />
+        <appender-ref ref="defaultFile" />
+    </logger>
+    <!-- Java SQL -->
+    <logger name="java.sql.ResultSet" additivity="false">
+        <level value="info" />
+        <appender-ref ref="console" />
+    </logger>
+    <logger name="java.sql" additivity="false">
+        <level value="debug" />
+        <appender-ref ref="console" />
+    </logger>
+    <!-- log4jdbc Library -->
+    <logger name="jdbc.sqlonly" additivity="false">
+        <level value="debug" />
+        <appender-ref ref="console" />
+    </logger>
+    <logger name="jdbc.sqltiming" additivity="false">
+        <level value="debug" />
+        <appender-ref ref="console" />
+    </logger>
+    <logger name="jdbc.audit" additivity="false">
+        <level value="info" />
+        <appender-ref ref="console" />
+    </logger>
+    <logger name="jdbc.resultset" additivity="false">
+        <level value="info" />
+        <appender-ref ref="console" />
+    </logger>
+    <!-- Spring Framework -->
+    <logger name="org.springframework" additivity="false">
+        <level value="warn" />
+        <appender-ref ref="console" />
+        <appender-ref ref="defaultFile" />
+    </logger>
+    <!-- Spring quartz -->
+    <logger name="org.quartz" additivity="false">
+        <level value="warn" />
+        <appender-ref ref="console" />
+        <appender-ref ref="defaultFile" />
+    </logger>
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Root                                                                -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <root>
+        <level value="debug" />
+        <appender-ref ref="console" />
+        <appender-ref ref="defaultFile" />
+    </root>
+    
+</log4j:configuration>

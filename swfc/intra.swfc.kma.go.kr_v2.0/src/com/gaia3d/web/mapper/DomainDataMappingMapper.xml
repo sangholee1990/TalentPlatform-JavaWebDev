@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.DomainDataMappingMapper">
+	<select id="SelectMany" parameterType="hashmap" resultType="DomainDataMappingDTO">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+     			SELECT
+     				 A.DTA_KND_INSIDE_SEQ_N
+					,DECODE( B.DEL_F_CD, 'Y', '', B.DTA_KND_INSIDE_KOR_NM ) AS DTA_KND_INSIDE_KOR_NM
+				    ,A.DTA_KND_SEQ_N  
+					,DECODE( C.DEL_F_CD, 'Y', '', C.DTA_KND_KOR_NM ) AS DTA_KND_KOR_NM
+					,A.DMN_SUB_SEQ_N  
+					,DECODE( D.DEL_F_CD, 'Y', '', D.DMN_SUB_KOR_NM ) AS DMN_SUB_KOR_NM
+					,A.DMN_SEQ_N
+					,DECODE( E.DEL_F_CD, 'Y', '', E.DMN_KOR_NM ) AS DMN_KOR_NM
+					,A.DMN_LAYER_SEQ_N  
+					,DECODE( F.DEL_F_CD, 'Y', '', F.DMN_LAYER_KOR_NM ) AS DMN_LAYER_KOR_NM
+					,A.USE_F_CD       
+					,A.RG_K_SEQ_N     
+					,A.RG_D           
+					,A.RG_TM          
+					,A.RG_IP          
+					,A.MDF_K_SEQ_N    
+					,A.MDF_D          
+					,A.MDF_TM         
+					,A.MDF_IP         
+				FROM
+				        SMT_DMN_LAYER_DTA_KND_MP_T A
+				       ,SMT_DTA_KND_INSIDE_T B
+				       ,SMT_DTA_KND_T C
+				       ,SMT_DMN_SUB_T D
+				       ,SMT_DMN_T E
+				       ,SMT_DMN_LAYER_T F
+				WHERE
+						B.DTA_KND_INSIDE_SEQ_N = A.DTA_KND_INSIDE_SEQ_N
+					AND C.DTA_KND_SEQ_N = A.DTA_KND_SEQ_N
+					AND D.DMN_SUB_SEQ_N = A.DMN_SUB_SEQ_N
+					AND E.DMN_SEQ_N = A.DMN_SEQ_N
+					AND F.DMN_LAYER_SEQ_N = A.DMN_LAYER_SEQ_N
+				<if test="search_text != null and search_text != '' and search_target != null ">
+				   <if test="search_target == 'dta_knd_inside_kor_nm' ">
+	    				AND B.DTA_KND_INSIDE_KOR_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'dta_knd_kor_nm'">
+	    				AND C.DTA_KND_KOR_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'dmn_sub_kor_nm' ">
+	    				AND D.DMN_SUB_KOR_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'dmn_kor_nm'">
+	    				AND E.DMN_KOR_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'dmn_layer_kor_nm'">
+	    				AND F.DMN_LAYER_KOR_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'all' ">
+	    				AND ( 
+	    						B.DTA_KND_INSIDE_KOR_NM like '%' ||#{search_text} ||'%' 
+	    					OR C.DTA_KND_KOR_NM like '%' ||#{search_text} ||'%'
+	    					OR D.DMN_SUB_KOR_NM like '%' ||#{search_text} ||'%'
+	    					OR E.DMN_KOR_NM like '%' ||#{search_text} ||'%'
+	    					OR F.DMN_LAYER_KOR_NM like '%' ||#{search_text} ||'%'
+	    				 )
+				   </if>
+	  			</if>
+	 			<if test="search_use != null and search_use != '' ">
+	 					AND A.USE_F_CD = #{search_use}
+	 			</if> 
+	 			
+	 				
+	 			<if test="search_dmn_seq_n != null and search_dmn_seq_n != '' ">
+	 					AND A.DMN_SEQ_N = #{search_dmn_seq_n}
+	 			</if> 
+	 			
+	 			<if test="search_dmn_sub_seq_n != null and search_dmn_sub_seq_n != '' ">
+	 					AND A.DMN_SUB_SEQ_N = #{search_dmn_sub_seq_n}
+	 			</if> 
+	 			
+	 			<if test="search_dmn_layer_seq_n != null and search_dmn_layer_seq_n != '' ">
+	 					AND A.DMN_LAYER_SEQ_N = #{search_dmn_layer_seq_n}
+	 			</if> 
+	 			
+	 			<if test="search_dta_knd_seq_n != null and search_dta_knd_seq_n != '' ">
+	 					AND A.DTA_KND_SEQ_N = #{search_dta_knd_seq_n}
+	 			</if> 
+	 			<if test="search_dta_knd_inside_seq_n != null and search_dta_knd_inside_seq_n != '' ">
+	 					AND A.DTA_KND_INSIDE_SEQ_N = #{search_dta_knd_inside_seq_n}
+	 			</if> 
+			ORDER BY A.RG_D DESC, A.RG_TM DESC
+		<![CDATA[
+				) A
+			) WHERE RNUM >= #{startRow}	AND RNUM <= #{endRow}
+		]]>		 	
+	</select>
+
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM
+		        SMT_DMN_LAYER_DTA_KND_MP_T A
+		       ,SMT_DTA_KND_INSIDE_T B
+		       ,SMT_DTA_KND_T C
+		       ,SMT_DMN_SUB_T D
+		       ,SMT_DMN_T E
+		       ,SMT_DMN_LAYER_T F
+		WHERE
+				B.DTA_KND_INSIDE_SEQ_N = A.DTA_KND_INSIDE_SEQ_N
+			AND C.DTA_KND_SEQ_N = A.DTA_KND_SEQ_N
+			AND D.DMN_SUB_SEQ_N = A.DMN_SUB_SEQ_N
+			AND E.DMN_SEQ_N = A.DMN_SEQ_N
+			AND F.DMN_LAYER_SEQ_N = A.DMN_LAYER_SEQ_N
+		<if test="search_text != null and search_text != '' and search_target != null ">
+		   <if test="search_target == 'dta_knd_inside_kor_nm' ">
+   				AND B.DTA_KND_INSIDE_KOR_NM like '%' ||#{search_text} ||'%'
+		   </if>
+		   <if test="search_target == 'dta_knd_kor_nm'">
+   				AND C.DTA_KND_KOR_NM like '%' ||#{search_text} ||'%'
+		   </if>
+		   <if test="search_target == 'dmn_sub_kor_nm' ">
+   				AND D.DMN_SUB_KOR_NM like '%' ||#{search_text} ||'%'
+		   </if>
+		   <if test="search_target == 'dmn_kor_nm'">
+   				AND E.DMN_KOR_NM like '%' ||#{search_text} ||'%'
+		   </if>
+		   <if test="search_target == 'dmn_layer_kor_nm'">
+   				AND F.DMN_LAYER_KOR_NM like '%' ||#{search_text} ||'%'
+		   </if>
+		   <if test="search_target == 'all' ">
+   				AND ( 
+   						B.DTA_KND_INSIDE_KOR_NM like '%' ||#{search_text} ||'%' 
+   					OR C.DTA_KND_KOR_NM like '%' ||#{search_text} ||'%'
+   					OR D.DMN_SUB_KOR_NM like '%' ||#{search_text} ||'%'
+   					OR E.DMN_KOR_NM like '%' ||#{search_text} ||'%'
+   					OR F.DMN_LAYER_KOR_NM like '%' ||#{search_text} ||'%'
+   				 )
+		   </if>
+		</if>
+		<if test="search_use != null and search_use != '' ">
+				AND A.USE_F_CD = #{search_use}
+		</if>
+			
+		<if test="search_dmn_seq_n != null and search_dmn_seq_n != '' ">
+				AND A.DMN_SEQ_N = #{search_dmn_seq_n}
+		</if> 
+		
+		<if test="search_dmn_sub_seq_n != null and search_dmn_sub_seq_n != '' ">
+				AND A.DMN_SUB_SEQ_N = #{search_dmn_sub_seq_n}
+		</if> 
+		
+		<if test="search_dmn_layer_seq_n != null and search_dmn_layer_seq_n != '' ">
+				AND A.DMN_LAYER_SEQ_N = #{search_dmn_layer_seq_n}
+		</if> 
+		
+		<if test="search_dta_knd_seq_n != null and search_dta_knd_seq_n != '' ">
+				AND A.DTA_KND_SEQ_N = #{search_dta_knd_seq_n}
+		</if> 
+		<if test="search_dta_knd_inside_seq_n != null and search_dta_knd_inside_seq_n != '' ">
+				AND A.DTA_KND_INSIDE_SEQ_N = #{search_dta_knd_inside_seq_n}
+		</if> 
+	</select>
+	
+		
+	<select id="SelectOne" parameterType="hashmap" resultType="DomainDataMappingDTO">
+		SELECT 
+   			 A.DTA_KND_INSIDE_SEQ_N
+			,DECODE( B.DEL_F_CD, 'Y', '', B.DTA_KND_INSIDE_KOR_NM ) AS DTA_KND_INSIDE_KOR_NM
+		    ,A.DTA_KND_SEQ_N  
+			,DECODE( C.DEL_F_CD, 'Y', '', C.DTA_KND_KOR_NM ) AS DTA_KND_KOR_NM
+			,A.DMN_SUB_SEQ_N  
+			,DECODE( D.DEL_F_CD, 'Y', '', D.DMN_SUB_KOR_NM ) AS DMN_SUB_KOR_NM
+			,A.DMN_SEQ_N
+			,DECODE( E.DEL_F_CD, 'Y', '', E.DMN_KOR_NM ) AS DMN_KOR_NM
+			,A.DMN_LAYER_SEQ_N  
+			,DECODE( F.DEL_F_CD, 'Y', '', F.DMN_LAYER_KOR_NM ) AS DMN_LAYER_KOR_NM
+			,A.USE_F_CD       
+			,A.RG_K_SEQ_N     
+			,A.RG_D           
+			,A.RG_TM          
+			,A.RG_IP          
+			,A.MDF_K_SEQ_N    
+			,A.MDF_D          
+			,A.MDF_TM         
+			,A.MDF_IP         
+		FROM
+		        SMT_DMN_LAYER_DTA_KND_MP_T A
+		       ,SMT_DTA_KND_INSIDE_T B
+		       ,SMT_DTA_KND_T C
+		       ,SMT_DMN_SUB_T D
+		       ,SMT_DMN_T E
+		       ,SMT_DMN_LAYER_T F
+		WHERE
+				A.DTA_KND_INSIDE_SEQ_N=#{dta_knd_inside_seq_n}
+			AND A.DTA_KND_SEQ_N=#{dta_knd_seq_n}
+			AND A.DMN_SUB_SEQ_N=#{dmn_sub_seq_n}
+			AND A.DMN_SEQ_N=#{dmn_seq_n}
+			AND A.DMN_LAYER_SEQ_N=#{dmn_layer_seq_n}
+			AND B.DTA_KND_INSIDE_SEQ_N = A.DTA_KND_INSIDE_SEQ_N
+			AND C.DTA_KND_SEQ_N = A.DTA_KND_SEQ_N
+			AND D.DMN_SUB_SEQ_N = A.DMN_SUB_SEQ_N
+			AND E.DMN_SEQ_N = A.DMN_SEQ_N
+			AND F.DMN_LAYER_SEQ_N = A.DMN_LAYER_SEQ_N
+	</select>
+
+	
+	<select id="Insert" parameterType="DomainDataMappingDTO">
+		INSERT INTO SMT_DMN_LAYER_DTA_KND_MP_T (
+			 DTA_KND_INSIDE_SEQ_N         
+			,DTA_KND_SEQ_N         
+			,DMN_SUB_SEQ_N         
+			,DMN_SEQ_N             
+			,DMN_LAYER_SEQ_N
+			,USE_F_CD              
+			,RG_K_SEQ_N            
+			,RG_D                  
+			,RG_TM                 
+			,RG_IP                 
+			,MDF_K_SEQ_N           
+			,MDF_D                 
+			,MDF_TM                
+			,MDF_IP            
+		) VALUES (
+			 #{dta_knd_inside_seq_n}
+			,(SELECT DTA_KND_SEQ_N FROM SMT_DTA_KND_INSIDE_T WHERE DTA_KND_INSIDE_SEQ_N = #{dta_knd_inside_seq_n} ) 
+			,(SELECT DMN_SUB_SEQ_N FROM SMT_DTA_KND_INSIDE_T WHERE DTA_KND_INSIDE_SEQ_N = #{dta_knd_inside_seq_n} )
+			,(SELECT DMN_SEQ_N FROM SMT_DTA_KND_INSIDE_T WHERE DTA_KND_INSIDE_SEQ_N = #{dta_knd_inside_seq_n} )
+			,#{dmn_layer_seq_n}
+			,#{use_f_cd}
+			,#{rg_k_seq_n}
+			,TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,TO_CHAR(SYSDATE, 'HH24MISS')
+			,#{rg_ip}
+			,#{mdf_k_seq_n}
+			,#{mdf_d}
+			,#{mdf_tm}
+			,#{mdf_ip}
+		) 
+	</select>
+	
+	<select id="Update" parameterType="DomainDataMappingDTO">
+		UPDATE SMT_DMN_LAYER_DTA_KND_MP_T SET
+			 DTA_KND_INSIDE_SEQ_N = #{dta_knd_inside_seq_n}
+			,DTA_KND_SEQ_N		 = (SELECT DTA_KND_SEQ_N FROM SMT_DTA_KND_INSIDE_T WHERE DTA_KND_INSIDE_SEQ_N = #{dta_knd_inside_seq_n} ) 
+			,DMN_SUB_SEQ_N		 = (SELECT DMN_SUB_SEQ_N FROM SMT_DTA_KND_INSIDE_T WHERE DTA_KND_INSIDE_SEQ_N = #{dta_knd_inside_seq_n} )
+			,DMN_SEQ_N           = (SELECT DMN_SEQ_N FROM SMT_DTA_KND_INSIDE_T WHERE DTA_KND_INSIDE_SEQ_N = #{dta_knd_inside_seq_n} )
+			,DMN_LAYER_SEQ_N = #{dmn_layer_seq_n}
+			,USE_F_CD = #{use_f_cd}
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+		WHERE DTA_KND_INSIDE_SEQ_N=#{dta_knd_inside_seq_n}
+	</select>
+
+	<select id="Delete" parameterType="MapperParam">
+		UPDATE SMT_DMN_LAYER_DTA_KND_MP_T SET 
+			 USE_F_CD = 'N'
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+		WHERE DTA_KND_INSIDE_SEQ_N=#{dta_knd_inside_seq_n}
+			AND DTA_KND_SEQ_N=#{dta_knd_seq_n}
+			AND DMN_SUB_SEQ_N=#{dmn_sub_seq_n}
+			AND DMN_SEQ_N=#{dmn_seq_n}
+			AND DMN_LAYER_SEQ_N=#{dmn_layer_seq_n}
+	</select>
+</mapper>

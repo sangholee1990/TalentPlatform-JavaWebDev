@@ -1,0 +1,308 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>우주기상 예특보 서비스 :: 국가기상위성센터</title>
+<link rel="stylesheet" type="text/css" href="css/default.css"  />
+<script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+<!-- gnb -->
+<script language="javascript" type="text/javascript" src="js/gnb.js"></script><!-- //gnb -->
+<script type="text/javascript">
+$(function() {
+	var tabItems = $("#tab a"); 
+	tabItems.click(function() {
+		var tabContents = $("#sun,#mag,#weather,#alert,#notice,#faq,#data");
+		tabContents.hide();
+		tabItems.removeClass("on");
+		var index = tabItems.index(this);
+		tabContents.eq(index).show();
+		$(this).addClass("on");
+		return false;
+	});
+});
+</script>
+</head>
+<body>
+
+<div id="header">
+    <h1>
+    	<a href="http://swfc.kma.go.kr/">
+        <img src="images/ko/logo.png" alt="국가기상위성센터 우주기상 예특보 서비스" class="imgbtn" />
+        </a>
+    </h1>
+	<ul class='gmn'>
+		<li><a href='' class='bt_genglish'><span>english</span></a></li>
+		<li><a href='' class='bt_glogin'><span>login</span></a></li>
+	</ul>
+	<div id="TopMenu">
+		<div id="TopMenuSub">
+			<ul>
+				<li>
+					<a href="http://swfc.kma.go.kr/current"><img class="m" src="images/ko/bg_gnb.png" alt="우주기상실황" /></a>
+					<div class="TopSubMenu">
+						<div class="menu1">
+							<strong class='txt_hidden'>우주기상실황</strong>
+							<ul>
+								<li><a href="http://swfc.kma.go.kr/current">태양영상</a></li>
+							</ul>
+						</div>
+						<div class="menu2">
+							<strong class='txt_hidden'>우주기상예특보</strong>
+							<ul class="">
+								<li><a href="http://swfc.kma.go.kr/alerts">우주기상예특보</a></li>
+							</ul>
+						</div>
+						<div class="menu3">
+							<strong class='txt_hidden'>우주기상소개</strong>
+							<ul class="">
+								<li><a href="http://swfc.kma.go.kr/intro">태양활동</a></li>
+								<li><a href="">지자기 활동</a></li>
+								<li><a href="">우주기상 감시</a></li>
+								<li><a href="">기상청의 우주기상 예특보</a></li>
+							</ul>
+						</div>
+						<div class="menu4">
+							<strong class='txt_hidden'>해외 우주기상 정보</strong>
+							<ul class="">
+								<li><a href="http://swfc.kma.go.kr/links">극항로 항공기상</a></li>
+								<li><a href="">위성운영</a></li>
+								<li><a href="">해외 관련기관</a></li>
+							</ul>
+						</div>
+						<div class="menu5">
+							<strong class='txt_hidden'>정보마당</strong>
+							<ul class="">
+								<li><a href="">공지사항</a></li>
+								<li><a href="">FAQ</a></li>
+							</ul>
+						</div>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<script type="text/javascript">
+//		var TopMenu1 = new fnTopMenu1_Type1;
+//		TopMenu1.DivName = "TopMenuSub";
+//		TopMenu1.fnName = "TopMenu1";
+//		TopMenu1.DefaultMenu = 0;
+//		TopMenu1.DefaultSubMenu = 0;
+//			
+//		TopMenu1.Start();
+	</script>
+
+</div>
+
+<div id="wrap_sub">
+	<h2 class="community">
+    	<span>정보마당</span>
+    </h2>
+    <div id="tab" class="tab3">
+    	<a href="#" class="notice on"><span>공지사항</span></a>
+        <a href="#" class="faq"><span>FAQ</span></a>
+        <a href="#" class="data"><span>자료실</span></a>
+    </div>
+    
+    <!-- 공지사항 -->
+    <div id="notice">
+        <h3 class="noticet">
+            <span>공지사항</span>
+        </h3>
+		<!-- bbs : view -->
+		<table summary='News & Notice' class="list">
+			<caption class='txt_hidden'>News & Notice</caption>
+			<colgroup>
+				<col width='10%'/>
+				<col width='50%'/>
+				<col width='10%'/>
+				<col width='10%'/>
+				<col width='10%'/>
+			</colgroup>
+			<thead>
+				<tr>
+					<th>번호</th>
+					<th>제목</th>
+					<th>날짜</th>
+					<th>글쓴이</th>
+					<th class='th_date'>조회수</th>
+				</tr>
+			</thead>
+			<tbody>
+			<tr>
+				<td class='txt_notice'>01</td>
+				<td class='txt_subj'><a href='#'>공지까지 11줄</a></td>
+				<td>2013-04-30</td>
+				<td>운영자</td>
+				<td>132</td>
+			</tr>
+			<tr>
+				<td class='txt_edit' colspan='5'>내용내용내용내용내용내용내용내용내용내용내용내용내용내용</td>
+			</tr>
+			</tbody>
+		</table>
+		<a href='#'><img class='bt_list' src='images/ko/bt_list.png' alt='목록'/></a><!--//bbs : view -->
+
+    </div>
+    <!-- END 공지사항 -->
+    
+    <!-- FAQ -->
+    <div id="faq" style="display:none;">
+        <h3 class="faqt">
+            <span>faq</span>
+        </h3>
+		<div class='searchbox'>
+			<select class='sel_sort' name="">
+				<option value="">선택</option>
+			</select>
+			<input class='inp_search' type="text" name="" value="">
+			<a href='' class='bt_search'><img src='images/ko/bt_search.png' alt='검색'/></a>
+		</div>
+		<!-- bbs -->
+		<table summary='자주묻는질문' class="list">
+			<caption class='txt_hidden'>FAQ</caption>
+			<colgroup>
+				<col width='10%'/>
+				<col width='50%'/>
+				<col width='10%'/>
+				<col width='10%'/>
+				<col width='10%'/>
+			</colgroup>
+			<thead>
+				<tr>
+					<th>번호</th>
+					<th>제목</th>
+					<th>날짜</th>
+					<th>글쓴이</th>
+					<th class='th_date'>조회수</th>
+				</tr>
+			</thead>
+			<tbody>
+			<tr>
+				<td class='txt_notice'>01</td>
+				<td class='txt_subj'><a href='#'>공지까지 11줄</a></td>
+				<td>2013-04-30</td>
+				<td>운영자</td>
+				<td>132</td>
+			</tr>
+			<tr>
+				<td>18</td>
+				<td class='txt_subj'><a href='#'>공지까지 11줄</a></td>
+				<td>2013-04-30</td>
+				<td>운영자</td>
+				<td>132</td>
+			</tr>
+			<tr>
+				<td class='fin'>10</td>
+				<td class='fin txt_subj'><a href='#'>공지까지 11줄</a></td>
+				<td>2013-04-30</td>
+				<td>운영자</td>
+				<td>132</td>
+			</tr>
+			</tbody>
+		</table><!-- //bbs -->
+		<!-- page -->
+		<div class="pager">
+			<a href="#" class="tsp" page="1">1</a>
+			<a href="#"  page="2">2</a>
+			<a href="#"  page="3">3</a>
+			<a href="#"  page="4">4</a>
+			<a href="#"  page="5">5</a>
+			<a href="#"  page="6">6</a>
+			<a href="#"  page="7">7</a>
+			<a href="#"  page="8">8</a>		
+		</div><!-- //page -->
+    </div>
+    <!-- END FAQ -->
+    
+    <!-- 자료실 -->
+    <div id="data" style="display:none;">
+        <h3 class="datat">
+            <span>자료실</span>
+        </h3>
+		<div class='searchbox'>
+			<select class='sel_sort' name="">
+				<option value="">선택</option>
+			</select>
+			<input class='inp_search' type="text" name="" value="">
+			<a href='' class='bt_search'><img src='images/ko/bt_search.png' alt='검색'/></a>
+		</div>
+		<!-- bbs -->
+		<table summary='자료실' class="list">
+			<caption class='txt_hidden'>자료실</caption>
+			<colgroup>
+				<col width='10%'/>
+				<col width='50%'/>
+				<col width='10%'/>
+				<col width='10%'/>
+				<col width='10%'/>
+			</colgroup>
+			<thead>
+				<tr>
+					<th>번호</th>
+					<th>제목</th>
+					<th>날짜</th>
+					<th>글쓴이</th>
+					<th class='th_date'>조회수</th>
+				</tr>
+			</thead>
+			<tbody>
+			<tr>
+				<td class='txt_notice'>01</td>
+				<td class='txt_subj'><a href='#'>공지까지 11줄</a></td>
+				<td>2013-04-30</td>
+				<td>운영자</td>
+				<td>132</td>
+			</tr>
+			<tr>
+				<td>18</td>
+				<td class='txt_subj'><a href='#'>공지까지 11줄</a></td>
+				<td>2013-04-30</td>
+				<td>운영자</td>
+				<td>132</td>
+			</tr>
+			<tr>
+				<td class='fin'>10</td>
+				<td class='fin txt_subj'><a href='#'>공지까지 11줄</a></td>
+				<td>2013-04-30</td>
+				<td>운영자</td>
+				<td>132</td>
+			</tr>
+			</tbody>
+		</table><!-- //bbs -->
+		<!-- page -->
+		<div class="pager">
+			<a href="#" class="tsp" page="1">1</a>
+			<a href="#"  page="2">2</a>
+			<a href="#"  page="3">3</a>
+			<a href="#"  page="4">4</a>
+			<a href="#"  page="5">5</a>
+			<a href="#"  page="6">6</a>
+			<a href="#"  page="7">7</a>
+			<a href="#"  page="8">8</a>		
+		</div><!-- //page -->
+    </div>
+    <!-- END 자료실 -->
+
+</div>    
+
+
+
+<div id="footer">
+	<div class="logo">
+		<a href="http://nmsc.kma.go.kr/html/homepage/ko/main.do" target="_blank">
+    	<img src="images/ko/logo_nmsc.png" alt="국가기상위성센터" />
+    	</a>
+    </div>
+	<div class="wrap_footer">
+        <p class="address">
+            (365-831) 충청북도 진천군 광혜원면 구암길 64-18(광혜원리 636-10) / 대표전화 070-7850-5709 / 날씨예보상담 131
+        </p>
+        <p class="copyright">
+            COPYRIGHT ⓒ NMSC. ALL RIGHT RESERVED. <img src="images/ko/ico_mail.png" alt="이메일" /> webmaster : kmasod@korea.kr 
+        </p>
+    </div>
+</div>
+<!-- END FOOTER -->
+
+</body>
+</html>

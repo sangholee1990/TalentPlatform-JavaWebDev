@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<source timeOffset="-1440">
+		<size_list>
+			<size>1024</size>
+		</size_list>
+		<code_list>
+			<code code="SOHO_01001" value="c2"/>
+			<code code="SOHO_01002" value="c3"/>
+		</code_list>
+	</source>
+	<destination>
+		<browse>D:\test\soho\browse</browse>
+		<thumbnail width="160" height="160">D:\test\soho\thumbnail</thumbnail>
+	</destination>
+</configuration>

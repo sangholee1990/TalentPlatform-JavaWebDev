@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xsi:schemaLocation="http://www.springframework.org/schema/security
+                        http://www.springframework.org/schema/security/spring-security-3.1.xsd
+                        http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	
+	<http pattern="/monitor/**" security="none"/>
+	<http auto-config="true" entry-point-ref="SWFCAuthenticationEntryPoint">
+		 
+		<intercept-url pattern="/favicon.ico" access="ROLE_ANONYMOUS" />
+		<intercept-url pattern="/login/login_form.do" access="ROLE_ANONYMOUS" />
+		<intercept-url pattern="/admin/**" access="ROLE_USER" />
+		<intercept-url pattern="/report/forecast_report_form.do" access="ROLE_USER" />
+		<intercept-url pattern="/report/forecast_form.do" access="ROLE_USER" />
+		<intercept-url pattern="/report/forecast_submit.do" access="ROLE_USER" />
+		<intercept-url pattern="/report/forecast_del.do" access="ROLE_USER" />
+		<intercept-url pattern="/report/forecast_report_del.do" access="ROLE_USER" />
+		<intercept-url pattern="/report/cme_download_program.do" access="ROLE_USER" />
+		<intercept-url pattern="/report/comis_submit.do" access="ROLE_USER" />
+		<intercept-url pattern="/board/pds_form.do" access="ROLE_USER" />
+		<intercept-url pattern="/board/pds_del.do" access="ROLE_USER" />
+		
+		<intercept-url pattern="/**" access="ROLE_ANONYMOUS" />
+		
+		<custom-filter ref="SWFCATimeoutRedirectFilter" after="EXCEPTION_TRANSLATION_FILTER"/>
+
+		<form-login login-page="/" 
+			 default-target-url="/"
+			 always-use-default-target="false"
+			 authentication-success-handler-ref="SWFCAuthenticationSuccessHandler"
+			 authentication-failure-handler-ref="SWFCAuthenticationFailureHandler" />
+		<logout invalidate-session="true" logout-success-url="/"/>
+		<anonymous/>
+		<!--  session-management invalid-session-url="/" / -->
+	</http>
+	
+
+	<!-- windows popup url contain "_popup" in url check filter -->
+	<beans:bean id="SWFCAuthenticationEntryPoint" class="com.gaia3d.web.security.SWFCAuthenticationEntryPoint">
+		<beans:constructor-arg name="loginUrl" value="/"/>
+		<beans:property name="popupLoginUrl" value="/login/login_form.do" />
+		<beans:property name="popupCheckStr" value="_popup"/>
+	</beans:bean>
+
+	<!-- Ajax session timeout check  -->
+	<beans:bean id="SWFCATimeoutRedirectFilter" class="com.gaia3d.web.security.SWFCATimeoutRedirectFilter">
+    	<beans:property name="customSessionExpiredErrorCode" value="901"/>
+    	<beans:property name="ajaxHeader" value="AJAX" />
+	</beans:bean>
+
+	<!-- Login success after redirect to home url or previous url handler -->
+	<beans:bean id="SWFCAuthenticationSuccessHandler"
+        class="com.gaia3d.web.security.SWFCAuthenticationSuccessHandler" >
+        <beans:property name="roleHomeUrl">
+            <beans:map>
+            	<beans:entry key="ROLE_USER" value="/"/> 
+            	<beans:entry key="ROLE_SPECIFIC_USER" value="/"/>
+            	<beans:entry key="ROLE_ADMIN" value="/admin/user/user_list.do"/>
+            </beans:map>
+        </beans:property>
+    </beans:bean>
+    
+    <!-- Login fail after redirect to home url or previous url handler -->
+    <beans:bean id="SWFCAuthenticationFailureHandler"
+        class="com.gaia3d.web.security.SWFCAuthenticationFailureHandler" >
+        <beans:property name="defaultUrl" value="/login/login_error.do"></beans:property>
+    </beans:bean>
+	
+	<beans:bean id="userPasswordSaltSource" class="org.springframework.security.authentication.dao.SystemWideSaltSource">
+		<beans:property name="systemWideSalt" value="--#swfc2013#--"/>
+	</beans:bean>
+	
+	<beans:bean id="userPasswordEncoder" class="org.springframework.security.authentication.encoding.ShaPasswordEncoder">
+		<beans:constructor-arg value="256"/>
+	 	<beans:property name="iterations" value="1000"/>
+	 	<beans:property name="encodeHashAsBase64" value="true"/>
+	</beans:bean>
+	
+ 	<beans:bean id="userDetailsServiceWrapper" class="org.springframework.security.access.hierarchicalroles.UserDetailsServiceWrapper">
+        <beans:property name="roleHierarchy" ref="roleHierarchy" />
+        <beans:property name="userDetailsService" ref="userDetailService" />
+    </beans:bean>	
+
+	<authentication-manager>
+		<authentication-provider user-service-ref="userDetailsServiceWrapper">
+			<password-encoder ref="userPasswordEncoder">
+				<salt-source ref="userPasswordSaltSource"/>
+			</password-encoder>
+		</authentication-provider>
+	</authentication-manager>
+	
+	<beans:bean id="userDetailService" class="com.gaia3d.web.user.SWFCUserDetailsService">
+	</beans:bean>
+
+	<beans:bean class="org.springframework.security.web.access.expression.WebExpressionVoter">
+	    <beans:property name="expressionHandler">
+	        <beans:bean class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler">
+	            <beans:property name="roleHierarchy" ref="roleHierarchy"/>
+	        </beans:bean>
+	    </beans:property> 
+	</beans:bean>	
+
+	<beans:bean id="roleVoter" class="org.springframework.security.access.vote.RoleHierarchyVoter">
+		<beans:constructor-arg ref="roleHierarchy" />
+	</beans:bean>
+	<beans:bean id="roleHierarchy"
+		class="org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl">
+		<beans:property name="hierarchy">
+			<beans:value>
+				ROLE_ADMIN > ROLE_USER
+				ROLE_USER > ROLE_SPECIFIC_USER
+				ROLE_SPECIFIC_USER > ROLE_ANONYMOUS
+			</beans:value>
+		</beans:property>
+	</beans:bean>
+</beans:beans>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.rte.swfc.mapper.SpecificUserContentMapper">
+
+	
+	<sql id="selectSeq">
+		SELECT USER_SEQ_N FROM SOS_USER_T WHERE USER_ID = #{userId}
+	</sql>
+
+	<!-- 특정수요자 신규컨텐츠 추가 -->
+	<insert id="insertNewContent" parameterType="hashMap">
+		INSERT INTO SOS_SPCF_USER_MAPPING_T 
+		(
+			SPCF_USER_MAPPING_SEQ_N, 
+		    USER_SEQ_N,
+			SPCF_SEQ_N,
+		    USE_YN,
+		    ORD_N
+		)
+		SELECT 
+			SPCF_USER_MAPPING_SQ01.NEXTVAL,
+		    (<include refid="selectSeq"/>) AS USER_SEQ_N,
+		    SPCF_SEQ_N,
+		    USE_YN,
+		    1 AS ORDER_NUM
+		FROM SOS_SPCF_T    
+		WHERE 
+			SPCF_SEQ_N 
+			NOT IN 
+			(
+		    	SELECT SPCF_SEQ_N FROM SOS_SPCF_USER_MAPPING_T WHERE USER_SEQ_N = (<include refid="selectSeq"/>)
+		    )	
+	</insert>
+
+	<!-- 특정수요자 컨텐츠 정보 -->
+	<select id="SelectContent" parameterType="hashMap" resultType="SpecificUserContentDTO">
+		SELECT 
+			user_t.ORD_N AS orderNum,
+			t.SPCF_SEQ_N AS spcfSeq, 
+			t.SPCF_NM AS title,
+			t.SPCF_URI AS uri, 
+			user_t.USE_YN AS useruse,
+			t.USE_YN AS adminuse,
+			user_t.CSS_INFO AS cssInfo
+		FROM 
+			SOS_SPCF_T t, 
+			SOS_SPCF_USER_MAPPING_T user_t
+		WHERE 
+			t.SPCF_SEQ_N = user_t.SPCF_SEQ_N 
+		AND 
+			user_t.USER_SEQ_N = (<include refid="selectSeq"/>)
+		AND 
+			t.USE_YN = 'Y'
+		ORDER BY
+			user_t.ORD_N DESC
+	</select>
+	
+	
+	<!-- 특정수요자 컨텐츠 업데이트 종합 -->
+	<update id="updateContents" parameterType="hashMap">
+		UPDATE 
+			(
+			SELECT 
+				CSS_INFO,
+	            USE_YN,
+	            ORD_N,
+				SPCF_SEQ_N
+			FROM 
+				SOS_SPCF_USER_MAPPING_T
+			WHERE 
+				USER_SEQ_N = (<include refid="selectSeq"/>)
+			) a
+		SET CSS_INFO = 
+
+			( 
+				WITH CSSLIST AS
+	 			<foreach collection="updateData" item="data"  index="index"  separator=" UNION ALL " open="(" close=")">
+				 	SELECT ${data.spcfSeq} SPCF_SEQ_N, '${data.cssInfo}' CSS_INFO FROM DUAL
+				</foreach>
+				SELECT CSS_INFO FROM CSSLIST b WHERE a.SPCF_SEQ_N = b.SPCF_SEQ_N
+			) ,
+	        USE_YN = 
+			( 
+				WITH USELIST AS
+			 	<foreach collection="updateData" item="data"  index="index"  separator=" UNION ALL " open="(" close=")">
+				 	SELECT ${data.spcfSeq} SPCF_SEQ_N, '${data.userUse}' USE_YN FROM DUAL
+				</foreach>
+				SELECT USE_YN FROM USELIST b WHERE a.SPCF_SEQ_N = b.SPCF_SEQ_N
+			) ,
+			ORD_N = 
+			( 
+				WITH ORDERLIST AS
+			 	<foreach collection="updateData" item="data"  index="index"  separator=" UNION ALL " open="(" close=")">
+				 	SELECT ${data.spcfSeq} SPCF_SEQ_N, '${data.orderNum}' ORD_N FROM DUAL
+				</foreach>
+				SELECT ORD_N FROM ORDERLIST b WHERE a.SPCF_SEQ_N = b.SPCF_SEQ_N
+			) 
+	</update>
+</mapper>

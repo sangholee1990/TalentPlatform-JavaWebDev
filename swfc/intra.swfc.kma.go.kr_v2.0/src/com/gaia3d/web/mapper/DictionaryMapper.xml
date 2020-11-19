@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.DictionaryMapper">
+
+<sql id="whereQuery">
+	<if test="search_text != null and search_text != ''">
+		<choose>
+			<when test="search_target == 'simple_nm'">
+				AND SIMPLE_NM like '%' ||#{search_text} || '%'
+			</when>
+			<when test="search_target == 'kor_nm'">
+				AND KOR_NM like '%' ||#{search_text} || '%'
+			</when>
+			<when test="search_target == 'eng_nm'">
+				AND ENG_NM like '%' ||#{search_text} || '%'
+			</when>
+			<otherwise>
+				AND (SIMPLE_NM like '%' ||#{search_text} ||'%' OR KOR_NM like '%' ||#{search_text} ||'%' OR ENG_NM like '%' ||#{search_text} || '%')
+			</otherwise>
+		</choose>
+	</if>
+</sql>
+
+	<select id="SelectMany" parameterType="hashmap" resultType="DictionaryDTO">
+		SELECT * FROM (
+			SELECT ROWNUM AS RNUM, A.* FROM (
+				SELECT
+					wrd_dic_seq_n
+					, simple_nm
+					, kor_nm
+					, eng_nm
+					, wrd_desc
+					, reg_dt
+					, up_dt
+				FROM sos_wrd_dic_t
+				<where>
+				<include refid="whereQuery" />
+				</where>
+				ORDER BY wrd_dic_seq_n DESC
+				<![CDATA[
+    			) A
+			) WHERE RNUM >= #{startRow}	AND RNUM <= #{endRow}   
+		]]>	
+	</select>
+	
+	<select id="selectDictionaryExcelList" parameterType="hashmap" resultType="DictionaryDTO">
+		SELECT
+			wrd_dic_seq_n
+			, simple_nm
+			, kor_nm
+			, eng_nm
+			, wrd_desc
+			, reg_dt
+			, up_dt
+		FROM sos_wrd_dic_t
+		<![CDATA[
+		ORDER BY wrd_dic_seq_n DESC
+		]]>
+		
+	</select>
+	
+	<select id="SelectOne" parameterType="hashmap" resultType="DictionaryDTO">
+		SELECT
+			wrd_dic_seq_n
+			, simple_nm
+			, kor_nm
+			, eng_nm
+			, wrd_desc
+			, reg_dt
+			, up_dt
+		FROM sos_wrd_dic_t
+		WHERE wrd_dic_seq_n = #{wrd_dic_seq_n}
+	</select>
+	
+	<select id="SelectUniqueExcelDataCount" parameterType="hashmap" resultType="int">
+		SELECT
+				count(*)
+			FROM sos_wrd_dic_t
+			WHERE KOR_NM = #{kor_nm}
+		    AND ENG_NM = #{eng_nm}
+		    AND simple_nm = #{simple_nm}
+	</select>
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*)
+		FROM sos_wrd_dic_t
+		<where>
+		<include refid="whereQuery" />
+		</where>
+		ORDER BY wrd_dic_seq_n DESC
+	</select>
+	
+	<insert id="insertDictionary" parameterType="DictionaryDTO">
+		<selectKey keyProperty="wrd_dic_seq_n" resultType="Integer" order="BEFORE">
+			SELECT sos_wrd_dic_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_wrd_dic_t (
+			wrd_dic_seq_n
+			, simple_nm
+			, kor_nm
+			, eng_nm
+			, wrd_desc
+			, reg_dt
+		) VALUES (
+			#{wrd_dic_seq_n}
+			, #{simple_nm}
+			, #{kor_nm}
+			, #{eng_nm}
+			, #{wrd_desc}
+			, SYSDATE
+		)
+	</insert>
+	
+	<update id="updateDictionary" parameterType="DictionaryDTO">
+		UPDATE SOS_WRD_DIC_T 
+			SET 
+			     SIMPLE_NM = #{simple_nm}	
+			     , KOR_NM = #{kor_nm}
+			     , ENG_NM = #{eng_nm}
+			     , WRD_DESC = #{wrd_desc}
+			     , UP_DT = SYSDATE
+ 		WHERE WRD_DIC_SEQ_N=#{wrd_dic_seq_n}
+	</update>
+	
+	<delete id="deleteDictionary" parameterType="DictionaryDTO">
+		delete FROM sos_wrd_dic_t WHERE wrd_dic_seq_n=#{wrd_dic_seq_n}
+	</delete>		
+</mapper>

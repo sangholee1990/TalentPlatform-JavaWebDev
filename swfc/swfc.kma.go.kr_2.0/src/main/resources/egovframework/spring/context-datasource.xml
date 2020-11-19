@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- @(#)context-datasource.xml 1.0 2012/08/01                               -->
+<!--                                                                         -->
+<!-- COPYRIGHT (C) 2008 GALLOPSYS CO., LTD.                                  -->
+<!-- ALL RIGHTS RESERVED.                                                    -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<!-- Spring Framework 설정을 정의하는 파일이다.                              -->
+<!--                                                                         -->
+<!-- @author 김은삼                                                          -->
+<!-- @version 1.0 2012/08/01                                                 -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+    
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- Data Source                                                          -->
+    <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+    <!-- COMSDB1 -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="core.log.jdbc.driver.OracleDriver" />
+        <property name="url" value="jdbc:oracle:thin:@dev.indisystem.co.kr:1521:orcl" />
+        <!-- 
+        <property name="url" value="jdbc:oracle:thin:@172.19.11.72:2525:comsdb1" />
+        <property name="url" value="jdbc:oracle:thin:@(DESCRIPTION =(ADDRESS_LIST =(FAILOVER = ON)(LOAD_BALANCE = ON)(ADDRESS = (PROTOCOL = TCP)(HOST = 172.19.11.72)(PORT = 2525))(ADDRESS = (PROTOCOL = TCP)(HOST = 172.19.11.73)(PORT = 2525)))(CONNECT_DATA =(SERVICE_NAME = COMSDB)(FAILOVER_MODE =(TYPE=SELECT)(METHOD=BASIC))))" />
+         -->
+        <property name="username" value="swpc" />
+        <property name="password" value="swpcheedong" />
+    </bean>
+    
+    <!-- DDDBORA -->
+    <bean id="OtherDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+        <property name="url" value="jdbc:oracle:thin:@172.19.11.62:1521:DDDBORA" />
+        <property name="username" value="POLESTAR" />
+        <property name="password" value="POLESTAR" />
+    </bean>
+    <!-- REALDB -->
+    <bean id="RealDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+        <property name="url" value="jdbc:oracle:thin:@172.19.11.73:2525:comsdb2" />
+        <property name="username" value="comsobj" />
+        <property name="password" value="heedong" />
+    </bean>        
+</beans>

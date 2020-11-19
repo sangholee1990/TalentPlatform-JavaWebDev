@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.DailySituationReportMapper">
+	<select id="selectRSGPreDay" parameterType="hashmap" resultType="hashmap">
+		WITH tm_range AS (
+		 SELECT TO_CHAR(((TO_DATE(#{publish_dt} || '090000' , 'YYYY-MM-DDHH24MISS') - 9/24) - 1), 'YYYYMMDDHH24MISS') sd 
+		  ,TO_CHAR((TO_DATE(#{publish_dt} || '090000', 'YYYY-MM-DDHH24MISS') - 9/24), 'YYYYMMDDHH24MISS') ed
+		  ,TO_CHAR(((TO_DATE(#{publish_dt} || '090000' , 'YYYY-MM-DDHH24MISS') - 6/24) - 1), 'YYYYMMDDHH24MISS') sd_kp 
+		  ,TO_CHAR((TO_DATE(#{publish_dt} || '090000', 'YYYY-MM-DDHH24MISS') - 6/24), 'YYYYMMDDHH24MISS') ed_kp 
+		 FROM dual )
+		<![CDATA[
+		SELECT 'XRAY' AS nm, tm, long_flux AS val,
+			CASE 
+			  WHEN POWER(10, -8) <= long_flux AND long_flux < POWER(10, -7) THEN 'A'
+			  WHEN POWER(10, -7) <= long_flux AND long_flux < POWER(10, -6) THEN 'B'
+			  WHEN POWER(10, -6) <= long_flux AND long_flux < POWER(10, -5) THEN 'C'
+			  WHEN POWER(10, -5) <= long_flux AND long_flux < POWER(10, -4) THEN 'M'
+			  WHEN POWER(10, -4) <= long_flux AND long_flux < POWER(10, -3) THEN 'X'
+			  WHEN POWER(10, -4) > long_flux THEN 'A'
+			  WHEN POWER(10, -8) < long_flux THEN 'X'
+			  END AS grade
+			  ,TO_CHAR(TO_DATE(tm, 'YYYYMMDDHH24MISS'), 'MM.DD HH24:MI') AS display_dt
+			  ,TRUNC(LOG(10, long_flux), 0) AS A
+			  ,CASE
+		          WHEN long_flux >= 0.002 THEN 5
+		          WHEN long_flux >= 0.001 THEN 4
+		          WHEN long_flux >= 0.0001 THEN 3
+		          WHEN long_flux >= 0.00005 THEN 2
+		          WHEN long_flux >= 0.00001 THEN 1
+		          ELSE 0
+		        END AS B
+		FROM ( SELECT * FROM tb_goes_xray_1m , tm_range  WHERE long_flux != -100000 AND tm BETWEEN tm_range.sd AND tm_range.ed ORDER BY long_flux DESC ) WHERE ROWNUM = 1
+		UNION ALL
+		SELECT 'PROTON' as nm, tm, p10 AS val, to_char( ROUND(LOG(10, p10), 0 ) ) as grade,TO_CHAR(TO_DATE(tm, 'YYYYMMDDHH24MISS'), 'MM.DD HH24:MI') AS display_dt, TRUNC(LOG(10, p10), 0) AS A  
+			,CASE
+	          WHEN p10 >= 100000 THEN 5
+	          WHEN p10 >= 10000 THEN 4
+	          WHEN p10 >= 1000 THEN 3
+	          WHEN p10 >= 100 THEN 2
+	          WHEN p10 >= 10 THEN 1
+	          ELSE 0
+	        END AS B
+		FROM ( SELECT * FROM tb_goes_particle_p , tm_range  WHERE p10 != -100000 AND tm BETWEEN tm_range.sd AND tm_range.ed ORDER BY p10 DESC ) WHERE ROWNUM = 1
+		UNION ALL
+		SELECT 'KP' AS nm, tm, kp AS val,to_char(  kp ) as grade,TO_CHAR(TO_DATE(tm, 'YYYYMMDDHH24MISS'), 'MM.DD HH24:MI') AS display_dt, 0 AS A 
+		,CASE
+          WHEN kp >= 9 THEN 5
+          WHEN kp >= 8 THEN 4
+          WHEN kp >= 7 THEN 3
+          WHEN kp >= 6 THEN 2
+          WHEN kp >= 5 THEN 1
+          ELSE 0
+        END AS B
+		FROM ( SELECT * FROM tb_kp_index , tm_range  WHERE TM BETWEEN tm_range.sd_kp AND tm_range.ed_kp ORDER BY kp DESC ) WHERE ROWNUM = 1
+		UNION ALL
+		SELECT 'GEOMAG' AS nm, tm, radius AS val,to_char(  radius ) as grade,TO_CHAR(TO_DATE(tm, 'YYYYMMDDHH24MISS'), 'MM.DD HH24:MI') AS display_dt, 0 AS A 
+		,CASE
+          WHEN radius >= 10.6 THEN 0
+          WHEN radius >= 8.6 THEN 1
+          WHEN radius >= 6.6 THEN 2
+          WHEN radius >= 5.6 THEN 3
+          WHEN radius >= 4.6 THEN 4
+          ELSE 5
+        END AS B
+		FROM (select * from tb_magnetopause_radius, tm_range  WHERE TM BETWEEN tm_range.sd AND tm_range.ed ORDER BY radius ASC ) WHERE ROWNUM = 1 
+		UNION ALL
+		SELECT DATA_TYPE, TM, ROUND(val, 2) AS val, grade  
+	    ,TO_CHAR(TO_DATE(tm, 'YYYYMMDDHH24MISS'), 'MM.DD HH24:MI') AS display_dt
+	    ,NULL AS A
+	    ,NULL AS B
+	    FROM (
+			  SELECT '10MeV' AS DATA_TYPE, tm, p10 AS VAL, NULL AS grade from tb_goes_particle_p, tm_range WHERE tm BETWEEN tm_range.sd and tm_range.ed ORDER BY p10 DESC
+			) WHERE ROWNUM = 1
+			UNION ALL
+			SELECT data_type, tm, ROUND(val, 2) AS val, grade  
+	    ,TO_CHAR(TO_DATE(tm, 'YYYYMMDDHH24MISS'), 'MM.DD HH24:MI') AS display_dt
+			,NULL AS A
+			,NULL AS B
+	    FROM (
+			  SELECT '2MeV' AS DATA_TYPE, tm, e20 AS VAL, NULL AS grade from tb_goes_particle_p, tm_range WHERE tm BETWEEN tm_range.sd and tm_range.ed ORDER BY e20 DESC
+			) WHERE ROWNUM = 1
+			UNION ALL
+			SELECT data_type, tm, ROUND(val, 2) AS val, grade  
+	    ,TO_CHAR(TO_DATE(tm, 'YYYYMMDDHH24MISS'), 'MM.DD HH24:MI') AS display_dt
+			,NULL AS A
+	    	,NULL AS B
+	    FROM (
+			  SELECT 'bz' AS DATA_TYPE, tm, bz AS VAL, NULL AS grade from tb_ace_mag, tm_range WHERE tm BETWEEN tm_range.sd and tm_range.ed AND bz != -999.9 ORDER BY bz ASC
+			) WHERE ROWNUM = 1
+			UNION ALL
+			SELECT data_type, tm, ROUND(VAL, 2) AS val, grade  
+	    ,TO_CHAR(TO_DATE(tm, 'YYYYMMDDHH24MISS'), 'MM.DD HH24:MI') AS display_dt
+	    ,NULL AS A
+	    ,NULL AS B
+	    FROM (
+			  SELECT 'bulk_spd' AS DATA_TYPE, tm, bulk_spd AS VAL, NULL AS grade FROM tb_ace_swepam, tm_range WHERE tm BETWEEN tm_range.sd and tm_range.ed AND bulk_spd != -9999.9 ORDER BY bulk_spd DESC
+			) WHERE ROWNUM = 1
+		]]>
+	</select>
+	
+	
+	<select id="selectWrnLastData" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+		WITH tm_range AS (
+		 SELECT ((TO_DATE(#{publish_dt} || '090000' , 'YYYY-MM-DDHH24MISS') - 9/24) - 1) sd 
+		  ,(TO_DATE(#{publish_dt} || '235959', 'YYYY-MM-DDHH24MISS')) ed 
+		 FROM dual )
+		SELECT A.*, ROWNUM 
+		FROM (  
+			SELECT 
+			  rpt_seq_n
+			  ,not1_type, not1_publish, not1_finish, not1_desc
+			  ,not2_type, not2_publish, not2_finish, not2_desc
+			  ,not3_type, not3_publish, not3_finish, not3_desc
+			  ,wrn_flag  
+			FROM sos_forecast_rpt_t , tm_range
+			WHERE rpt_type = 'WRN' 
+				AND publish_dt BETWEEN tm_range.sd and tm_range.ed
+			ORDER BY rpt_seq_n DESC
+		) A WHERE ROWNUM = 1
+		]]>
+	</select>
+	
+	
+	<insert id="insertDailySituationReport" parameterType="hashmap">
+		<selectKey keyProperty="rpt_seq_n" resultType="Integer" order="BEFORE">
+			SELECT sos_forecast_rpt_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_forecast_rpt_t (
+			rpt_seq_n
+			,rpt_type
+			,title
+			,contents
+			,rmk1
+			,rmk2
+			,info1
+			,info2
+			,info3
+			,info4 
+			,write_dt
+			,publish_dt
+			,publish_seq_n
+			,not1_type
+			,not1_publish
+			,not1_finish
+			,not1_tar
+			,not1_desc
+			,not2_type
+			,not2_publish
+			,not2_finish
+			,not2_tar
+			,not2_desc
+			,not3_type
+			,not3_publish
+			,not3_finish
+			,not3_tar
+			,not3_desc
+			,not4_type
+			,not4_publish
+			,not4_finish
+			,not4_tar
+			,not4_desc
+			,file_nm1
+			,file_path1
+			,file_title1
+			,file_nm2
+			,file_path2
+			,file_title2
+			,file_nm3
+			,file_path3
+			,file_title3
+			,file_nm4
+			,file_path4
+			,file_title4
+			,rpt_file_nm
+			,rpt_file_org_nm
+			,rpt_file_path
+			,xray_tm
+			,proton_tm
+			,kp_tm
+			,geomag_tm
+			,writer
+			,user_seq_n
+		) VALUES (
+			#{rpt_seq_n}
+			,#{rpt_type}
+			,#{title}
+			,#{contents}
+			,#{rmk1}
+			,#{rmk2}
+			,#{info1}
+			,#{info2}
+			,#{info3}
+			,#{info4}
+			,SYSDATE
+			,TO_DATE(#{publish_dt} || #{publish_hour} || #{publish_min}, 'yyyy-mm-ddhh24miss')
+			,0
+			,#{not1_type}
+			,#{not1_publish}
+			,#{not1_finish}
+			,#{not1_tar}
+			,#{not1_desc}
+			,#{not2_type}
+			,#{not2_publish}
+			,#{not2_finish}
+			,#{not2_tar}
+			,#{not2_desc}
+			,#{not3_type}
+			,#{not3_publish}
+			,#{not3_finish}
+			,#{not3_tar}
+			,#{not3_desc}
+			,#{not4_type}
+			,#{not4_publish}
+			,#{not4_finish}
+			,#{not4_tar}
+			,#{not4_desc}
+			,#{file_nm1}
+			,#{file_path1}
+			,#{file_title1}
+			,#{file_nm2}
+			,#{file_path2}
+			,#{file_title2}
+			,#{file_nm3}
+			,#{file_path3}
+			,#{file_title3}
+			,#{file_nm4}
+			,#{file_path4}
+			,#{file_title4}
+			,#{rpt_file_nm}
+			,#{rpt_file_org_nm}
+			,#{rpt_file_path}
+			,#{xray_tm}
+			,#{proton_tm}
+			,#{kp_tm}
+			,#{geomag_tm}
+			,#{writer}
+			,#{user_seq_n}
+		)
+	
+	</insert>
+	
+	<select id="selectDailySituationReport" parameterType="hashmap" resultType="hashmap">
+		SELECT 
+			rpt_seq_n
+			,rpt_type
+			,title
+			,contents
+			,rmk1
+			,rmk2
+			,info1
+			,info2
+			,info3
+			,info4 
+			,write_dt
+			,publish_dt
+			,publish_seq_n
+			,not1_type
+			,not1_publish
+			,not1_finish
+			,not1_tar
+			,not1_desc
+			,not2_type
+			,not2_publish
+			,not2_finish
+			,not2_tar
+			,not2_desc
+			,not3_type
+			,not3_publish
+			,not3_finish
+			,not3_tar
+			,not3_desc
+			,not4_type
+			,not4_publish
+			,not4_finish
+			,not4_tar
+			,not4_desc
+			,file_nm1
+			,file_path1
+			,file_title1
+			,file_nm2
+			,file_path2
+			,file_title2
+			,file_nm3
+			,file_path3
+			,file_title3
+			,file_nm4
+			,file_path4
+			,file_title4
+			,rpt_file_nm
+			,rpt_file_org_nm
+			,rpt_file_path
+			,xray_tm
+			,proton_tm
+			,kp_tm
+			,geomag_tm
+			,writer
+			,rpt_file_nm
+			,rpt_file_org_nm
+			,rpt_file_path
+			,TO_CHAR(publish_dt, 'YYYY-MM-DD') AS publish_date
+            ,TO_CHAR(publish_dt, 'HH24') AS publish_hour
+            ,TO_CHAR(publish_dt, 'MI') AS publish_min
+            ,TO_CHAR(publish_dt, 'DY') AS publish_day_nm
+		FROM sos_forecast_rpt_t
+		WHERE rpt_seq_n = #{rpt_seq_n}
+	</select>
+	
+	<select id="SelectSummary" resultType="ChartSummaryDTO">
+	<![CDATA[
+		WITH TM_RANGE AS (
+	      SELECT 
+	        SELECT TO_CHAR(((TO_DATE(#{publish_dt} || '090000' , 'YYYY-MM-DDHH24MISS') - 9/24) - 1), 'YYYYMMDDHH24MISS') SD1D 
+		    ,TO_CHAR((TO_DATE(#{publish_dt} || '090000', 'YYYY-MM-DDHH24MISS') - 9/24), 'YYYYMMDDHH24MISS') ED
+	         FROM DUAL)
+		  SELECT 'XRAY', 'D1', TM, VAL FROM (SELECT TM, LONG_FLUX VAL FROM TB_GOES_XRAY_1M, TM_RANGE WHERE TM BETWEEN TM_RANGE.SD1D AND TM_RANGE.ED ORDER BY VAL DESC) WHERE ROWNUM = 1
+		  UNION ALL
+		  SELECT 'PROTON', 'D1', TM, VAL  FROM (SELECT TM, P5 VAL FROM TB_GOES_PARTICLE_P, TM_RANGE WHERE TM BETWEEN TM_RANGE.SD1D AND TM_RANGE.ED ORDER BY VAL DESC) WHERE ROWNUM = 1
+		  UNION ALL
+		  SELECT 'KP', 'D1', TM, VAL FROM (SELECT TM, KP VAL FROM TB_KP_INDEX, TM_RANGE WHERE TM BETWEEN TM_RANGE.SD1D AND TM_RANGE.ED ORDER BY VAL DESC) WHERE ROWNUM = 1
+		  UNION ALL
+		  SELECT 'MP', 'D1', TM, VAL FROM (SELECT TM, RADIUS VAL FROM TB_MAGNETOPAUSE_RADIUS, TM_RANGE WHERE TM BETWEEN TM_RANGE.SD1D AND TM_RANGE.ED ORDER BY VAL) WHERE ROWNUM = 1
+	]]>
+	</select>
+	
+	<update id="updateDailySituationReport" parameterType="hashmap">
+		UPDATE sos_forecast_rpt_t
+			SET
+				title           =#{title}
+				,contents       =#{contents}
+				,rmk1           =#{rmk1}
+				,rmk2           =#{rmk2}
+				,info1          =#{info1}
+				,info2          =#{info2}
+				,info3          =#{info3}
+				,info4          =#{info4}
+				,publish_dt     =TO_DATE(#{publish_dt} || #{publish_hour} || #{publish_min}, 'yyyy-mm-ddhh24miss')
+				,not1_type      =#{not1_type}
+				,not1_publish   =#{not1_publish}
+				,not1_finish    =#{not1_finish}
+				,not1_tar       =#{not1_tar}
+				,not1_desc      =#{not1_desc}
+				,not2_type      =#{not2_type}
+				,not2_publish   =#{not2_publish}
+				,not2_finish    =#{not2_finish}
+				,not2_tar       =#{not2_tar}
+				,not2_desc      =#{not2_desc}
+				,not3_type      =#{not3_type}
+				,not3_publish   =#{not3_publish}
+				,not3_finish    =#{not3_finish}
+				,not3_tar       =#{not3_tar}
+				,not3_desc      =#{not3_desc}
+				,not4_type      =#{not4_type}
+				,not4_publish   =#{not4_publish}
+				,not4_finish    =#{not4_finish}
+				,not4_tar       =#{not4_tar}
+				,not4_desc      =#{not4_desc}
+				,file_nm1       =#{file_nm1}
+				,file_path1     =#{file_path1}
+				,file_title1    =#{file_title1}
+				,file_nm2       =#{file_nm2}
+				,file_path2     =#{file_path2}
+				,file_title2    =#{file_title2}
+				,file_nm3       =#{file_nm3}
+				,file_path3     =#{file_path3}
+				,file_title3    =#{file_title3}
+				,file_nm4       =#{file_nm4}
+				,file_path4     =#{file_path4}
+				,file_title4    =#{file_title4}
+				,rpt_file_nm    =#{rpt_file_nm}
+				,rpt_file_org_nm=#{rpt_file_org_nm}
+				,rpt_file_path  =#{rpt_file_path}
+				,xray_tm        =#{xray_tm}
+				,proton_tm      =#{proton_tm}
+				,kp_tm          =#{kp_tm}
+				,geomag_tm      =#{geomag_tm}
+				,writer         =#{writer}
+				,user_seq_n     =#{user_seq_n}
+		WHERE rpt_seq_n = #{rpt_seq_n}
+	</update>
+	
+	<delete id="deleteDailySituationReport" parameterType="hashmap">
+		DELETE FROM sos_forecast_rpt_t WHERE rpt_seq_n = #{rpt_seq_n}
+	</delete>
+</mapper>

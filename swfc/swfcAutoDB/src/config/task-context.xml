@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:jee="http://www.springframework.org/schema/jee" 
+	xmlns:tx="http://www.springframework.org/schema/tx" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:ehcache="http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-3.0.xsd   
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd   
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.0.xsd   
+		http://www.springframework.org/schema/jee 
+		http://www.springframework.org/schema/jee/spring-jee-3.0.xsd   
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring
+        http://ehcache-spring-annotations.googlecode.com/svn/schema/ehcache-spring/ehcache-spring-1.1.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+	
+	<!-- ========================== MESSAGE DEFINTIONS ============================ -->
+	<!-- 
+	<task:scheduler id="taskScheduler"/>
+	<task:executor id="taskExecutor" pool-size="1" />
+	<task:annotation-driven executor="taskExecutor" scheduler="taskScheduler" />
+	-->
+	
+	<import resource="application-context.xml"/>
+    <import resource="datasource-context.xml"/>
+	
+	<task:executor id="executor" pool-size="5-10" queue-capacity="255" />
+	<task:scheduler id="scheduler" pool-size="10" />
+	<task:annotation-driven executor="executor" scheduler="scheduler" />
+	
+	<!-- 
+	
+	<bean id="dailyTask" class="kr.pe.anaconda.sms.task.DailyTask" />
+	<bean id="monitoringTask" class="kr.pe.anaconda.sms.task.MonitoringTask" />
+	
+	<task:scheduled-tasks>
+        <task:scheduled ref="dailyTask" method="dailyMonitoringTask" cron="#{config['task.monitoring.cron.daily']}"></task:scheduled>
+        <task:scheduled ref="monitoringTask" method="monitoringTask" fixed-delay="#{config['task.monitoring.fixedDelay.sec.30']}"></task:scheduled>
+        <task:scheduled ref="monitoringTask" method="networkMonitoringTask" fixed-delay="#{config['task.monitoring.fixedDelay.min.1']}" ></task:scheduled>
+        <task:scheduled ref="monitoringTask" method="monitoringCpuStatusCollectorTask" fixed-delay="#{config['task.monitoring.fixedDelay.min.2']}" ></task:scheduled>
+    </task:scheduled-tasks>
+	 -->
+    
+</beans>

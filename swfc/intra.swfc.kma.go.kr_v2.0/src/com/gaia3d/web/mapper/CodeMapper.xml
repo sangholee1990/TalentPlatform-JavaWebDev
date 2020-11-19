@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.CodeMapper">
+
+	<resultMap type="hashMap" id="codeMap">
+		<result property="parent_code_seq_n" column="parent_code_seq_n"/>
+		<result property="code_nm" column="code_nm"/>
+		<result property="code_en_nm" column="code_en_nm"/>
+		<result property="code" column="code"/>
+		<result property="code_seq_n" column="code_seq_n"/>
+		<result property="use_yn" column="use_yn"/>
+	</resultMap>
+
+	<select id="SelectMany" parameterType="hashMap" resultType="CodeDTO">
+		SELECT code_seq_n, code_nm, code_en_nm, description, use_yn, parent_code_seq_n, rg_date, code, code_ko_nm
+		FROM sos_code_t
+		WHERE parent_code_seq_n = (SELECT code_seq_n FROM sos_code_t WHERE code = #{code})
+		<if test="use_yn != null and use_yn != ''">
+			AND use_yn = #{use_yn} 
+		</if>
+	</select>
+	
+	<select id="selectCode" parameterType="hashMap" resultType="CodeDTO">
+		SELECT code_seq_n, code_nm, code_en_nm, description, use_yn, parent_code_seq_n, rg_date, code, code_ko_nm
+		FROM sos_code_t
+		WHERE code_seq_n = #{code_seq_n}
+	</select>
+	
+	<select id="listCodeLevel" resultType="hashMap">
+		SELECT level,code_seq_n, code_nm, code_en_nm, description, use_yn, parent_code_seq_n, rg_date, code, code_ko_nm
+		FROM  sos_code_t
+		START WITH parent_code_seq_n = 0  
+		CONNECT BY PRIOR  code_seq_n = parent_code_seq_n 
+	</select>
+	
+	<insert id="insertCode" parameterType="hashMap" >
+		<selectKey keyProperty="code_seq_n" resultType="Integer" order="BEFORE">
+			SELECT sos_code_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_code_t (code_seq_n, code_nm, code_en_nm, description, use_yn, parent_code_seq_n, rg_date, code, code_ko_nm)
+		VALUES (#{code_seq_n}, #{code_nm}, #{code_en_nm}, #{description}, #{use_yn}, #{parent_code_seq_n}, SYSDATE, #{code}, #{code_ko_nm})
+	</insert>
+	
+	<update id="updateCode"  parameterType="hashMap" >
+		UPDATE sos_code_t 
+			<trim prefix="SET" prefixOverrides=",">
+				<if test="code_nm != null">,code_nm=#{code_nm}</if>
+				<if test="code_en_nm != null">,code_en_nm=#{code_en_nm}</if>
+				<if test="description != null">,description=#{description}</if>
+				<if test="use_yn != null">,use_yn=#{use_yn}</if>
+				<if test="parent_code_seq_n != null">,parent_code_seq_n=#{parent_code_seq_n}</if>
+				<if test="code != null">,code=#{code}</if>
+				<if test="code_ko_nm != null">,code_ko_nm=#{code_ko_nm}</if>
+			</trim> 
+		WHERE code_seq_n = #{code_seq_n} 
+	</update>
+	
+	<delete id="deleteCode" parameterType="hashMap" >
+		DELETE FROM sos_code_t WHERE code_seq_n = #{code_seq_n} 
+	</delete>
+	
+	<select id="hasChild" resultType="int" parameterType="hashMap">
+		  SELECT count(*) FROM sos_code_t parent_code_seq_n = #{code_seq_n}
+	</select>
+</mapper>

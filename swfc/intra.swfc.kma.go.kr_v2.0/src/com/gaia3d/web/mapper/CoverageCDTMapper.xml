@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.CoverageCDTMapper">
+	<select id="SelectMany" parameterType="hashmap" resultType="CoverageCDTDTO">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+     			SELECT 
+					 A.COVERAGE_CDT_SEQ_N    
+					,A.COVERAGE_SEQ_N        
+					,A.LFT_TOP_CDT_X         
+					,A.LFT_TOP_CDT_Y         
+					,A.RIGH_TOP_CDT_X        
+					,A.RIGH_TOP_CDT_Y        
+					,A.LFT_BTM_CDT_X         
+					,A.LFT_BTM_CDT_Y         
+					,A.RIGH_BTM_CDT_X        
+					,A.RIGH_BTM_CDT_Y        
+					,A.PIXEL_PER_DSTC_X      
+					,A.PIXEL_PER_DSTC_Y      
+					,A.USE_F_CD              
+					,A.DEL_F_CD              
+					,A.RG_K_SEQ_N            
+					,A.RG_D                  
+					,A.RG_TM                 
+					,A.RG_IP                 
+					,A.MDF_K_SEQ_N           
+					,A.MDF_D                 
+					,A.MDF_TM                
+					,A.MDF_IP                
+				FROM
+			       SMT_COVERAGE_CDT_T  A
+				WHERE
+							A.COVERAGE_SEQ_N = #{coverage_seq_n}
+						AND A.DEL_F_CD = 'N'
+				ORDER BY
+				A.RG_D DESC, A.RG_TM DESC
+		<![CDATA[		
+				) A 
+			) WHERE RNUM >= #{startRow}	AND RNUM <= #{endRow}
+		]]>	
+	</select>
+
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM
+	       SMT_COVERAGE_CDT_T  A
+		WHERE
+				A.COVERAGE_SEQ_N = #{coverage_seq_n}
+				AND A.DEL_F_CD = 'N'
+	</select>
+	
+		
+	<select id="SelectOne" parameterType="hashmap" resultType="CoverageCDTDTO">
+		SELECT 
+					 A.COVERAGE_CDT_SEQ_N 
+					,A.COVERAGE_SEQ_N     
+					,A.LFT_TOP_CDT_X      
+					,A.LFT_TOP_CDT_Y      
+					,A.RIGH_TOP_CDT_X     
+					,A.RIGH_TOP_CDT_Y     
+					,A.LFT_BTM_CDT_X      
+					,A.LFT_BTM_CDT_Y      
+					,A.RIGH_BTM_CDT_X     
+					,A.RIGH_BTM_CDT_Y     
+					,A.PIXEL_PER_DSTC_X   
+					,A.PIXEL_PER_DSTC_Y   
+					,A.USE_F_CD           
+					,A.DEL_F_CD           
+					,A.RG_K_SEQ_N         
+					,A.RG_D               
+					,A.RG_TM              
+					,A.RG_IP              
+					,A.MDF_K_SEQ_N        
+					,A.MDF_D              
+					,A.MDF_TM             
+					,A.MDF_IP             
+				FROM
+			       SMT_COVERAGE_CDT_T  A
+				WHERE
+						A.COVERAGE_CDT_SEQ_N=#{coverage_cdt_seq_n}
+	</select>
+
+	
+	<select id="Insert" parameterType="CoverageCDTDTO">
+		INSERT INTO SMT_COVERAGE_CDT_T (
+			 COVERAGE_CDT_SEQ_N 
+			,COVERAGE_SEQ_N     
+			,LFT_TOP_CDT_X      
+			,LFT_TOP_CDT_Y      
+			,RIGH_TOP_CDT_X     
+			,RIGH_TOP_CDT_Y     
+			,LFT_BTM_CDT_X      
+			,LFT_BTM_CDT_Y      
+			,RIGH_BTM_CDT_X     
+			,RIGH_BTM_CDT_Y     
+			,PIXEL_PER_DSTC_X   
+			,PIXEL_PER_DSTC_Y   
+			,USE_F_CD           
+			,DEL_F_CD           
+			,RG_K_SEQ_N         
+			,RG_D               
+			,RG_TM              
+			,RG_IP              
+			,MDF_K_SEQ_N        
+			,MDF_D              
+			,MDF_TM             
+			,MDF_IP             
+		) VALUES (
+			 SMT_COVERAGE_CDT_T_SQ01.NEXTVAL
+			,#{coverage_seq_n} 
+			,#{lft_top_cdt_x} 
+			,#{lft_top_cdt_y} 
+			,#{righ_top_cdt_x} 
+			,#{righ_top_cdt_y} 
+			,#{lft_btm_cdt_x} 
+			,#{lft_btm_cdt_y} 
+			,#{righ_btm_cdt_x} 
+			,#{righ_btm_cdt_y} 
+			,#{pixel_per_dstc_x} 
+			,#{pixel_per_dstc_y} 
+			,#{use_f_cd} 
+			,#{del_f_cd} 
+			,#{rg_k_seq_n} 
+			,TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,TO_CHAR(SYSDATE, 'HH24MISS')
+			,#{rg_ip} 
+			,#{mdf_k_seq_n} 
+			,#{mdf_d} 
+			,#{mdf_tm} 
+			,#{mdf_ip} 
+		) 
+	</select>
+	
+	<select id="Update" parameterType="CoverageCDTDTO">
+		UPDATE SMT_COVERAGE_CDT_T SET 
+			 LFT_TOP_CDT_X      = #{lft_top_cdt_x}      
+			,LFT_TOP_CDT_Y      = #{lft_top_cdt_y}      
+			,RIGH_TOP_CDT_X     = #{righ_top_cdt_x}     
+			,RIGH_TOP_CDT_Y     = #{righ_top_cdt_y}     
+			,LFT_BTM_CDT_X      = #{lft_btm_cdt_x}      
+			,LFT_BTM_CDT_Y      = #{lft_btm_cdt_y}      
+			,RIGH_BTM_CDT_X     = #{righ_btm_cdt_x}     
+			,RIGH_BTM_CDT_Y     = #{righ_btm_cdt_y}     
+			,PIXEL_PER_DSTC_X   = #{pixel_per_dstc_x}   
+			,PIXEL_PER_DSTC_Y   = #{pixel_per_dstc_y}   
+			,USE_F_CD = #{use_f_cd}
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+		WHERE 
+				COVERAGE_CDT_SEQ_N=#{coverage_cdt_seq_n}
+	</select>
+
+	<select id="Delete" parameterType="MapperParam">
+		UPDATE SMT_COVERAGE_CDT_T SET 
+			 DEL_F_CD = 'Y' 
+			,USE_F_CD = 'N' 
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+		WHERE 
+			COVERAGE_CDT_SEQ_N=#{coverage_cdt_seq_n}
+	</select>
+</mapper>

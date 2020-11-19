@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.indisystem.web.user.UserMapper">
+
+	<insert id="insertUser"  parameterType="Hashmap" >
+       INSERT INTO USER_T (USER_ID, USER_PW, USER_ROLE) VALUES (#{userId}, #{userPw}, #{role})  
+    </insert>
+
+    <select id="selectAuthority"  parameterType="String" resultType="User" >
+        select USER_ID as userId, USER_PW as userPw, USER_ROLE as role from USER_T WHERE USER_ID = #{value}
+    </select>
+    
+</mapper> 

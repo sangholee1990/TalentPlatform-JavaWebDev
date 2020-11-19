@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "doc/dtds/log4j.dtd">
+
+<!-- ==================================
+	-  @filename : WEB-INF/classes/log4j.xml
+	-  ==================================
+-->
+<log4j:configuration xmlns:log4j='http://jakarta.apache.org/log4j/'>
+
+	<!-- Standard output -->
+	<appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
+		<param name="Threshold" value="ALL" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%d{HH:mm:ss.SSS}[%p]%t[%C{2}]%m%n" />
+		</layout>
+	</appender>
+	
+	 <appender name="defaultFile" class="org.apache.log4j.DailyRollingFileAppender">
+	 	<param name="File" value="logs/log.log" />
+	  	<param name="DatePattern" value=".yyyy-MM-dd" />
+	  	<layout class="org.apache.log4j.PatternLayout">
+	   	<param name="ConversionPattern" value="[%p] %d{HH:mm:ss.SSS} %t [%C{2}]%n%m%n%n" />
+	  	</layout>
+	 </appender>
+
+	<category name="kr.co.indisystem" additivity="false">
+		<level value="DEBUG"/>
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="defaultFile" />
+	</category>
+	
+	<category name="java.sql.Connection" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="STDOUT" />
+	</category>
+	<category name="java.sql.Statement" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="STDOUT" />
+	</category>
+	<category name="java.sql.PreparedStatement" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="STDOUT" />
+	</category>
+	<category name="java.sql.ResultSet" additivity="false">
+		<level value="INFO" />
+		<appender-ref ref="STDOUT" />
+	</category>
+
+	<category name="org.apache" additivity="false">
+		<level value="DEBUG" />
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="defaultFile" />
+	</category>	
+	
+	<!-- root category -->
+	<root>
+		<priority value="DEBUG" />
+		<appender-ref ref="STDOUT" />
+		<appender-ref ref="defaultFile" />
+	</root>
+</log4j:configuration>

@@ -1,0 +1,73 @@
+#!/bin/sh
+# seeSys Master Server startup/shutdown script
+#. /etc/rc.d/init.d/functions
+
+SEE_SYS_PATH=/home/sms/swfc/swfcAuto
+SEE_APP_MAIN=kr.pe.anaconda.swfc.auto.Runner
+
+# Get standard environment variables
+if [ -r $SEE_SYS_PATH/set_env.sh ]; then
+  . $SEE_SYS_PATH/set_env.sh
+fi
+
+PID_PATH=$SEE_SYS_PATH/bin
+
+start() {
+export MASTERD_OPTS=-Djava.library.path="$SEE_SYS_PATH/lib/ext:$PATH"
+
+export MASTERD_OPTS="$MASTERD_OPTS -Dlog4j.configuration=log4j.xml"
+
+PID_FILE=$PID_PATH/$1.pid
+
+java -ms64m -mx164m -cp "$SEE_SYS_CLASSPATH" $MASTERD_OPTS $SEE_APP_MAIN  2>&1 &
+
+if [ ! -z "$PID_FILE" ]; then
+    echo $! > $PID_FILE
+fi
+echo ------------------------------------------------------------
+echo success autoDBDaemon server start!
+echo ------------------------------------------------------------
+
+}
+
+stop() {
+PID_FILE=$PID_PATH/$1.pid
+#if ! status $1; then
+#   return 0
+#fi
+PID=`cat $PID_FILE`
+kill -TERM $PID >/dev/null 2>&1
+echo ------------------------------------------------------------
+echo success autoDBDaemon server stop!
+echo ------------------------------------------------------------
+}
+
+#status() {
+#PID_FILE=$PID_PATH/$1.pid
+#if [ -f $PID_FILE ]; then
+#   PID=`cat $PID_FILE`
+#   if [ ! "x$PID" = "x" ] && kill -0 $PID 2>/dev/null; then
+#     return 0
+#   fi
+#fi
+#return 1
+#}
+
+
+
+case "$1" in
+start)
+   start autoDBDaemon && \
+   exit $?
+   ;;
+stop)
+   stop autoDBDaemon && \
+   exit $?
+   ;;
+#status)
+#   status autoDBDaemon && \
+#   exit $?
+#   ;;
+*)
+   exit 0
+esac

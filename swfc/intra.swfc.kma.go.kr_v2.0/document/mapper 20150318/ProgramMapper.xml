@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.ProgramMapper">
+	<select id="SelectMany" parameterType="hashmap" resultType="ProgramDTO">
+	<![CDATA[
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+          		SELECT * FROM TB_PROGRAM_LIST ORDER BY ID DESC
+    		) A WHERE ROWNUM <= #{endRow}
+		) WHERE RNUM >= #{startRow}
+	]]>
+	</select>
+
+	<select id="SelectOne" parameterType="hashmap" resultType="ProgramDTO">
+		SELECT *
+		FROM TB_PROGRAM_LIST
+		WHERE ID=#{id}
+	</select>
+
+	<select id="SelectRecentOne" resultType="ProgramDTO">
+		SELECT * FROM (SELECT * FROM TB_PROGRAM_LIST WHERE TYPE=#{type} ORDER BY ID DESC ) WHERE ROWNUM  = 1
+	</select>
+
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT COUNT(ID) FROM TB_PROGRAM_LIST
+	</select>
+
+	<insert id="Insert" parameterType="ProgramDTO">
+		INSERT INTO TB_PROGRAM_LIST (NAME, TYPE, FILENAME, FILEPATH) VALUES (#{name}, #{type}, #{filename}, #{filepath})
+	</insert>
+
+	<update id="Update" parameterType="ProgramDTO">
+		UPDATE TB_PROGRAM_LIST SET
+			NAME=#{name},
+			TYPE=#{type}
+			<if test="!@org.apache.commons.lang.StringUtils@isBlank(filename)">,FILENAME=#{filename}</if>
+			<if test="!@org.apache.commons.lang.StringUtils@isBlank(filepath)">,FILEPATH=#{filepath}</if>
+		WHERE ID=#{id}
+	</update>
+
+	<delete id="Delete" parameterType="MapperParam">
+		DELETE FROM TB_PROGRAM_LIST WHERE ID=#{id}
+	</delete>
+	
+	
+	<select id="listCltDataMappingInfo" parameterType="hashmap" resultType="hashmap">
+		SELECT scdmt.*, clt_dta_seq_n
+	    FROM smt_clt_dta_mstr_t scdmt
+	      LEFT JOIN (
+	        SELECT clt_prog_seq_n as mnp_seq, clt_dta_seq_n 
+			    	FROM sos_clt_prog_mnp_t 
+			    	WHERE clt_dta_seq_n = #{clt_dta_mstr_seq_n}
+	      ) scpmt ON scdmt.clt_dta_mstr_seq_n = scpmt.mnp_seq
+	    WHERE clt_dta_tp_cd = '02' 
+	    	AND use_f_cd = 'Y' 
+	    	AND del_f_cd = 'N'
+	    ORDER BY scdmt.clt_dta_mstr_seq_n ASC NULLS LAST
+	</select>
+	
+	<select id="listFrctProgMappingInfo" parameterType="hashmap" resultType="hashmap">
+        SELECT *
+	    FROM smt_clt_dta_mstr_t scdmt
+	      LEFT JOIN (
+	      	SELECT frct_prog_seq_n as prog_seq_n, clt_dta_seq_n, dta_type 
+            FROM sos_frct_prog_mnp_t WHERE frct_prog_seq_n = #{clt_dta_mstr_seq_n}
+	      ) sfpmt ON scdmt.clt_dta_mstr_seq_n = sfpmt.clt_dta_seq_n
+	    WHERE clt_dta_tp_cd = '01' 
+	    	AND use_f_cd = 'Y' 
+	    	AND del_f_cd = 'N'
+	    ORDER BY scdmt.clt_dta_mstr_seq_n ASC NULLS LAST, dta_type DESC NULLS LAST
+	</select>
+	
+	<select id="listCltData" parameterType="hashmap" resultType="hashmap"><![CDATA[
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+          		SELECT * FROM smt_clt_dta_mstr_t
+              	WHERE CLT_DTA_TP_CD = '01' 
+	            	AND USE_F_CD = 'Y' 
+	            	AND DEL_F_CD = 'N'
+          		ORDER BY clt_dta_mstr_seq_n DESC 
+    		) A
+		) WHERE RNUM >= #{navigation.startRow}	AND RNUM <= #{navigation.endRow}
+	]]></select>
+	
+	<select id="listCltProg" parameterType="hashmap" resultType="hashmap"><![CDATA[
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+          		SELECT * FROM sos_clt_prog_t 
+          		ORDER BY clt_prog_seq_n DESC
+    		) A
+			) WHERE RNUM >= #{navigation.startRow}	AND RNUM <= #{navigation.endRow}
+	]]></select>
+	
+	<select id="listFrctProg" parameterType="hashmap" resultType="hashmap"><![CDATA[
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+          		SELECT * FROM smt_clt_dta_mstr_t
+              	WHERE CLT_DTA_TP_CD = '03' 
+	            	AND USE_F_CD = 'Y' 
+	            	AND DEL_F_CD = 'N'
+          		ORDER BY clt_dta_mstr_seq_n DESC 
+    		) A
+		) WHERE RNUM >= #{navigation.startRow}	AND RNUM <= #{navigation.endRow}
+	]]></select>
+	
+	<select id="listCountCltData" parameterType="hashmap" resultType="int"><![CDATA[
+       		SELECT COUNT(*) 
+       		FROM smt_clt_dta_mstr_t
+            WHERE clt_dta_tp_cd = '01' 
+            	AND use_f_cd = 'Y' 
+            	AND del_f_cd = 'N'
+	]]></select>
+	
+	<select id="listCountCltProg" parameterType="hashmap" resultType="int"><![CDATA[
+    	SELECT COUNT(*) FROM sos_clt_prog_t 
+	]]></select>
+	
+	<select id="listCountFrctProg" parameterType="hashmap" resultType="int"><![CDATA[
+     	SELECT COUNT(*) 
+     	FROM smt_clt_dta_mstr_t  
+     	WHERE clt_dta_tp_cd = '03' 
+         	AND use_f_cd = 'Y' 
+         	AND del_f_cd = 'N'
+	]]></select>
+	
+	
+	<select id="selectCltData" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM smt_clt_dta_mstr_t
+		WHERE CLT_DTA_TP_CD = '01' 
+            	AND USE_F_CD = 'Y' 
+            	AND DEL_F_CD = 'N'
+				AND clt_dta_mstr_seq_n = #{clt_dta_mstr_seq_n}  	
+	</select>
+	
+	<select id="selectCltProg" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM smt_clt_dta_mstr_t
+		WHERE clt_dta_tp_cd = '02' 
+            	AND use_f_cd = 'Y' 
+            	AND del_f_cd = 'N'
+				AND clt_dta_mstr_seq_n = #{clt_dta_mstr_seq_n}  
+	</select>
+	
+	<select id="selectFrctProg" parameterType="hashmap" resultType="hashmap">
+		SELECT * FROM smt_clt_dta_mstr_t
+		WHERE clt_dta_tp_cd = '03' 
+            	AND use_f_cd = 'Y' 
+            	AND del_f_cd = 'N'
+				AND clt_dta_mstr_seq_n = #{clt_dta_mstr_seq_n} 
+	</select>
+	
+	<!-- 수집 자료 등록 -->
+	<insert id="insertCltData" parameterType="hashmap">
+		<selectKey keyProperty="clt_dta_seq_n" resultType="Integer" order="BEFORE">
+			SELECT sos_clt_dta_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_clt_dta_t ( clt_dta_seq_n ,dta_nm ,dta_path ,dta_file_nm ,rg_dt)
+		VALUES (#{clt_dta_seq_n} ,#{dta_nm} ,#{dta_path} ,#{dta_file_nm} ,SYSDATE)
+	</insert>
+	
+	<!-- 수집 프로그램 등록-->
+	<insert id="insertCltProg" parameterType="hashmap">
+		<selectKey keyProperty="clt_prog_seq_n" resultType="Integer" order="BEFORE">
+			SELECT sos_clt_prog_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_clt_prog_t ( clt_prog_seq_n ,prog_nm ,prog_path ,prog_file_nm ,rg_dt)
+		VALUES (#{clt_prog_seq_n} ,#{prog_nm} ,#{prog_path} ,#{prog_file_nm} ,SYSDATE)
+	</insert>
+	
+	<!-- 예측 프로그램 등록-->
+	<insert id="insertFrctProg" parameterType="hashmap">
+		<selectKey keyProperty="frct_prog_seq_n" resultType="Integer" order="BEFORE">
+			SELECT sos_frct_prog_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_frct_prog_t ( frct_prog_seq_n ,prog_nm ,prog_path ,prog_file_nm ,rg_dt)
+		VALUES (#{frct_prog_seq_n} ,#{prog_nm} ,#{prog_path} ,#{prog_file_nm} ,SYSDATE)
+	</insert>
+	
+	<update id="updateCltData" parameterType="hashmap">
+		UPDATE sos_clt_dta_t 
+			SET
+				dta_nm = #{dta_nm} 
+				,dta_path = #{dta_path} 
+				,dta_file_nm = #{dta_file_nm}
+		WHERE clt_dta_seq_n = #{clt_dta_seq_n}  																						
+	</update>
+	
+	<update id="updateCltProg" parameterType="hashmap">
+		UPDATE sos_clt_prog_t 
+			SET
+				prog_nm = #{prog_nm} 
+				,prog_path = #{prog_path} 
+				,prog_file_nm = #{prog_file_nm}
+		WHERE clt_prog_seq_n = #{clt_prog_seq_n}  																						
+	</update>
+	
+	<update id="updateFrctProg" parameterType="hashmap">
+		UPDATE sos_frct_prog_t 
+			SET
+				prog_nm = #{prog_nm} 
+				,prog_path = #{prog_path} 
+				,prog_file_nm = #{prog_file_nm}	
+		WHERE frct_prog_seq_n = #{frct_prog_seq_n}  																						
+	</update>
+	
+	<delete id="deleteCltData" parameterType="hashmap">
+		DELETE FROM sos_clt_dta_t
+		WHERE clt_dta_seq_n = #{clt_dta_seq_n}
+	</delete>
+	
+	<delete id="deleteCltProg" parameterType="hashmap">
+		DELETE FROM sos_clt_prog_t
+		WHERE clt_prog_seq_n = #{clt_prog_seq_n}
+	</delete>
+	
+	<delete id="deleteFrctProg" parameterType="hashmap">
+		DELETE FROM sos_frct_prog_t
+		WHERE frct_prog_seq_n = #{frct_prog_seq_n}  
+	</delete>
+	
+	<delete id="deleteCltProgMapping" parameterType="hashmap">
+		DELETE FROM sos_clt_prog_mnp_t 
+		WHERE clt_dta_seq_n = #{clt_dta_seq_n}
+		<if test="!@org.apache.commons.lang.StringUtils@isBlank(clt_prog_seq_n)">
+			AND clt_prog_seq_n = #{clt_prog_seq_n}
+		</if>
+	</delete>
+	<delete id="deleteCltProgMappingAll" parameterType="hashmap">
+		DELETE FROM sos_clt_prog_mnp_t 
+		WHERE clt_dta_seq_n = #{clt_dta_seq_n}
+	</delete>
+	
+	<delete id="deleteFrctProgMapping" parameterType="hashmap">
+		DELETE FROM sos_frct_prog_mnp_t 
+		WHERE frct_prog_seq_n = #{frct_prog_seq_n}
+		<if test="!@org.apache.commons.lang.StringUtils@isBlank(clt_dta_seq_n)">
+			AND clt_dta_seq_n = #{clt_dta_seq_n}
+		</if>
+	</delete>
+	
+	<insert id="insertCltProgMapping" parameterType="hashmap">
+		INSERT INTO sos_clt_prog_mnp_t (clt_prog_seq_n, clt_dta_seq_n) 
+		VALUES (#{clt_prog_seq_n}, #{clt_dta_seq_n})
+	</insert>
+	
+	<insert id="insertFrctProgMapping" parameterType="hashmap">
+		INSERT INTO sos_frct_prog_mnp_t (clt_dta_seq_n, frct_prog_seq_n, dta_type) 
+		VALUES (#{clt_dta_seq_n}, #{frct_prog_seq_n}, #{dta_type})
+	</insert>
+	
+	<select id="hasFrctProgMapping" parameterType="hashmap" resultType="int">
+		SELECT COUNT(1) FROM sos_frct_prog_mnp_t WHERE frct_prog_seq_n = #{frct_prog_seq_n} AND clt_dta_seq_n = #{clt_dta_seq_n} 
+	</select>
+	
+	<insert id="updateFrctProgMapping" parameterType="hashmap">
+		UPDATE sos_frct_prog_mnp_t
+			<trim prefix="SET" prefixOverrides=",">
+				<if test="!@org.apache.commons.lang.StringUtils@isBlank(clt_dt)">,clt_dt=#{clt_dt} </if>				
+				<if test="!@org.apache.commons.lang.StringUtils@isBlank(dta_type)">,dta_type=#{dta_type} </if>				
+			</trim>
+		WHERE frct_prog_seq_n = #{frct_prog_seq_n} AND clt_dta_seq_n = #{clt_dta_seq_n}
+	</insert>
+		
+	<update id="updateMasterCollectDate" parameterType="hashmap">
+		UPDATE smt_clt_dta_mstr_t 
+			SET
+				clt_dta_lst_dtm = #{tm}
+		WHERE clt_dta_mstr_seq_n = #{clt_dta_mstr_seq_n}
+	</update>
+	
+	
+</mapper>

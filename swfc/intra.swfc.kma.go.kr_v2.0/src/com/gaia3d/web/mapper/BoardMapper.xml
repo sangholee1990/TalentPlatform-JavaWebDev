@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.BoardMapper">
+
+	<sql id="whereQuery">
+		<if test="search_text != null and search_text != ''">
+			<choose>
+				<when test="search_target == 'title'">
+    				AND B.TITLE like '%' ||#{search_text} ||'%'
+				</when>
+				<when test="search_target == 'content'">
+    				AND B.CONTENT like '%' ||#{search_text} ||'%'
+				</when>
+				<otherwise>
+    				AND (B.TITLE like '%' ||#{search_text} ||'%' OR B.CONTENT like '%' ||#{search_text} ||'%' )
+				</otherwise>
+			</choose>
+		 </if> 
+		<if test="site_code_cd != null and site_code_cd != '' ">
+			AND B.site_code_cd = #{site_code_cd}
+		</if>
+		<if test="use_yn != null and use_yn != '' ">
+			AND B.USE_YN = #{use_yn}
+		</if>	
+		<if test="board_section_cd != null and board_section_cd != '' ">
+			AND B.board_section_cd = #{board_section_cd}
+		</if>	
+		<if test="popup_yn != null and popup_yn != '' ">
+			AND B.popup_yn = #{popup_yn}
+		</if>	
+	</sql>
+
+	<select id="SelectMany" parameterType="hashmap" resultType="BoardsDTO">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+     			SELECT
+				        B.board_seq as board_seq				
+				        , B.title as title						
+				        , B.content as content					
+				        , TO_CHAR(B.rg_date, 'YYYY-MM-DD') as create_date			
+				        , B.hit as hit							
+				        , B.writer as writer					
+				        , B.use_yn as use_yn					
+				        , B.site_code_cd as site_code_cd				
+				        , C.code_nm as site_nm						
+				        , C.code_en_nm as site_eng
+				        ,d.code_nm as board_section_nm	    
+			 			,b.board_section_cd
+			 			,CASE WHEN 7 <![CDATA[<]]> (SYSDATE - b.rg_date) THEN 'N' ELSE 'Y' END is_new
+			 			,B.popup_yn		
+				FROM
+						sos_board_t B
+						LEFT JOIN (SELECT * FROM sos_code_t WHERE parent_code_seq_n IN (SELECT code_seq_n FROM sos_code_t WHERE code = 'SITE_CODE_CD')) C ON TO_CHAR(B.site_code_cd) = c.code 
+						LEFT JOIN (SELECT * FROM sos_code_t WHERE parent_code_seq_n IN (SELECT code_seq_n FROM sos_code_t WHERE code IN ('ARCHIVES_CODE_CD', 'ARCHIVES_CODE_INTRA_CD', 'ARCHIVES_CODE_HOME_CD'))) d ON TO_CHAR(b.board_section_cd) = d.code
+				WHERE	B.board_code_cd = #{board_code_cd}
+					<include refid="whereQuery"/>
+				ORDER BY b.board_seq DESC
+		<![CDATA[		
+				) A
+			) WHERE RNUM >= #{startRow}	AND RNUM <= #{endRow}     
+		]]>		 	
+	</select>
+	
+	<select id="SelectOne" parameterType="hashmap" resultType="BoardsDTO">
+		SELECT
+			 a.board_seq
+			 ,b.code_nm as site_nm	    
+			 ,c.code_nm as board_section_nm	    
+			 ,a.board_section_cd 
+			 ,a.use_yn      			
+			 ,a.title					
+			 ,a.content
+			 ,a.site_code_cd
+			 ,TO_CHAR(a.rg_date, 'YYYY-MM-DD') as create_date
+			 ,a.hit
+			 ,CASE WHEN 7 <![CDATA[<]]> (SYSDATE - b.rg_date) THEN 'N' ELSE 'Y' END is_new
+			 ,a.popup_yn	
+		FROM sos_board_t a
+			LEFT JOIN (SELECT * FROM sos_code_t WHERE parent_code_seq_n IN (SELECT code_seq_n FROM sos_code_t WHERE code = 'SITE_CODE_CD')) b ON TO_CHAR(a.site_code_cd) = b.code 
+			LEFT JOIN (SELECT * FROM sos_code_t WHERE parent_code_seq_n IN (SELECT code_seq_n FROM sos_code_t WHERE code IN ('ARCHIVES_CODE_CD', 'ARCHIVES_CODE_INTRA_CD', 'ARCHIVES_CODE_HOME_CD'))) c ON TO_CHAR(a.board_section_cd) = c.code
+		WHERE board_seq= #{board_seq}
+	</select>
+	
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT count(*)		
+		FROM
+				sos_board_t B
+				LEFT JOIN (SELECT * FROM sos_code_t WHERE parent_code_seq_n IN (SELECT code_seq_n FROM sos_code_t WHERE code = 'SITE_CODE_CD')) C ON TO_CHAR(B.site_code_cd) = c.code 
+				LEFT JOIN (SELECT * FROM sos_code_t WHERE parent_code_seq_n IN (SELECT code_seq_n FROM sos_code_t WHERE code IN ('ARCHIVES_CODE_CD', 'ARCHIVES_CODE_INTRA_CD', 'ARCHIVES_CODE_HOME_CD'))) d ON TO_CHAR(b.board_section_cd) = d.code
+		WHERE	B.board_code_cd = #{board_code_cd}
+			<include refid="whereQuery"/>
+	</select>
+	
+	<insert id="Insert" parameterType="BoardsDTO">
+		<selectKey keyProperty="board_seq" resultType="Integer" order="BEFORE">
+			SELECT sos_board_sq01.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO sos_board_t (
+			 board_seq					
+			,board_code_cd					
+			,site_code_cd					
+			,board_section_cd					
+			,use_yn						
+			,title						
+			,writer						
+			,writer_ip					
+			,content
+			,rg_date
+			,popup_yn					
+		) VALUES (
+			#{board_seq}
+			,#{board_code_cd}
+			,#{site_code_cd}
+			,#{board_section_cd}
+			,#{use_yn}
+			,#{title}
+			,#{writer}
+			,#{writer_ip}
+			,#{content}
+			,SYSDATE
+			,#{popup_yn}
+		) 
+	</insert>
+	
+	<update id="Update" parameterType="BoardsDTO">
+		UPDATE sos_board_t 
+			SET 
+			     site_code_cd = #{site_code_cd}	
+			     , use_yn = #{use_yn}		
+			     , title = #{title}			
+			     , content = #{content}
+			     , up_date = SYSDATE
+			     , popup_yn = #{popup_yn}
+			     <if test="board_section_cd != null and board_section_cd != '' ">
+			     , board_section_cd = #{board_section_cd}
+			     </if>
+		WHERE board_seq=#{board_seq}
+	</update>
+	
+	<update id="IncreaseHit">
+		UPDATE sos_board_t SET hit = hit + 1 WHERE board_seq=#{board_seq}
+	</update>
+	
+	<delete id="Delete" parameterType="BoardsDTO">
+		delete FROM sos_board_t WHERE board_seq=#{board_seq}
+	</delete>
+	
+	<select id="selectBoardSectionCode" resultType="CodeDTO" parameterType="hashmap">
+		<if test="site_cd == 'manager'">
+			SELECT * FROM sos_code_t WHERE use_yn = 'Y' AND parent_code_seq_n = (SELECT code_seq_n FROM sos_code_t WHERE code = 'ARCHIVES_CODE_CD')
+			union all
+			SELECT * FROM sos_code_t WHERE use_yn = 'Y' AND parent_code_seq_n = (SELECT code_seq_n FROM sos_code_t WHERE code = 'ARCHIVES_CODE_INTRA_CD')
+			union all
+			SELECT * FROM sos_code_t WHERE use_yn = 'Y' AND parent_code_seq_n = (SELECT code_seq_n FROM sos_code_t WHERE code = 'ARCHIVES_CODE_HOME_CD')
+		</if>
+		<if test="site_cd == 'intranet'">
+			SELECT * FROM sos_code_t WHERE use_yn = 'Y' AND parent_code_seq_n = (SELECT code_seq_n FROM sos_code_t WHERE code = 'ARCHIVES_CODE_CD')
+			union all
+			SELECT * FROM sos_code_t WHERE use_yn = 'Y' AND parent_code_seq_n = (SELECT code_seq_n FROM sos_code_t WHERE code = 'ARCHIVES_CODE_INTRA_CD')
+		</if>
+		<if test="site_cd == 'homepage'">
+			SELECT * FROM sos_code_t WHERE use_yn = 'Y' AND parent_code_seq_n = (SELECT code_seq_n FROM sos_code_t WHERE code = 'ARCHIVES_CODE_CD')
+			union all
+			SELECT * FROM sos_code_t WHERE use_yn = 'Y' AND parent_code_seq_n = (SELECT code_seq_n FROM sos_code_t WHERE code = 'ARCHIVES_CODE_HOME_CD')
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.indisystem.web.monitor.MonitorMapper">
+<!-- 위성 영상 List -->
+	<select id="comsImageList"  parameterType="Hashmap" resultType="Hashmap">
+		SELECT 
+			search_info_seq, reg_date, scan_date
+			,REPLACE(file_nm, SUBSTR(file_nm, INSTR(file_nm, '.'), LENGTH(file_nm)), '.png') image_nm
+			,file_nm
+			,SUBSTR(scan_dt, 1, 4) date_y
+			,SUBSTR(scan_dt, 5, 2) date_m
+			,SUBSTR(scan_dt, 7, 2) date_d
+		FROM
+			cmt_bin_t
+		WHERE
+		 	sat_seq = 32
+		AND sensor_seq = #{sensor}
+		AND scan_dt = #{date}
+	<if test="hour != null and hour != ''">
+	     AND LEFT(scan_tm, 2) = #{hour}
+    </if>
+    	AND search_info_seq IN
+    <foreach collection="searchSeq" item="seq" open="(" close=")" separator=",">
+    	#{seq}
+    </foreach>
+		ORDER BY scan_date DESC, file_nm DESC
+ 	</select>
+ 	
+<!-- 위성 영상 마지막 영상 -->
+ 	<select id="comsLastImageList" parameterType="Hashmap" resultType="Hashmap">
+ 		SELECT scan_dt, scan_tm, DATE_FORMAT(scan_date, '%Y-%m-%d') AS scan_dtf
+ 		FROM
+			cmt_bin_t
+		WHERE
+		 	sat_seq = 32
+		AND sensor_seq = #{sensor}
+ 		AND search_info_seq IN
+    <foreach collection="searchSeq" item="seq" open="(" close=")" separator=",">
+    	#{seq}
+    </foreach>
+		ORDER BY scan_date DESC limit 1
+ 	</select>
+ 	
+<!-- 영상별 수집 현황 List -->
+    <select id="todayMonitorCount"  parameterType="Hashmap" resultType="Hashmap">
+   		SELECT search_info_seq, COUNT(*) AS cnt, DATE_FORMAT(MAX(scan_date), '%Y.%m.%d %H:%i:%S') AS last_date
+		FROM 
+		    cmt_bin_t
+		WHERE 
+		    sat_seq = 32
+		AND search_info_seq IN
+    <foreach collection="searchSeq" item="seq" open="(" close=")" separator=",">
+    	#{seq}
+    </foreach>
+		GROUP BY 
+			search_info_seq
+    </select>
+ 
+<!-- 일별 수집 현황 List -->    
+    <select id="totalMonitorCount"  parameterType="Hashmap" resultType="Hashmap">
+    	SELECT 
+    		scan_date, search_info_seq, count AS cnt
+		FROM cmt_collect_moni_t
+		<trim prefix="WHERE" prefixOverrides="AND |OR">
+			<if test="sDate != null">
+					scan_date BETWEEN #{sDate} AND #{eDate}
+			</if>
+			AND search_info_seq IN
+		    <foreach collection="searchSeq" item="seq" open="(" close=")" separator=",">
+		    	#{seq}
+		    </foreach>
+		</trim>
+    </select>
+
+<!-- 일별 수집 현황 날짜 List -->     
+    <select id="dateAllList" parameterType="Hashmap" resultType="String">
+    	SELECT DISTINCT scan_date
+		FROM cmt_collect_moni_t
+		WHERE search_info_seq IN
+	    <foreach collection="searchSeq" item="seq" open="(" close=")" separator=",">
+	    	#{seq}
+	    </foreach>
+    </select>
+    
+
+</mapper> 

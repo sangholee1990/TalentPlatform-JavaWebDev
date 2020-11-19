@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+<!-- 
+	<source path="/home/gnss/prog/tec_grid_map"/>
+	 -->
+	 <source path="D:\upload\tec"/>
+	<destination path="D:\upload\2013"/>
+</configuration>

@@ -1,0 +1,1679 @@
+<?xml version="1.0" encoding="UTF-8"?>                                                                               
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">          
+<mapper namespace="com.gaia3d.web.mapper.WmoMetaMapper">                                                             
+                                                                                                             
+<!--                                                                                                                 
+	WMO Meta테이블 구조와 1대1로 매칭되는 bean들은 "WMO_" prefix를 빼고 생성                                           
+                                                                                                                     
+	resultMap id = bean class name + "Map"                                                                             
+	ex) MD_MetadataMap	                                                                                               
+	                                                                                                                   
+	Select id 는 "get" + bean class name + [List]                                                                      
+	ex) getMD_MaintenanceInformation, getMD_ExtensionInformationList                                                   
+                                                                                                                     
+ -->       
+ 	
+   	<resultMap type="hashmap" id="metadataList">
+		<id property="metadataseqn" column="metadataseqn" />
+		<result column="fileidentifier" property="fileidentifier"/>
+		<result column="role" property="role"/>
+		<result column="datestamp" property="datestamp" javaType="Date"/>
+		<result column="topiccategory" property="topiccategory"/>
+   	</resultMap> 
+    
+	<!-- WMO MD_Metadata  -->                                                                                          
+	<resultMap id="MD_MetadataMap" type="MD_Metadata">                                                                 
+		<id property="metadataseqn" column="metadataseqn" />
+		<!--                                                                                                             
+			WMO MD_MaintenanceInformation 유지보수정보                                                                     
+			아래 Error 때문에 제일 앞에 association을 놔야함
+				                                                             
+			"The content of element type "resultMap" must match 
+			(constructor?,id*,result*,association*,collection*,discriminator?)"                                                        
+		 -->                                                                                                             
+		 
+		<association property="metadatamaintenance" 
+					column="{metadataseqn=metadataseqn}"
+					select="getMD_MaintenanceInformation"/>
+	    
+                   
+		<association property="distributioninfo"                                                                      
+					column="{metadataseqn=metadataseqn}"                                                                       
+					select="getMD_Distribution"/>                                                              
+                                                                                                           
+		<!-- WMO CI_ResponsibleParty 관련그룹  -->                                                                       
+		<collection property="contact"                                                                                   
+					column="{metadataseqn=metadataseqn}"                                                                       
+					javaType="ArrayList"                                                                                       
+					select="getCI_ResponsiblePartyList" />                                                                     
+		                                                                                                                 
+		<!-- WMO MD_ExtensionInformation 확장설명정보 -->                                                                
+		<collection property="metadataextensioninfo"                                                                     
+					column="{metadataseqn=metadataseqn}"                                                                       
+					javaType="ArrayList"                                                                                       
+					select="getMD_ExtensionInformationList" />			                                                           
+	                                                                                                                   
+		<!-- WMO MD_DataIdentification  자료기본정보 -->                                                                 
+		<collection property="identificationinfo"                                                                        
+					column="{metadataseqn=metadataseqn}"                                                                       
+					javaType="ArrayList"                                                                                       
+					select="getMD_DataIdentificationList" />
+					
+		<!-- WMO MD_Constraints  자료활용정보 -->                                                                 
+		<collection property="metadataconstraints"                                                                       
+					column="{metadataseqn=metadataseqn}"                                                         
+					javaType="ArrayList"                                                                                       
+					select="getMD_ConstraintsList" />	                                                             
+		
+		<!-- WMO DQ_DataQuality  자료품질평가 -->                                                                 
+		<collection property="dataqualityinfo"                                                                       
+					column="{metadataseqn=metadataseqn}"                                                        
+					javaType="ArrayList"                                                                                       
+					select="getDQ_DataQualityList" />                                                                                                                
+	</resultMap>                                                                                                       
+                                                                                                                     
+	<!-- WMO MD_MaintenanceInformation 유지보수정보 Start -->                                                          
+	<resultMap id="MD_MaintenanceInformationMap" type="MD_MaintenanceInformation" >                                    
+	    <id property="maintenanceinformationseqn" column="maintenanceinformationseqn"/>
+	    <result column="userdefinedmaintenancefrequenc" property="userdefinedmaintenancefrequency"/>
+	    <collection property="contact"                                                                                 
+					column="{maintenanceinformationseqn=maintenanceinformationseqn}"                                                                        
+					javaType="ArrayList"                                                                                       
+					select="getCI_ResponsiblePartyList" />                                                                   
+	</resultMap>                                                                                                       
+	<!-- WMO MD_MaintenanceInformation 유지보수정보 End -->                                                            
+	                                                                                                                   
+		                                                                                                                 
+	<!-- WMO CI_ResponsibleParty 관련그룹 Start -->                                                                    
+	<resultMap id="CI_ResponsiblePartyMap" type="CI_ResponsibleParty">
+	    <id property="responsiblepartyseqn" column="responsiblepartyseqn"/>                                            
+	    <collection property="contactinfo"                                                                             
+			  				column="{responsiblepartyseqn=responsiblepartyseqn}"                                                                        
+			  				javaType="ArrayList"                                                                                 
+			  				select="getCI_ContactList" />                                                                        
+	</resultMap>                                                                                                       
+                                                                                                                     
+                                                                                                                     
+	<!-- WMO CI_Contact  -->                                                                                           
+	<resultMap id="CI_ContactMap" type="CI_Contact" >                                                                  
+	    <id property="contactseqn" column="contactseqn"/>                                                              
+	    <collection property="phone"                                                                                   
+			  				column="{contactseqn=contactseqn}"                                                                   
+			  				javaType="ArrayList"                                                                                 
+			  				ofType="CI_Telephone"                                                                                
+			  				select="getCI_TelephoneList" />                                                                      
+			  				                                                                                                     
+	    <collection property="address"                                                                                 
+			  				column="{contactseqn=contactseqn}"                                                                   
+			  				javaType="ArrayList"                                                                                 
+			  				ofType="CI_Address"                                                                                  
+			  				select="getCI_AddressList" />                                                                        
+			  				                                                                                                     
+	    <collection property="onlineresource"                                                                          
+			  				column="{contactseqn=contactseqn}"                                                                   
+			  				javaType="ArrayList"                                                                                 
+			  				ofType="CI_OnlineResource"                                                                           
+			  				select="getCI_OnlineResourceList" /> 			  							  				                                 
+	</resultMap>                                                                                                       
+	                                                                                                                   
+	<!-- WMO CI_ResponsibleParty 관련그룹 End -->                                                                      
+	                                                                                                                   
+	                                                                                                                   
+	<!-- WMO MD_ExtensionInformation 확장설명정보  Start -->                                                           
+	<resultMap id="MD_ExtensionInformationMap" type="MD_ExtensionInformation" >                                        
+	    <id property="extensioninformationseqn" column="extensioninformationseqn"/>                                    
+	    <collection property="extensiononlineresource"                                                                 
+			  				column="{extensioninformationseqn=extensioninformationseqn}"                                         
+			  				javaType="ArrayList"                                                                                 
+			  				ofType="CI_OnlineResource"                                                                           
+			  				select="getCI_OnlineResourceList" /> 	                                                               
+	</resultMap>                                                                                                       
+	<!-- WMO MD_ExtensionInformation 확장설명정보  End -->                                                             
+	                                                                                                                   
+	                                                                                                                   
+	                                                                                                                   
+	<!-- WMO MD_DataIdentificationMap 자료기본정보Start -->                                                            
+	<resultMap id="MD_DataIdentificationMap" type="MD_DataIdentification" >                                            
+	    <id property="dataidentificationseqn" column="dataidentificationseqn"/>                                        
+	                                                                                                                   
+	    <collection property="citation"                                                                                
+			  				column="{dataidentificationseqn=dataidentificationseqn}"                                             
+			  				javaType="ArrayList"                                                                                 
+			  				select="getCI_CitationList" /> 	                                                                     
+			  				                                                                                                     
+		<collection property="pointofcontact"                                                                            
+					column="{dataidentificationseqn=dataidentificationseqn}"                                                   
+					javaType="ArrayList"                                                                                       
+					select="getCI_ResponsiblePartyList" />                                                                     
+					                                                                                                           
+					                                                                                                           
+		<collection property="resourcemaintenance"                                                                       
+					column="{dataidentificationseqn=dataidentificationseqn}"                                                   
+					javaType="ArrayList"                                                                                       
+					select="getMD_MaintenanceInformation" />	                                                                 
+					                                                                                                           
+					                                                                                                           
+		<collection property="descriptivekeywords"                                                                       
+					column="{dataidentificationseqn=dataidentificationseqn}"                                                   
+					javaType="ArrayList"                                                                                       
+					select="getMD_KeywordsList" />						                                                                 
+                                                                                                                     
+		<collection property="extent"                                                                                    
+					column="{dataidentificationseqn=dataidentificationseqn}"                                                   
+					javaType="ArrayList"                                                                                       
+					select="getEX_ExtentList" />
+		
+		<collection property="resourceconstraints"                                                                       
+					column="{dataidentificationseqn=dataidentificationseqn}"                                                   
+					javaType="ArrayList"                                                                                       
+					ofType="MD_Constraints"                                                                                       
+					select="getMD_ConstraintsList" />			  				                                                                                                     
+	</resultMap>                                                                                                       
+
+	<resultMap id="MD_KeywordsMap" type="MD_Keywords">
+	    <id property="keywordsseqn" column="keywordsseqn"/>
+		<association property="thesaurusname"
+					column="{keywordsseqn=keywordsseqn}"
+					select="getCI_CitationList"/>
+	</resultMap>
+
+	<resultMap id="CI_CitationMap" type="CI_Citation" >                                                                
+	    <id property="citationseqn" column="citationseqn"/>                                                            
+	    <collection property="dates"                                                                                   
+			  				column="{citationseqn=citationseqn}"                                                                 
+			  				javaType="ArrayList"                                                                                 
+			  				ofType="CI_Date"                                                                                     
+			  				select="getCI_DateList" />                                                                           
+			  				                                                                                                     
+	    <collection property="identifier"                                                                              
+			  				column="{citationseqn=citationseqn}"                                                                 
+			  				javaType="ArrayList"                                                                                 
+			  				select="getMD_IdentifierList" />                                                                     
+			  				                                                                                                     
+	    <collection property="citedresponsibleparty"                                                                   
+			  				column="{citationseqn=citationseqn}"                                                                 
+			  				javaType="ArrayList"                                                                                 
+							select="getCI_ResponsiblePartyList" />	  							  				                                     
+	</resultMap>                                                                                                       
+	                                                                                                                   
+	                                                                                                                   
+	<resultMap id="MD_IdentifierMap" type="MD_Identifier" >                                                            
+	    <id property="identifierseqn" column="identifierseqn"/>	                                                       
+	   <association property="authority"                                                                               
+					column="{identifierseqn=identifierseqn}"                                                                   
+					select="getCI_ResponsiblePartyList"/>                                                                      
+	</resultMap>                                                                                                       
+	                                                                                                                   
+	                                                                                                                   
+	<resultMap id="EX_ExtentMap" type="EX_Extent" >                                                                    
+	    <id property="extentseqn" column="extentseqn"/>                                                                
+	                                                                                                                   
+	    <collection property="geographicelement"                                                                       
+			  				column="{extentseqn=extentseqn}"                                                                     
+			  				javaType="ArrayList"                                                                                 
+			  				select="getEX_GeographicExtentList" />                                                               
+			  				                                                                                                     
+	    <collection property="temporalelement"                                                                         
+			  				column="{extentseqn=extentseqn}"                                                                     
+			  				javaType="ArrayList"                                                                                 
+			  				ofType="EX_TemporalExtent"                                                                           
+			  				select="getEX_TemporalExtentList" /> 				  				                                               
+	</resultMap>	                                                                                                     
+	                                                                                                                   
+	                                                                                                                   
+	<resultMap id="EX_GeographicExtentMap" type="EX_GeographicExtent" >                                                
+		<discriminator column="g_type" javaType="integer" >                                                              
+			<case value="1" resultType="EX_GeographicBoundingBox" />                                                       
+			<case value="2" resultMap="EX_GeographicDescriptionMap" />                                                     
+        </discriminator>                                                                                             
+		                                                                                                                 
+	</resultMap>                                                                                                       
+                                                                                                                     
+	<!-- resultMap id="EX_GeographicDescriptionMap" type="EX_GeographicDescription" extends="EX_GeographicExtent" --> 
+	<resultMap id="EX_GeographicDescriptionMap" type="EX_GeographicDescription">        
+	    <id property="geographicdescriptionseqn" column="geographicdescriptionseqn"/>                                  
+	    <association property="geographicidentifier"                                                                   
+					column="{geographicdescriptionseqn=geographicdescriptionseqn}"                                    
+					select="getMD_IdentifierList"/> 			  				                                                           
+	</resultMap>                                                                                                       
+	                                                                                                                   
+	                                                                                                                   
+	<!-- WMO MD_DataIdentificationMap 자료기본정보  End -->                                                            
+                                                                                
+                                                                                
+	<!-- WMO MD_DistributionMap 자료분배및옵션정보 End -->                                                            
+                           
+	<resultMap id="MD_DistributionMap" type="MD_Distribution" >                                                                    
+	    <id property="distributionseqn" column="distributionseqn"/>                                                                
+	                                                                                                                   
+	    <collection property="distributionformat"                                                                       
+			  				column="{distributionseqn=distributionseqn}"                                                                     
+			  				javaType="ArrayList"                                                                                 
+			  				select="getMD_FormatList" />                                                               
+			  				                                                                                                     
+	    <collection property="distributor"                                                                       
+			  				column="{distributionseqn=distributionseqn}"                                                                     
+			  				javaType="ArrayList"                                                                                 
+			  				select="getMD_DistributorList" />   
+			  				
+	    <collection property="transferoptions"                                                                       
+			  				column="{distributionseqn=distributionseqn}"                                                                     
+			  				javaType="ArrayList"                                                                                 
+			  				select="getMD_DigitalTransferOptionsList" />    				  				                                               
+	</resultMap>	   
+	
+	<resultMap id="MD_FormatMap" type="MD_Format" >                                                                    
+	    <id property="formatseqn" column="formatseqn"/>                                                                
+	                                                                                                                   
+	    <collection property="formatdistributor"                                                                       
+			  				column="{formatseqn=formatseqn}"                                                                     
+			  				javaType="ArrayList"                                                                                 
+			  				select="getMD_DistributorList" />                                                               
+	</resultMap>
+
+
+	<resultMap id="MD_DistributorMap" type="MD_Distributor" >                                                                    
+	    <id property="distributorseqn" column="distributorseqn"/>                                                                
+	                                                                                                                   
+	    <collection property="distributorformat"                                                                       
+			  				column="{distributorseqn=distributorseqn}"                                                                     
+			  				javaType="ArrayList"                                                                                 
+			  				select="getMD_FormatList" />                                                               
+			  				
+		<collection property="distributortransferoptions"                                                                       
+			  				column="{distributorseqn=distributorseqn}"                                                                  
+			  				javaType="ArrayList"                                                                                 
+			  				select="getMD_DigitalTransferOptionsList" />    	  				
+	</resultMap>
+
+	<resultMap id="MD_DigitalTransferOptionsMap" type="MD_DigitalTransferOptions" >                                                                    
+	    <id property="digitaltransferoptionsseqn" column="digitaltransferoptionsseqn"/>                                                                
+	                                                                                                                   
+	    <collection property="onlines"                                                                       
+			  				column="{digitaltransferoptionsseqn=digitaltransferoptionsseqn}"                                                                     
+			  				javaType="ArrayList"
+			  				ofType="CI_OnlineResource"
+			  				select="getCI_OnlineResourceList" />                                                               
+	</resultMap>	
+	                                                                                          
+	<!-- WMO MD_DistributionMap 자료분배및옵션정보  End -->                                                            
+                            
+                            
+
+	<!-- WMO DQ_DataQuality  자료품질평가 Start -->   
+
+	<resultMap id="DQ_DataQualityMap" type="DQ_DataQuality" >                                                                    
+	    <id property="dataqualityseqn" column="dataqualityseqn"/>                                                                
+
+		<association property="scope"                                                                   
+					column="{dataqualityseqn=dataqualityseqn}"                                    
+					select="getDQ_Scope"/>
+	
+		<association property="lineage"                                                                   
+					column="{dataqualityseqn=dataqualityseqn}"                                 
+					javaType="LI_Lineage"
+					select="getLI_Lineage"/>
+					                                                                                                             
+	    <collection property="report"                                                                       
+			  				column="{dataqualityseqn=dataqualityseqn}"                                                                    
+			  				javaType="ArrayList"
+			  				select="getDQ_ElementList" />                                                               
+	</resultMap>	
+
+
+	<resultMap id="DQ_DomainConsistencyMap" type="DQ_DomainConsistency" >                                                                    
+	    <id property="domainconsistencyseqn" column="domainconsistencyseqn"/>                                                                
+
+		<association property="measureidentification"                                                                   
+					column="{domainconsistencyseqn=domainconsistencyseqn}"                                    
+					select="getMD_IdentifierList"/>
+	
+	    <collection property="resultArray"                                                                     
+			  				column="{domainconsistencyseqn=domainconsistencyseqn}"                                                                       
+			  				javaType="ArrayList"
+			  				select="getDQ_ResultList" />                                                               
+	</resultMap>
+	
+	
+	<resultMap id="DQ_ConformanceResultMap" type="DQ_ConformanceResult" >                                                                    
+	    <id property="conformanceresultseqn" column="conformanceresultseqn"/>                                                                
+
+		<association property="specification"                                                                   
+					column="{conformanceresultseqn=conformanceresultseqn}"                                    
+					select="getCI_CitationList"/>
+	                                                     
+	</resultMap>
+
+	<!-- WMO DQ_DataQuality  자료품질평가 End -->   
+                                                                                         
+	<!-- Select Start -->	                                                                                             
+	                                                                                                                   
+	                                                                                                                   
+	<select id="SelectMany" parameterType="java.util.HashMap" resultMap="metadataList">                                          
+		SELECT * FROM (                                                                                                  
+     		SELECT ROWNUM AS RNUM, A.* FROM (                                                                            
+          		SELECT        
+          				A.METADATASEQN                                                                                         
+				       ,A.FILEIDENTIFIER                                                                                      
+				       ,(
+							SELECT
+									(SELECT CODE_NM FROM SOS_CODE_T C WHERE C.CODE = B.ROLE AND C.PARENT_CODE_SEQ_N = 10200) AS ROLE
+							  FROM	
+							  		WMO_CI_RESPONSIBLEPARTY B
+							 WHERE
+									B.METADATASEQN = A.METADATASEQN
+									<![CDATA[
+									AND ROWNUM <= 1
+									]]>
+						) AS ROLE
+				       ,A.DATESTAMP                                                                                          
+				       ,(
+				       		SELECT
+									CODE_NM
+							  FROM
+									SOS_CODE_T
+							 WHERE
+									PARENT_CODE_SEQ_N = 10800
+									AND CODE = (SELECT C.TOPICCATEGORY FROM WMO_MD_DATAIDENTIFICATION C WHERE C.METADATASEQN = A.METADATASEQN)
+    					) AS TOPICCATEGORY
+				FROM                                                                                                         
+				          WMO_MD_METADATA A                                                                                  
+				WHERE  
+						1 = 1
+						<if test="search_text != null and search_text != '' ">
+							AND A.METADATASEQN
+								IN (
+									SELECT
+										B.METADATASEQN
+									FROM
+										WMO_MD_KEYWORDS A,
+										WMO_MD_DATAIDENTIFICATION B
+									WHERE
+										A.KEYWORD LIKE '%' || #{search_text} || '%'
+										AND B.DATAIDENTIFICATIONSEQN = A.DATAIDENTIFICATIONSEQN
+								)
+						</if>
+				ORDER BY A.METADATASEQN DESC                                                                                    
+    		) A                                       
+		<![CDATA[		
+			) WHERE RNUM >= #{startRow}	 AND RNUM <= #{endRow}
+		]]>		
+		                                                    
+	</select>                                                                                                          
+	                                                                                                                   
+	<select id="Count" parameterType="java.util.HashMap" resultType="int">                                                       
+        SELECT                                                                                                       
+		       COUNT(*)                                                                                                  
+		FROM                                                                                                             
+		          WMO_MD_METADATA A                                                                                      
+		WHERE  
+				1 = 1
+				<if test="search_text != null and search_text != '' ">
+					AND A.METADATASEQN
+						IN (
+							SELECT
+								B.METADATASEQN
+							FROM
+								WMO_MD_KEYWORDS A,
+								WMO_MD_DATAIDENTIFICATION B
+							WHERE
+								A.KEYWORD LIKE '%' || #{search_text} || '%'
+								AND B.DATAIDENTIFICATIONSEQN = A.DATAIDENTIFICATIONSEQN
+						)
+				</if>
+	</select>                                                                                                          
+	                                                                                                                   
+	                                                                                                                   
+	<select id="SelectOne" parameterType="java.util.HashMap" resultMap="MD_MetadataMap">                                         
+		SELECT                                                                                                           
+			    METADATASEQN            
+		       ,FILEIDENTIFIER          
+		       ,LANGUAGE                
+		       ,CHARACTERSET            
+		       ,HIERARCHYLEVEL          
+		       ,HIERARCHYLEVELNAME      
+		       ,DATESTAMP               
+		       ,METADATASTANDARDNAME    
+		       ,METADATASTANDARDVERSION 
+		       ,LOCALE                  
+		FROM                                                                                                             
+			 WMO_MD_METADATA A                                                                                             
+		WHERE A.METADATASEQN= #{metadataseqn}                                                                            
+	</select>                                                                                                          
+                                                                                                                     
+                                                                                                                     
+                                                                                                                     
+	<select id="getMD_MaintenanceInformation" parameterType="java.util.HashMap" resultMap="MD_MaintenanceInformationMap">        
+		SELECT                                                                                                           
+		        MAINTENANCEINFORMATIONSEQN                                                                               
+		       ,METADATASEQN                                                                                             
+		       ,DATAIDENTIFICATIONSEQN                                                                                   
+		       ,MAINTENANCEANDUPDATEFREQUENCY                                                                            
+		       ,USERDEFINEDMAINTENANCEFREQUENC                                                                           
+		       ,UPDATESCOPE                                                                                              
+		FROM                                                                                                             
+			 WMO_MD_MAINTENANCEINFORMATION A                                                                               
+		WHERE                                                                                                            
+			<if test="metadataseqn != null and metadataseqn != ''">                                                        
+				A.METADATASEQN= #{metadataseqn}                                                                              
+			</if>                                                                                                          
+			<if test="dataidentificationseqn != null and dataidentificationseqn != ''">                                    
+				A.DATAIDENTIFICATIONSEQN = ${dataidentificationseqn}                                                         
+			</if>                                                                                                          
+	</select>                                                                                                          
+		                                                                                                                 
+                                                                                                                     
+	                                                                                                                   
+	<select id="getMD_ExtensionInformationList" parameterType="hashmap" resultType="MD_ExtensionInformation">          
+		SELECT                                                                                                           
+			 EXTENSIONINFORMATIONSEQN                                                                                      
+       		,METADATASEQN                                                                                              
+       		,EXTENSIONONLINERESOURCE                                                                                   
+		FROM                                                                                                             
+			 WMO_MD_EXTENSIONINFORMATION A                                                                                 
+		WHERE A.METADATASEQN= #{metadataseqn}                                                                            
+	</select>                                                                                                          
+		                                                                                                                 
+	<select id="getCI_ResponsiblePartyList" parameterType="hashmap" resultMap="CI_ResponsiblePartyMap">                
+		SELECT                                                                                                           
+				RESPONSIBLEPARTYSEQN                                                                                         
+		       ,METADATASEQN                                                                                             
+		       ,MAINTENANCEINFORMATIONSEQN                                                                               
+		       ,DATAIDENTIFICATIONSEQN                                                                                   
+		       ,CITATIONSEQN                                                                                             
+		       ,IDENTIFIERSEQN                                                                                           
+		       ,DISTRIBUTORSEQN                                                                                          
+		       ,INDIVIDUALNAME                                                                                           
+		       ,ORGANISATIONNAME                                                                                         
+		       ,POSITIONNAME                                                                                             
+		       ,ROLE                                                                                                     
+		FROM                                                                                                             
+			 WMO_CI_RESPONSIBLEPARTY A                                                                                     
+		WHERE                                                                                                            
+		                                                                                                                 
+			<if test="metadataseqn != null and metadataseqn != ''">                                                        
+		 		A.METADATASEQN= #{metadataseqn}                                                                              
+			</if>                                                                                                          
+			<if test="maintenanceinformationseqn != null and maintenanceinformationseqn != ''">                            
+			 	A.MAINTENANCEINFORMATIONSEQN= #{maintenanceinformationseqn}                                                  
+			</if>                                                                                                          
+			<if test="dataidentificationseqn != null and dataidentificationseqn != ''">                                    
+			 	A.DATAIDENTIFICATIONSEQN= #{dataidentificationseqn}                                                          
+			</if>                                                                                                          
+			<if test="citationseqn != null and citationseqn != ''">                                                        
+			 	A.CITATIONSEQN= #{citationseqn}                                                                              
+			</if>                                                                                                          
+			<if test="identifierseqn != null and identifierseqn != ''">                                                    
+			 	A.IDENTIFIERSEQN= #{identifierseqn}                                                                          
+			</if>                                                                                                          
+			<if test="distributorseqn != null and distributorseqn != ''">                                                  
+			 	A.DISTRIBUTORSEQN= #{distributorseqn}                                                                        
+			</if>                                                                                                          
+		                                                                                                                 
+	</select>                                                                                                          
+                                                                                                                     
+                                                                                                                     
+	<select id="getCI_ContactList" parameterType="hashmap" resultMap="CI_ContactMap">                                  
+		SELECT                                                                                                           
+				 CONTACTSEQN                                                                                                 
+				,RESPONSIBLEPARTYSEQN                                                                                        
+				,PHONE                                                                                                       
+				,ADDRESS                                                                                                     
+				,ONLINERESOURCE                                                                                              
+		FROM                                                                                                             
+			 WMO_CI_CONTACT A                                                                                              
+		WHERE A.RESPONSIBLEPARTYSEQN= #{responsiblepartyseqn}                                                            
+	</select>                                                                                                          
+                                                                                                                     
+                                                                                                                     
+	<select id="getCI_TelephoneList" parameterType="hashmap" resultType="CI_Telephone">                                
+		SELECT                                                                                                           
+			 TELEPHONESEQN                                                                                                 
+       		,CONTACTSEQN                                                                                               
+       		,VOICE                                                                                                     
+		FROM                                                                                                             
+			 WMO_CI_TELEPHONE A                                                                                            
+		WHERE A.CONTACTSEQN= #{contactseqn}                                                                              
+	</select>                                                                                                          
+                                                                                                                     
+                                                                                                                     
+	<select id="getCI_AddressList" parameterType="hashmap" resultType="CI_Address">                                    
+		SELECT                                                                                                           
+		        ADDRESSSEQN                                                                                              
+		       ,CONTACTSEQN                                                                                              
+		       ,DELIVERYPOINT                                                                                            
+		       ,CITY                                                                                                     
+		       ,ADMINISTRATIVEAREA                                                                                       
+		       ,POSTALCODE                                                                                               
+		       ,COUNTRY                                                                                                  
+		       ,ELECTRONICMAILADDRESS                                                                                    
+		FROM                                                                                                             
+			 WMO_CI_ADDRESS A                                                                                              
+		WHERE A.CONTACTSEQN= #{contactseqn}                                                                              
+	</select>                                                                                                          
+                                                                                                                     
+                                                                                                                     
+	<select id="getCI_OnlineResourceList" parameterType="hashmap" resultType="CI_OnlineResource">                      
+		SELECT                                                                                                           
+		        ONLINERESOURCESEQN                                                                                       
+		       ,CONTACTSEQN                                                                                              
+		       ,EXTENSIONINFORMATIONSEQN                                                                                 
+		       ,LINKAGE                                                                                                  
+		       ,PROTOCOL                                                                                                 
+		       ,NAME                                                                                                     
+		       ,DESCRIPTION                                                                                              
+		       ,DIGITALTRANSFEROPTIONSSEQN                                                                               
+		FROM                                                                                                             
+			 WMO_CI_ONLINERESOURCE A                                                                                       
+		WHERE                                                                                                            
+			<if test="contactseqn != null and contactseqn != ''">                                                          
+			 A.CONTACTSEQN= #{contactseqn}                                                                                 
+			</if>                                                                                                          
+			<if test="extensioninformationseqn != null and extensioninformationseqn != ''">                                
+			 A.EXTENSIONINFORMATIONSEQN= #{extensioninformationseqn}                                                       
+			</if>                                                                                                          
+			<if test="digitaltransferoptionsseqn != null and digitaltransferoptionsseqn != ''">                            
+			 A.DIGITALTRANSFEROPTIONSSEQN= #{digitaltransferoptionsseqn}                                                   
+			</if>                                                                                                          
+	</select>                                                                                                          
+	                                                                                                                   
+	<select id="getMD_DataIdentificationList" parameterType="hashmap" resultMap="MD_DataIdentificationMap">            
+		SELECT                                                                                                           
+		        DATAIDENTIFICATIONSEQN                                                                                   
+		       ,METADATASEQN                                                                                             
+		       ,CITATION                                                                                                 
+		       ,ABSTRACT                                                                                                 
+		       ,POINTOFCONTACT                                                                                           
+		       ,SPATIALREPRESENTATIONTYPE                                                                                
+		       ,SPATIALRESOLUTION                                                                                        
+		       ,LANGUAGE                                                                                                 
+		       ,TOPICCATEGORY                                                                                            
+		       ,RESOURCEMAINTENANCE                                                                                      
+		       ,DESCRIPTIVEKEYWORDS                                                                                      
+		       ,EXTENT                                                                                                   
+		       ,RESOURCECONSTRAINTS                                                                                      
+		FROM                                                                                                             
+			 WMO_MD_DATAIDENTIFICATION A                                                                                   
+		WHERE A.METADATASEQN= #{metadataseqn}                                                                            
+	</select>                                                                                                          
+	
+	<select id="getCI_DateList" parameterType="hashmap" resultType="CI_Date">
+		SELECT  
+				DATESEQN        
+		       ,CITATIONSEQN    
+		       ,DATES           
+		       ,DATETYPE        
+		FROM 
+				WMO_CI_DATE	
+		WHERE
+				CITATIONSEQN = #{citationseqn}
+	</select>                                                                                                                   
+	                                                                                                                   
+	<select id="getCI_CitationList" parameterType="hashmap" resultMap="CI_CitationMap">                                  
+		SELECT                                                                                                           
+		        CITATIONSEQN                                                                                             
+		       ,DATAIDENTIFICATIONSEQN                                                                                   
+		       ,KEYWORDSSEQN                                                                                             
+		       ,CONFORMANCERESULTSEQN                                                                                    
+		       ,TITLE                                                                                                    
+		       ,ALTERNATIVETITLE                                                                                         
+		       ,DATES                                                                                                    
+		       ,IDENTIFIER                                                                                               
+		       ,CITEDRESPONSIBLEPARTY                                                                                    
+		       ,PRESENTATIONFORM                                                                                         
+		FROM                                                                                                             
+			 WMO_CI_CITATION A                                                                                             
+		WHERE 
+			<if test="dataidentificationseqn != null and dataidentificationseqn != ''">
+				A.DATAIDENTIFICATIONSEQN= #{dataidentificationseqn}        
+			</if>
+			<if test="keywordsseqn != null and keywordsseqn != ''">
+				A.KEYWORDSSEQN= #{keywordsseqn}
+			</if>
+			<if test="conformanceresultseqn != null and conformanceresultseqn != ''">   
+				A.CONFORMANCERESULTSEQN= #{conformanceresultseqn}        
+			</if>
+	</select>                                                                                                          
+	                                                                                                                   
+	                                                                                                                   
+	<select id="getMD_IdentifierList" parameterType="hashmap" resultMap="MD_IdentifierMap">                            
+		SELECT                                                                                                           
+		        IDENTIFIERSEQN                                                                                           
+		       ,CITATIONSEQN                                                                                             
+		       ,GEOGRAPHICDESCRIPTIONSEQN                                                                                
+		       ,AUTHORITY                                                                                                
+		       ,CODE                                                                                                     
+		       ,DOMAINCONSISTENCYSEQN                                                                                    
+		FROM                                                                                                             
+			 WMO_MD_IDENTIFIER A                                                                                           
+		WHERE                                                                                                            
+		<if test="citationseqn != null and citationseqn != ''">                                                            
+			A.CITATIONSEQN= #{citationseqn}                                                                                
+		</if>                                                                                                            
+		<if test="geographicdescriptionseqn != null and geographicdescriptionseqn != ''">                                                            
+			A.GEOGRAPHICDESCRIPTIONSEQN= #{geographicdescriptionseqn}                                                      
+		</if>                                                                                                            
+		<if test="domainconsistencyseqn != null and domainconsistencyseqn != ''">                                                            
+			A.DOMAINCONSISTENCYSEQN= #{domainconsistencyseqn}                                                      
+		</if> 
+	</select>                                                                                                          
+	                                                                                                                   
+	                                                                                                                   
+	<select id="getMD_KeywordsList" parameterType="hashmap" resultMap="MD_KeywordsMap">                                  
+		SELECT                                                                                                           
+		        KEYWORDSSEQN                                                                                             
+		       ,DATAIDENTIFICATIONSEQN                                                                                   
+		       ,KEYWORD                                                                                                  
+		       ,TYPE                                                                                                     
+		       ,THESAURUSNAME                                                                                            
+		FROM                                                                                                             
+			 WMO_MD_KEYWORDS A                                                                                             
+		WHERE A.DATAIDENTIFICATIONSEQN= #{dataidentificationseqn}                                                        
+	</select>                                                                                                          
+                                                                                                                     
+                                                                                                                     
+	<select id="getEX_ExtentList" parameterType="hashmap" resultMap="EX_ExtentMap">                                    
+		SELECT                                                                                                           
+		        EXTENTSEQN                                                                                               
+		       ,DATAIDENTIFICATIONSEQN                                                                                   
+		       ,GEOGRAPHICELEMENT                                                                                        
+		       ,TEMPORALELEMENT                                                                                          
+		FROM                                                                                                             
+			 WMO_EX_EXTENT A                                                                                               
+		WHERE A.DATAIDENTIFICATIONSEQN= #{dataidentificationseqn}                                                        
+	</select>
+	
+	
+	<select id="getEX_TemporalExtentList" parameterType="hashmap" resultType="EX_TemporalExtent">  
+		SELECT  
+			 TEMPORALEXTENTSEQN  
+       		,EXTENTSEQN              
+       		,EXTENT                  
+		FROM 
+			WMO_EX_TEMPORALEXTENT A                                                                                               
+		WHERE 
+			A.EXTENTSEQN= #{extentseqn}                                                        
+	</select>
+	                                                                                                     
+	                                                                                                                   
+                                                                                                                     
+	<select id="getEX_GeographicExtentList" parameterType="hashmap" resultMap="EX_GeographicExtentMap">                
+	                                                                                                                   
+		SELECT                                                                                                           
+		        1 AS G_TYPE                                                                                              
+		       ,GEOGRAPHICBOUNDINGBOXSEQN                                                                                
+		       ,EXTENTSEQN                                                                                               
+		       ,WESTBOUNDLONGITUDE                                                                                       
+		       ,EASTBOUNDLONGITUDE                                                                                       
+		       ,SOUTHBOUNDLATITUDE                                                                                       
+		       ,NORTHBOUNDLATITUDE                                                                                       
+		       ,NULL AS GEOGRAPHICDESCRIPTIONSEQN                                                                        
+		       ,NULL AS EXTENTSEQN                                                                                       
+		       ,NULL AS GEOGRAPHICIDENTIFIER                                                                             
+		FROM                                                                                                             
+				WMO_EX_GEOGRAPHICBOUNDINGBOX A                                                                               
+		WHERE                                                                                                            
+				A.EXTENTSEQN = #{extentseqn}                                                                                 
+                                                                                                                     
+	UNION                                                                                                              
+                                                                                                                     
+		 SELECT                                                                                                          
+		        2 AS G_TYPE                                                                                              
+		       ,NULL AS GEOGRAPHICBOUNDINGBOXSEQN                                                                        
+		       ,NULL AS EXTENTSEQN                                                                                       
+		       ,NULL AS WESTBOUNDLONGITUDE                                                                               
+		       ,NULL AS EASTBOUNDLONGITUDE                                                                               
+		       ,NULL AS SOUTHBOUNDLATITUDE                                                                               
+		       ,NULL AS NORTHBOUNDLATITUDE                                                                               
+		       ,GEOGRAPHICDESCRIPTIONSEQN                                                                                
+		       ,EXTENTSEQN                                                                                               
+		       ,GEOGRAPHICIDENTIFIER                                                                                     
+		FROM                                                                                                             
+		  WMO_EX_GEOGRAPHICDESCRIPTION B                                                                                 
+		WHERE                                                                                                            
+				B.EXTENTSEQN = #{extentseqn}                                                                                 
+	                                                                                                                   
+	</select>
+	
+	                                                                                        
+	<select id="getMD_ConstraintsList" parameterType="hashmap" resultType="MD_Constraints">                                    
+		SELECT                                                                                                           
+		        CONSTRAINTSSEQN           
+		       ,METADATASEQN              
+		       ,DATAIDENTIFICATIONSEQN    
+		       ,USELIMITATION             
+		FROM                                                                                                             
+			 WMO_MD_CONSTRAINTS A                                                                                               
+		WHERE 
+			<if test="metadataseqn != null and metadataseqn != ''">                                                            
+				A.METADATASEQN= #{metadataseqn}                                                        
+			</if>  
+			<if test="dataidentificationseqn != null and dataidentificationseqn != ''">                                                            
+				A.DATAIDENTIFICATIONSEQN= #{dataidentificationseqn}                                                        
+			</if>  
+	</select>
+	
+	
+	
+	
+	<select id="getMD_Distribution" parameterType="hashmap" resultMap="MD_DistributionMap">                                    
+		SELECT                                                                                                           
+		        DISTRIBUTIONSEQN        
+		       ,METADATASEQN            
+		       ,DISTRIBUTIONFORMAT      
+		       ,DISTRIBUTOR             
+		       ,TRANSFEROPTIONS         
+		FROM                                                                                                             
+			 WMO_MD_DISTRIBUTION A                                                                                               
+		WHERE 
+				A.METADATASEQN= #{metadataseqn}                                                        
+	</select>
+	
+
+	<select id="getMD_FormatList" parameterType="hashmap" resultMap="MD_FormatMap">                                    
+		SELECT    
+		        FORMATSEQN            
+		       ,DISTRIBUTIONSEQN      
+		       ,DISTRIBUTORSEQN       
+		       ,NAME                  
+		       ,VERSION               
+		       ,SPECIFICATION         
+		       ,FORMATDISTRIBUTOR     
+		FROM                                                                                                             
+			 WMO_MD_FORMAT A                                                                                               
+		WHERE 
+			<if test="distributionseqn != null and distributionseqn != ''">                                                            
+				A.DISTRIBUTIONSEQN= #{distributionseqn}                                                        
+			</if>  
+			<if test="distributorseqn != null and distributorseqn != ''">                                                            
+				A.DISTRIBUTORSEQN= #{distributorseqn}                                                        
+			</if>  
+	</select>
+	
+	
+	<select id="getMD_DistributorList" parameterType="hashmap" resultMap="MD_DistributorMap">                                    
+		SELECT    
+		        DISTRIBUTORSEQN
+		       ,FORMATSEQN
+		       ,DISTRIBUTIONSEQN
+		       ,DISTRIBUTORCONTACT
+		       ,DISTRIBUTORFORMAT
+		       ,DISTRIBUTORTRANSFEROPTIONS
+		FROM
+			 	WMO_MD_DISTRIBUTOR A
+		WHERE 
+			<if test="distributionseqn != null and distributionseqn != ''">                                                            
+				A.DISTRIBUTIONSEQN= #{distributionseqn}                                                  
+			</if>  
+			<if test="formatseqn != null and formatseqn != ''">                                                            
+				A.FORMATSEQN= #{formatseqn}                                                        
+			</if> 
+	</select>
+	
+	<select id="getMD_DigitalTransferOptionsList" parameterType="hashmap" resultMap="MD_DigitalTransferOptionsMap">                                    
+		SELECT    
+		        DIGITALTRANSFEROPTIONSSEQN
+		       ,DISTRIBUTIONSEQN          
+		       ,DISTRIBUTORSEQN           
+		       ,ONLINES                   
+		FROM                                                                                                             
+			 WMO_MD_DIGITALTRANSFEROPTIONS A                                                                                               
+		WHERE 
+			<if test="distributionseqn != null and distributionseqn != ''">                                                            
+				A.DISTRIBUTIONSEQN= #{distributionseqn}                                                        
+			</if>  
+			<if test="distributorseqn != null and distributorseqn != ''">                                                            
+				A.DISTRIBUTORSEQN= #{distributorseqn}                                                        
+			</if>                                                     
+	</select>
+	
+	
+	<select id="getDQ_DataQualityList" parameterType="hashmap" resultMap="DQ_DataQualityMap">                                    
+		SELECT    
+		        DATAQUALITYSEQN 
+		       ,METADATASEQN    
+		       ,SCOPE           
+		       ,REPORT          
+		       ,LINEAGE         
+		FROM
+			 	WMO_DQ_DATAQUALITY A
+		WHERE 
+				A.METADATASEQN= #{metadataseqn}
+	</select>
+
+
+			  
+	<select id="getDQ_Scope" parameterType="hashmap" resultType="DQ_Scope">                                    
+		SELECT    
+		        SCOPESEQN             
+		       ,DATAQUALITYSEQN       
+		       ,LEVELS                
+		FROM
+			 	WMO_DQ_SCOPE A
+		WHERE 
+				A.DATAQUALITYSEQN= #{dataqualityseqn}
+	</select>
+	
+	
+	
+	
+	<select id="getLI_Lineage" parameterType="hashmap" resultType="LI_Lineage">                                    
+		SELECT    
+		        LINEAGESEQN    
+		       ,DATAQUALITYSEQN 
+		       ,STATEMENT       
+		FROM
+			 	WMO_LI_LINEAGE A
+		WHERE 
+				A.DATAQUALITYSEQN= #{dataqualityseqn}
+	</select>		                                                                                   
+	
+	
+	
+	
+	<select id="getDQ_ElementList" parameterType="hashmap" resultMap="DQ_DomainConsistencyMap">                                    
+		SELECT    
+		        DOMAINCONSISTENCYSEQN    
+		       ,DATAQUALITYSEQN          
+		       ,MEASUREIDENTIFICATION    
+		       ,RESULT                   
+		FROM
+			 	WMO_DQ_DOMAINCONSISTENCY A
+		WHERE 
+				A.DATAQUALITYSEQN= #{dataqualityseqn}
+	</select>	
+	
+	
+
+	<select id="getDQ_ResultList" parameterType="hashmap" resultMap="DQ_ConformanceResultMap">                                    
+		SELECT    
+		        CONFORMANCERESULTSEQN  
+		       ,DOMAINCONSISTENCYSEQN  
+		       ,SPECIFICATION          
+		       ,EXPLANATION            
+		       ,PASS                   
+                       
+		FROM
+			 	WMO_DQ_CONFORMANCERESULT A
+		WHERE 
+				A.DOMAINCONSISTENCYSEQN= #{domainconsistencyseqn}
+	</select>	
+
+
+	<insert id="Insert" parameterType="MD_Metadata">
+		
+		<selectKey keyProperty="metadataseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_MD_METADATA.NEXTVAL FROM DUAL 
+  		</selectKey>
+
+		INSERT INTO WMO_MD_METADATA (
+			METADATASEQN             
+	       ,FILEIDENTIFIER           
+	       ,LANGUAGE                 
+	       ,CHARACTERSET             
+	       ,HIERARCHYLEVEL           
+	       ,HIERARCHYLEVELNAME       
+	       ,DATESTAMP                
+	       ,METADATASTANDARDNAME     
+	       ,METADATASTANDARDVERSION  
+	       ,LOCALE                   
+		) 
+		VALUES 
+		(
+			#{metadataseqn}
+		   ,#{fileidentifier}
+	       ,#{language}
+	       ,#{characterset}
+	       ,#{hierarchylevel}
+	       ,#{hierarchylevelname}
+	       ,#{datestamp}
+	       ,#{metadatastandardname}
+	       ,#{metadatastandardversion}
+	       ,#{locale}
+		) 
+	
+	</insert>                                                                                                         
+	
+	<insert id="InsertCI_ResponsibleParty" parameterType="CI_ResponsibleParty">
+	 
+	 	<selectKey keyProperty="responsiblepartyseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_CI_RESPONSIBLEPARTY.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_CI_RESPONSIBLEPARTY (
+			RESPONSIBLEPARTYSEQN      
+	       ,METADATASEQN              
+	       ,MAINTENANCEINFORMATIONSEQN
+	       ,DATAIDENTIFICATIONSEQN    
+	       ,CITATIONSEQN              
+	       ,IDENTIFIERSEQN            
+	       ,DISTRIBUTORSEQN           
+	       ,INDIVIDUALNAME            
+	       ,ORGANISATIONNAME          
+	       ,POSITIONNAME              
+	       ,ROLE                      
+       ) VALUES (
+      	    #{responsiblepartyseqn}
+	       ,#{metadataseqn}
+	       ,#{maintenanceinformationseqn}
+	       ,#{dataidentificationseqn}
+	       ,#{citationseqn}
+	       ,#{identifierseqn}
+	       ,#{distributorseqn}
+	       ,#{individualname}
+	       ,#{organisationname}
+	       ,#{positionname}
+	       ,#{role}
+       )
+	
+	</insert>
+	
+	
+	
+	<insert id="InsertCI_Contact" parameterType="CI_ResponsibleParty">
+	 
+	 	<selectKey keyProperty="contactseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_CI_CONTACT.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_CI_CONTACT (
+			 CONTACTSEQN
+			,RESPONSIBLEPARTYSEQN
+       ) VALUES (
+			 #{contactseqn}
+			,#{responsiblepartyseqn}
+       )
+
+	</insert>
+	
+
+	<insert id="InsertCI_Telephone" parameterType="CI_Telephone">
+
+	 	<selectKey keyProperty="telephoneseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_CI_TELEPHONE.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_CI_TELEPHONE (
+			 TELEPHONESEQN          
+			,CONTACTSEQN            
+			,VOICE 
+       ) VALUES (
+			 #{telephoneseqn}
+			,#{contactseqn}
+			,#{voice}
+       )
+
+	</insert>
+	
+	
+	<insert id="InsertCI_Address" parameterType="CI_Address">
+
+	 	<selectKey keyProperty="addressseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_CI_ADDRESS.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_CI_ADDRESS (
+			 ADDRESSSEQN             
+	        ,CONTACTSEQN             
+	        ,DELIVERYPOINT           
+	        ,CITY                    
+	        ,ADMINISTRATIVEAREA      
+	        ,POSTALCODE              
+	        ,COUNTRY                 
+	        ,ELECTRONICMAILADDRESS   
+       ) VALUES (
+			 #{addressseqn}
+			,#{contactseqn}
+			,#{deliverypoint}
+			,#{city}
+			,#{administrativearea}
+			,#{postalcode}
+			,#{country}
+			,#{electronicmailaddress}
+       )
+
+	</insert>
+	
+	
+	
+	<insert id="InsertCI_OnlineResource" parameterType="CI_OnlineResource">
+
+	 	<selectKey keyProperty="onlineresourceseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_CI_ONLINERESOURCE.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_CI_ONLINERESOURCE (
+			ONLINERESOURCESEQN        
+	       ,CONTACTSEQN               
+	       ,EXTENSIONINFORMATIONSEQN  
+	       ,LINKAGE                   
+	       ,PROTOCOL                  
+	       ,NAME                      
+	       ,DESCRIPTION               
+	       ,DIGITALTRANSFEROPTIONSSEQN
+       ) VALUES (
+			 #{onlineresourceseqn}
+			,#{contactseqn}
+			,#{extensioninformationseqn}
+			,#{linkage}
+			,#{protocol}
+			,#{name}
+			,#{description}
+			,#{digitaltransferoptionsseqn}
+       )
+
+	</insert>	
+
+
+	<insert id="InsertMD_ExtensionInformation" parameterType="MD_ExtensionInformation">
+
+	 	<selectKey keyProperty="extensioninformationseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_MD_EXTENSIONINFORMATION.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_MD_EXTENSIONINFORMATION (
+			 EXTENSIONINFORMATIONSEQN 
+       		,METADATASEQN             
+       ) VALUES (
+       
+       		 #{extensioninformationseqn}  
+       		,#{metadataseqn}
+       )
+
+	</insert>	
+		
+	<insert id="InsertMD_MaintenanceInformation" parameterType="MD_MaintenanceInformation">
+
+	 	<selectKey keyProperty="maintenanceinformationseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_MD_MAINTENANCEINFORMATION.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_MD_MAINTENANCEINFORMATION (
+				 MAINTENANCEINFORMATIONSEQN
+				,METADATASEQN              
+				,DATAIDENTIFICATIONSEQN    
+				,MAINTENANCEANDUPDATEFREQUENCY
+				,USERDEFINEDMAINTENANCEFREQUENC
+				,UPDATESCOPE               
+       ) VALUES (
+       
+				 #{maintenanceinformationseqn}
+				,#{metadataseqn}
+				,#{dataidentificationseqn}
+				,#{maintenanceandupdatefrequency}
+				,#{userdefinedmaintenancefrequency}
+				,#{updatescope}
+       )
+
+	</insert>	
+		
+	<insert id="InsertMD_DataIdentification" parameterType="MD_DataIdentification">
+
+	 	<selectKey keyProperty="dataidentificationseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_MD_DATAIDENTIFICATION.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_MD_DATAIDENTIFICATION (
+				DATAIDENTIFICATIONSEQN   
+		       ,METADATASEQN             
+		       ,ABSTRACT                 
+		       ,SPATIALREPRESENTATIONTYPE
+		       ,SPATIALRESOLUTION        
+		       ,LANGUAGE                 
+		       ,TOPICCATEGORY            
+       ) VALUES (
+			  #{dataidentificationseqn}
+			 ,#{metadataseqn}
+			 ,#{abstract}
+			 ,#{spatialrepresentationtype}
+			 ,#{spatialresolution}
+			 ,#{language}
+			 ,#{topiccategory}
+       )
+	</insert>	
+	
+	<insert id="InsertCI_Citation" parameterType="CI_Citation">
+
+	 	<selectKey keyProperty="citationseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_CI_CITATION.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_CI_CITATION (
+			 CITATIONSEQN            
+			,DATAIDENTIFICATIONSEQN  
+			,KEYWORDSSEQN            
+			,CONFORMANCERESULTSEQN   
+			,TITLE                   
+			,ALTERNATIVETITLE        
+			,PRESENTATIONFORM        
+       ) VALUES (
+			 #{citationseqn}
+			,#{dataidentificationseqn}
+			,#{keywordsseqn}
+			,#{conformanceresultseqn}
+			,#{title}
+			,#{alternativetitle}
+			,#{presentationform}
+       )
+	</insert>	
+	
+	<insert id="InsertCI_Date" parameterType="CI_Date">
+
+	 	<selectKey keyProperty="dateseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_CI_DATE.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_CI_DATE (
+			 DATESEQN       
+			,CITATIONSEQN   
+			,DATES          
+			,DATETYPE       
+       ) VALUES (
+			 #{dateseqn}
+			,#{citationseqn}
+			,#{dates}
+			,#{datetype}
+       )
+	</insert>	
+		
+	<insert id="InsertMD_Identifier" parameterType="MD_Identifier">
+
+	 	<selectKey keyProperty="identifierseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_MD_IDENTIFIER.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_MD_IDENTIFIER (
+			 IDENTIFIERSEQN            
+			,CITATIONSEQN              
+			,GEOGRAPHICDESCRIPTIONSEQN 
+			,CODE                      
+			,DOMAINCONSISTENCYSEQN     
+       ) VALUES (
+			#{identifierseqn}
+			,#{citationseqn}
+			,#{geographicdescriptionseqn}
+			,#{code}
+			,#{domainconsistencyseqn}
+       )
+	</insert>	
+	
+	<insert id="InsertMD_Keywords" parameterType="MD_Keywords">
+
+	 	<selectKey keyProperty="keywordsseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_MD_KEYWORDS.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_MD_KEYWORDS (
+			 KEYWORDSSEQN          
+			,DATAIDENTIFICATIONSEQN
+			,KEYWORD               
+			,TYPE                  
+       ) VALUES (
+			 #{keywordsseqn}
+			,#{dataidentificationseqn}
+			,#{keyword}
+			,#{type}
+       )
+	</insert>	
+		
+	<insert id="InsertEX_Extent" parameterType="EX_Extent">
+
+	 	<selectKey keyProperty="extentseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_EX_EXTENT.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_EX_EXTENT (
+			 EXTENTSEQN            
+			,DATAIDENTIFICATIONSEQN
+       ) VALUES (
+			 #{extentseqn}
+			,#{dataidentificationseqn}
+       )
+	</insert>
+	
+	
+	<insert id="InsertEX_TemporalExtent" parameterType="EX_TemporalExtent">
+
+	 	<selectKey keyProperty="temporalextentseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_EX_TEMPORALEXTENT.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_EX_TEMPORALEXTENT (
+			TEMPORALEXTENTSEQN
+			,EXTENTSEQN
+			,EXTENT
+       ) VALUES (
+			 #{temporalextentseqn}
+			,#{extentseqn}
+			,#{extent}
+       )
+	</insert>
+	
+	
+	<insert id="InsertEX_GeographicBoundingBox" parameterType="EX_GeographicBoundingBox">
+
+	 	<selectKey keyProperty="geographicboundingboxseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_EX_GEOGRAPHICBOUNDINGBOX.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_EX_GEOGRAPHICBOUNDINGBOX (
+			 GEOGRAPHICBOUNDINGBOXSEQN
+			,EXTENTSEQN               
+			,WESTBOUNDLONGITUDE       
+			,EASTBOUNDLONGITUDE       
+			,SOUTHBOUNDLATITUDE       
+			,NORTHBOUNDLATITUDE
+       ) VALUES (
+			 #{geographicboundingboxseqn}
+			,#{extentseqn}
+			,#{westboundlongitude}      
+			,#{eastboundlongitude}      
+			,#{southboundlatitude}      
+			,#{northboundlatitude}
+       )
+	</insert>
+	
+	
+	
+	<insert id="InsertEX_GeographicDescription" parameterType="EX_GeographicDescription">
+
+	 	<selectKey keyProperty="geographicdescriptionseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_EX_GEOGRAPHICDESCRIPTION.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_EX_GEOGRAPHICDESCRIPTION (
+			 GEOGRAPHICDESCRIPTIONSEQN
+			,EXTENTSEQN               
+       ) VALUES (
+			 #{geographicdescriptionseqn}
+			,#{extentseqn}
+       )
+	</insert>	
+	
+
+	<insert id="InsertMD_Constraints" parameterType="MD_Constraints">
+
+	 	<selectKey keyProperty="constraintsseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_MD_CONSTRAINTS.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_MD_CONSTRAINTS (
+			 CONSTRAINTSSEQN       
+			,METADATASEQN          
+			,DATAIDENTIFICATIONSEQN
+			,USELIMITATION              
+       ) VALUES (
+			 #{constraintsseqn}
+			,#{metadataseqn}
+			,#{dataidentificationseqn}
+			,#{uselimitation}
+       )
+	</insert>	
+	
+	
+	
+	<insert id="InsertMD_Distribution" parameterType="MD_Distribution">
+
+	 	<selectKey keyProperty="distributionseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_MD_DISTRIBUTION.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_MD_DISTRIBUTION (
+			 DISTRIBUTIONSEQN
+			,METADATASEQN
+       ) VALUES (
+			 #{distributionseqn}
+			,#{metadataseqn}
+       )
+	</insert>
+	
+
+
+	<insert id="InsertMD_Format" parameterType="MD_Format">
+
+	 	<selectKey keyProperty="formatseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_MD_FORMAT.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_MD_FORMAT (
+			 FORMATSEQN       
+			,DISTRIBUTIONSEQN 
+			,DISTRIBUTORSEQN  
+			,NAME             
+			,VERSION          
+			,SPECIFICATION    
+       ) VALUES (
+			 #{formatseqn}
+			,#{distributionseqn}
+			,#{distributorseqn}
+			,#{name}
+			,#{version}
+			,#{specification}
+       )
+	</insert>
+
+
+
+
+	<insert id="InsertMD_Distributor" parameterType="MD_Distributor">
+
+	 	<selectKey keyProperty="distributorseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_MD_DISTRIBUTOR.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_MD_DISTRIBUTOR (
+			 DISTRIBUTORSEQN           
+			,DISTRIBUTIONSEQN          
+			,FORMATSEQN                
+       ) VALUES (
+			 #{distributorseqn}
+			,#{distributionseqn}
+			,#{formatseqn}
+       )
+	</insert>
+
+
+	<insert id="InsertMD_DigitalTransferOptions" parameterType="MD_DigitalTransferOptions">
+
+	 	<selectKey keyProperty="digitaltransferoptionsseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_MD_DIGITALTRANSFEROPTIONS.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_MD_DIGITALTRANSFEROPTIONS (
+			 DIGITALTRANSFEROPTIONSSEQN
+			,DISTRIBUTIONSEQN          
+			,DISTRIBUTORSEQN           
+       ) VALUES (
+			 #{digitaltransferoptionsseqn}
+			,#{distributionseqn}
+			,#{distributorseqn}
+       )
+	</insert>
+
+
+	<insert id="InsertDQ_DataQuality" parameterType="DQ_DataQuality">
+
+	 	<selectKey keyProperty="dataqualityseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_DQ_DATAQUALITY.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_DQ_DATAQUALITY (
+			 DATAQUALITYSEQN
+			,METADATASEQN   
+       ) VALUES (
+			 #{dataqualityseqn}
+			,#{metadataseqn}
+       )
+	</insert>
+	
+	
+	<insert id="InsertDQ_Scope" parameterType="DQ_Scope">
+
+	 	<selectKey keyProperty="scopeseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_DQ_SCOPE.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_DQ_SCOPE (
+			 SCOPESEQN 
+			,DATAQUALITYSEQN
+			,LEVELS 
+       ) VALUES (
+			 #{scopeseqn}
+			,#{dataqualityseqn}
+			,#{levels}
+       )
+	</insert>	
+	
+	
+	<insert id="InsertDQ_DomainConsistency" parameterType="DQ_DomainConsistency">
+
+	 	<selectKey keyProperty="domainconsistencyseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_DQ_DOMAINCONSISTENCY.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_DQ_DOMAINCONSISTENCY (
+			 DOMAINCONSISTENCYSEQN
+			,DATAQUALITYSEQN      
+       ) VALUES (
+			 #{domainconsistencyseqn}
+			,#{dataqualityseqn}
+       )
+	</insert>	
+	
+
+	<insert id="InsertDQ_ConformanceResult" parameterType="DQ_ConformanceResult">
+
+	 	<selectKey keyProperty="conformanceresultseqn" resultType="int" order="BEFORE">
+      		SELECT SEQ_DQ_CONFORMANCERESULT.NEXTVAL FROM DUAL 
+  		</selectKey>
+	 	
+		INSERT INTO WMO_DQ_CONFORMANCERESULT (
+			 CONFORMANCERESULTSEQN
+			,DOMAINCONSISTENCYSEQN
+			,EXPLANATION          
+			,PASS                 
+       ) VALUES (
+			 #{conformanceresultseqn}
+			,#{domainconsistencyseqn}
+			,#{explanation}
+			,#{pass}
+       )
+	</insert>
+
+	
+	<delete id="Delete" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_MD_METADATA WHERE METADATASEQN=#{metadataseqn}                                                                       
+	</delete>                                                                                                          
+	
+	<delete id="DeleteMD_MaintenanceInformation" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_MD_MAINTENANCEINFORMATION WHERE 
+		<if test="metadataseqn != null and metadataseqn != ''">
+			METADATASEQN = #{metadataseqn}
+		</if>                                                                   
+		<if test="dataidentificationseqn != null and dataidentificationseqn != ''">
+			DATAIDENTIFICATIONSEQN = #{dataidentificationseqn}
+		</if>
+	</delete>  
+	
+	<delete id="DeleteCI_ResponsibleParty" parameterType="java.lang.Object">                                                                   
+		DELETE FROM 
+			WMO_CI_RESPONSIBLEPARTY 
+		WHERE 
+		<if test="metadataseqn != null and metadataseqn != ''">
+			METADATASEQN = #{metadataseqn}
+		</if>	
+		<if test="maintenanceinformationseqn != null and maintenanceinformationseqn != ''">
+			MAINTENANCEINFORMATIONSEQN = #{maintenanceinformationseqn}
+		</if>	
+		<if test="dataidentificationseqn != null and dataidentificationseqn != ''">
+			DATAIDENTIFICATIONSEQN = #{dataidentificationseqn}
+		</if>	
+		<if test="citationseqn != null and citationseqn != ''">
+			CITATIONSEQN = #{citationseqn}
+		</if>	
+		<if test="identifierseqn != null and identifierseqn != ''">
+			IDENTIFIERSEQN = #{identifierseqn}
+		</if>	
+		<if test="distributorseqn != null and distributorseqn != ''">
+			DISTRIBUTORSEQN = #{distributorseqn}
+		</if>	
+                                                                   
+	</delete>  
+	
+	
+	<delete id="DeleteCI_OnlineResource" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_CI_ONLINERESOURCE WHERE
+		<if test="contactseqn != null and contactseqn != ''">
+		 	CONTACTSEQN=#{contactseqn}                                                                         
+		</if>
+		<if test="extensioninformationseqn != null and extensioninformationseqn != ''">
+		 	EXTENSIONINFORMATIONSEQN=#{extensioninformationseqn}                                                                         
+		</if>
+		<if test="digitaltransferoptionsseqn != null and digitaltransferoptionsseqn != ''">
+		 	DIGITALTRANSFEROPTIONSSEQN=#{digitaltransferoptionsseqn}                                                                         
+		</if>
+	</delete> 
+	
+	<delete id="DelteCI_Address" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_CI_ADDRESS WHERE CONTACTSEQN=#{contactseqn}                                                                         
+	</delete>
+	
+	<delete id="DelteCI_Telephone" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_CI_TELEPHONE WHERE CONTACTSEQN=#{contactseqn}                                                                       
+	</delete>
+	
+	<delete id="DeleteCI_Contact" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_CI_CONTACT WHERE RESPONSIBLEPARTYSEQN=#{responsiblepartyseqn}                                                                       
+	</delete>
+	
+	<delete id="DeleteDQ_DataQuality" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_DQ_DATAQUALITY WHERE METADATASEQN = #{metadataseqn}                                                                   
+	</delete>
+	
+	<delete id="DeleteMD_Distribution" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_MD_DISTRIBUTION WHERE METADATASEQN = #{metadataseqn}                                                                   
+	</delete>
+	
+	<delete id="DeleteMD_DataIdentification" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_MD_DATAIDENTIFICATION WHERE METADATASEQN = #{metadataseqn}                                                                   
+	</delete>
+	
+	<delete id="DeleteMD_Constraints" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_MD_CONSTRAINTS 
+		WHERE 
+		<if test="metadataseqn != null and metadataseqn != ''">
+			METADATASEQN = #{metadataseqn}
+		</if>                                                                   
+		<if test="dataidentificationseqn != null and dataidentificationseqn != ''">
+			DATAIDENTIFICATIONSEQN = #{dataidentificationseqn}
+		</if>                                                                
+	</delete>
+	
+	<delete id="DeleteMD_ExtensionInformation" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_MD_EXTENSIONINFORMATION WHERE METADATASEQN = #{metadataseqn}                                                                   
+	</delete>
+	
+	<delete id="DeleteDQ_Scope" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_DQ_SCOPE WHERE DATAQUALITYSEQN = #{dataqualityseqn}                                                                   
+	</delete>	
+	
+	<delete id="DeleteLI_Lineage" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_LI_LINEAGE WHERE DATAQUALITYSEQN = #{dataqualityseqn}                                                                   
+	</delete>	
+	
+	<delete id="DeleteMD_Identifier" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_MD_IDENTIFIER 
+		WHERE
+		<if test="citationseqn != null and citationseqn != ''">
+			CITATIONSEQN = #{citationseqn}
+		</if>                                                                 
+		<if test="geographicdescriptionseqn != null and geographicdescriptionseqn != ''">
+			GEOGRAPHICDESCRIPTIONSEQN = #{geographicdescriptionseqn}
+		</if>                                                                 
+		<if test="domainconsistencyseqn != null and domainconsistencyseqn != ''">
+			DOMAINCONSISTENCYSEQN = #{domainconsistencyseqn}
+		</if>                                                                 
+	</delete>	
+	
+	<delete id="DeleteDQ_Element" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_DQ_DOMAINCONSISTENCY WHERE DATAQUALITYSEQN = #{dataqualityseqn}                                                                   
+	</delete>	
+	
+	<delete id="DeleteDQ_Result" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_DQ_CONFORMANCERESULT WHERE DOMAINCONSISTENCYSEQN = #{domainconsistencyseqn}                                                                   
+	</delete>	
+	
+	<delete id="DeleteCI_Citation" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_CI_CITATION WHERE 
+		<if test="dataidentificationseqn != null and dataidentificationseqn != ''">
+			DATAIDENTIFICATIONSEQN = #{dataidentificationseqn}
+		</if>                                                                 
+		<if test="keywordsseqn != null and keywordsseqn != ''">
+			KEYWORDSSEQN = #{keywordsseqn}
+		</if>                                                                 
+		<if test="conformanceresultseqn != null and conformanceresultseqn != ''">
+			CONFORMANCERESULTSEQN = #{conformanceresultseqn}
+		</if>  
+	</delete>
+	
+	<delete id="DeleteCI_Date" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_CI_DATE WHERE CITATIONSEQN = #{citationseqn}                                                                 
+	</delete>
+	
+	<delete id="DeleteMD_Format" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_MD_FORMAT WHERE
+		<if test="distributionseqn != null and distributionseqn != ''">
+			DISTRIBUTIONSEQN = #{distributionseqn}
+		</if>  
+		<if test="distributorseqn != null and distributorseqn != ''">
+			DISTRIBUTORSEQN = #{distributorseqn}
+		</if>  
+	</delete>
+	
+	
+	<delete id="DeleteMD_Distributor" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_MD_DISTRIBUTOR WHERE 
+		<if test="distributionseqn != null and distributionseqn != ''">
+			DISTRIBUTIONSEQN = #{distributionseqn}
+		</if>  
+		<if test="formatseqn != null and formatseqn != ''">
+			FORMATSEQN = #{formatseqn}
+		</if>                                                                 
+	</delete>
+	
+	
+	<delete id="DeleteMD_DigitalTransferOptions" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_MD_DIGITALTRANSFEROPTIONS WHERE 
+		<if test="distributionseqn != null and distributionseqn != ''">
+			DISTRIBUTIONSEQN = #{distributionseqn}
+		</if>  
+		<if test="distributorseqn != null and distributorseqn != ''">
+			DISTRIBUTORSEQN = #{distributorseqn}
+		</if>                                                                  
+	</delete>
+	
+	
+	<delete id="DeleteMD_Keywords" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_MD_KEYWORDS WHERE DATAIDENTIFICATIONSEQN = #{dataidentificationseqn} 
+	</delete>	
+	
+	
+	<delete id="DeleteEX_Extent" parameterType="java.util.HashMap">                                                                   
+		DELETE FROM WMO_EX_EXTENT WHERE DATAIDENTIFICATIONSEQN = #{dataidentificationseqn}                          
+	</delete>	
+	
+	
+	<delete id="DeleteEX_GeographicExtent" parameterType="java.util.HashMap"> 
+		{call
+	        declare
+	        begin   
+	                                                                 
+			DELETE FROM WMO_EX_GEOGRAPHICBOUNDINGBOX WHERE EXTENTSEQN = #{extentseqn};
+			
+			DELETE FROM WMO_EX_GEOGRAPHICDESCRIPTION WHERE EXTENTSEQN = #{extentseqn};
+			
+			end
+	    }
+	</delete>	
+	
+	<delete id="DeleteEX_TemporalExtent" parameterType="java.util.HashMap"> 
+		DELETE FROM WMO_EX_TEMPORALEXTENT WHERE EXTENTSEQN = #{extentseqn}                          
+	</delete>	
+
+	<update id="Update" parameterType="MD_Metadata">                                                                   
+		UPDATE WMO_MD_METADATA SET 
+	        FILEIDENTIFIER = #{fileidentifier}        
+	       ,LANGUAGE = #{language}
+	       ,CHARACTERSET = #{characterset}
+	       ,HIERARCHYLEVEL = #{hierarchylevel}       
+	       ,HIERARCHYLEVELNAME = #{hierarchylevelname}  
+	       ,DATESTAMP = #{datestamp}                
+	       ,METADATASTANDARDNAME = #{metadatastandardname} 
+	       ,METADATASTANDARDVERSION = #{metadatastandardversion}
+	       ,LOCALE = #{locale}               
+	     WHERE 
+	     	METADATASEQN = #{metadataseqn}
+	</update>    
+	
+	
+</mapper>                                                                                                            

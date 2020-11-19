@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>우주기상 예특보 서비스 :: 국가기상위성센터</title>
+<link rel="stylesheet" type="text/css" href="css/default.css"  />
+<script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+<!-- gnb -->
+<script language="javascript" type="text/javascript" src="js/gnb.js"></script><!-- //gnb -->
+<script type="text/javascript">
+$(function() {
+	var tabItems = $("#tab a"); 
+	tabItems.click(function() {
+		var tabContents = $("#sun,#mag,#weather,#alert");
+		tabContents.hide();
+		tabItems.removeClass("on");
+		var index = tabItems.index(this);
+		tabContents.eq(index).show();
+		$(this).addClass("on");
+		return false;
+	});
+});
+</script>
+</head>
+<body>
+
+<div id="header">
+    <h1>
+    	<a href="http://swfc.kma.go.kr/">
+        <img src="images/ko/logo.png" alt="국가기상위성센터 우주기상 예특보 서비스" class="imgbtn" />
+        </a>
+    </h1>
+	<ul class='gmn'>
+		<li><a href='' class='bt_genglish'><span>english</span></a></li>
+		<li><a href='' class='bt_glogin'><span>login</span></a></li>
+	</ul>
+	<div id="TopMenu">
+		<div id="TopMenuSub">
+			<ul>
+				<li>
+					<a href="http://swfc.kma.go.kr/current"><img class="m" src="images/ko/bg_gnb.png" alt="우주기상실황" /></a>
+					<div class="TopSubMenu">
+						<div class="menu1">
+							<strong class='txt_hidden'>우주기상실황</strong>
+							<ul>
+								<li><a href="http://swfc.kma.go.kr/current">태양영상</a></li>
+							</ul>
+						</div>
+						<div class="menu2">
+							<strong class='txt_hidden'>우주기상예특보</strong>
+							<ul class="">
+								<li><a href="http://swfc.kma.go.kr/alerts">우주기상예특보</a></li>
+							</ul>
+						</div>
+						<div class="menu3">
+							<strong class='txt_hidden'>우주기상소개</strong>
+							<ul class="">
+								<li><a href="http://swfc.kma.go.kr/intro">태양활동</a></li>
+								<li><a href="">지자기 활동</a></li>
+								<li><a href="">우주기상 감시</a></li>
+								<li><a href="">기상청의 우주기상 예특보</a></li>
+							</ul>
+						</div>
+						<div class="menu4">
+							<strong class='txt_hidden'>해외 우주기상 정보</strong>
+							<ul class="">
+								<li><a href="http://swfc.kma.go.kr/links">극항로 항공기상</a></li>
+								<li><a href="">위성운영</a></li>
+								<li><a href="">해외 관련기관</a></li>
+							</ul>
+						</div>
+						<div class="menu5">
+							<strong class='txt_hidden'>정보마당</strong>
+							<ul class="">
+								<li><a href="">공지사항</a></li>
+								<li><a href="">FAQ</a></li>
+							</ul>
+						</div>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</div>
+<!--
+	<div id="TopMenu">
+		<div id="TopMenuSub">
+			<ul>
+				<li>
+					<a href="http://swfc.kma.go.kr/current"><img class="m" src="images/ko/menua_off.png" alt="우주기상실황" /></a>
+					<div class="TopSubMenu">
+						<ul class="menu1">
+							<li><a href="http://swfc.kma.go.kr/current"><img src="images/ko/menua_1_off.png" alt="태양영상" /></a></li>
+						</ul>
+					</div>
+				</li>
+				<li>
+					<a href="http://swfc.kma.go.kr/alerts"><img class="m" src="images/ko/menub_off.png" alt="우주기상예특보" /></a>
+					<div class="TopSubMenu">
+						<ul class="menu2">
+							<li><a href="http://swfc.kma.go.kr/alerts"><img src="images/ko/menub_1_off.png" alt="우주기상예특보" /></a></li>
+						</ul>
+					</div>
+				</li>
+				<li>
+					<a href="http://swfc.kma.go.kr/intro"><img class="m" src="images/ko/menuc_off.png" alt="우주기상소개" /></a>
+					<div class="TopSubMenu">
+						<ul class="menu3">
+							<li><a href="http://swfc.kma.go.kr/intro"><img src="images/ko/menuc_1_off.png" alt="태양활동" /></a></li>
+							<li><a href=""><img src="images/ko/menuc_2_off.png" alt="지자기 활동" /></a></li>
+							<li><a href=""><img src="images/ko/menuc_3_off.png" alt="우주기상 감시" /></a></li>
+							<li><a href=""><img src="images/ko/menuc_4_off.png" alt="기상청의 우주기상 예특보" /></a></li>
+						</ul>
+					</div>
+				</li>
+				<li>
+					<a href="http://swfc.kma.go.kr/links"><img class="m" src="images/ko/menud_off.png" alt="해외 우주기상 정보" /></a>
+					<div class="TopSubMenu">
+						<ul class="menu4">
+							<li><a href="http://swfc.kma.go.kr/links"><img src="images/ko/menud_1_off.png" alt="극항로 항공기상" /></a></li>
+							<li><a href=""><img src="images/ko/menud_1_off.png" alt="위성운영" /></a></li>
+							<li><a href=""><img src="images/ko/menud_1_off.png" alt="해외 관련기관" /></a></li>
+						</ul>
+					</div>
+				</li>
+				<li class='nav_fin'>
+					<a href=""><img class="m" src="images/ko/menue_off.png" alt="정보마당" /></a>
+					<div class="TopSubMenu">
+						<ul class="menu5">
+							<li><a href=""><img src="images/ko/menue_1_off.png" alt="공지사항" /></a></li>
+							<li><a href=""><img src="images/ko/menue_2_off.png" alt="FAQ" /></a></li>
+						</ul>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</div>
+-->
+
+	<script type="text/javascript">
+//		var TopMenu1 = new fnTopMenu1_Type1;
+//		TopMenu1.DivName = "TopMenuSub";
+//		TopMenu1.fnName = "TopMenu1";
+//		TopMenu1.DefaultMenu = 0;
+//		TopMenu1.DefaultSubMenu = 0;
+//			
+//		TopMenu1.Start();
+	</script>
+
+</div>
+
+<div id="wrap_sub">
+	<h2 class="login">
+    	<span>로그인</span>
+    </h2>
+    
+    <!-- 로그인 -->
+    <div id="loginbox">
+		<dl>
+			<dt class='txt_id'><span>아이디</span></dt>
+				<dd><input type="text" name="" id="" value="" checked="" /></dd>
+			<dt class='txt_pwd'><span>비밀번호</span></dt>
+				<dd><input type="text" name="" id="" value="" checked="" /></dd>
+		</dl>
+		<a href='' class='bt_login'><span>로그인</span></a>
+		<ul class='unitmn'>
+			<li><a href='' class='bt_join'><span>회원가입</span></a></li>
+			<li><a href='' class='bt_idsearch'><span>아이디,비밀번호 찾기</span></a></li>
+		</ul>
+	</div><!-- // 로그인 -->
+    
+
+</div>    
+
+
+
+<div id="footer">
+	<div class="logo">
+		<a href="http://nmsc.kma.go.kr/html/homepage/ko/main.do" target="_blank">
+    	<img src="images/ko/logo_nmsc.png" alt="국가기상위성센터" />
+    	</a>
+    </div>
+	<div class="wrap_footer">
+        <p class="address">
+            (365-831) 충청북도 진천군 광혜원면 구암길 64-18(광혜원리 636-10) / 대표전화 070-7850-5709 / 날씨예보상담 131
+        </p>
+        <p class="copyright">
+            COPYRIGHT ⓒ NMSC. ALL RIGHT RESERVED. <img src="images/ko/ico_mail.png" alt="이메일" /> webmaster : kmasod@korea.kr 
+        </p>
+    </div>
+</div>
+<!-- END FOOTER -->
+
+<!-- 
+<div class="layer" style="top:320px; left:550px; width:500px; display:none;">
+	<div class="layer_contents">
+        <h3 class="help">
+            <span>기상청의 우주기상 예특보</span>
+        </h3>
+        <p class="paragraph">
+            <h4>1. 기상위성운영</h4>
+            기상위성운영은 우주기상의 영향으로부터 천리안위성 및 후속 기상위성의 안정적 운영지원을 위한 우주기상 예&middot;특보 요소이다. 기상위성운영에 영향을 주는 우주기상 인자로는 통신교란의 발생 원인인 플레어와 위성체 및 위성운영궤도에 영향을 주는 자기폭풍과 자기권계면 위치가 있다. 기상위성운영에 우주기상 특보 발령 시 기상위성의 안정적 운영을 위하여 위성궤도 모니터링 및 조정, 태양 전지판 운용각도 조정, 위성수신 장애 감시 등의 대응을 하고 있다.
+        </p>
+        <p class="paragraph">
+            <h4>2. 극항로 항공기상</h4>
+            극항로 항공기상은 세계기상기구의 우주기상 서비스 지원 결정 및 국제민간항공기구 우주기상 항행기준 준비를 지원하기 위한 우주기상 예&middot;특보 요소이다. 극항로 항공기상에 영향을 주는 우주기상 인자로는 항행통신에 영향을 주는 플레어와 극항로 부근에 방사선량을 증가시키는 태양 고에너지입자 발생 및 자기폭풍이 있다. 극항로 항공기상에 우주기상 특보 발령 시 항공기 운항고도 조정 및 북극항로 우회운항 제시, GPS 신호오차 감시 및 통신장애 감시 등의 대응을 하고 있다.
+        </p>
+        <p class="paragraph">
+            <h4>3. 전리권기상</h4>
+            전리권기상은 위성측위시스템(GNSS) 관측자료를 활용한 전자밀도 및 가강수량 산출지원을 위한 우주기상 예&middot;특보 요소이다. 태양 플레어 및 자기폭풍이 발생할 시 지구의 초고층대기인 전리권에 전자밀도를 증가시킨다. 지구의 초고층대기 변화를 감시하기 위해 위성측위시스템을 이용하여 전자밀도를 산출하고, 이와 더불어 기강수량을 산출하여 기상청의 수치예보에도 활용하고 있다.  전리권기상에 우주기상 특보 발령 시 기상&middot;기후 예측에 영향을 줄 수 있는 기상요소들의 변화 및 수치모델 결과 감시 등의 대응을 하고 있다. 
+        </p>    	       
+    </div>
+    <a href="#" class="close"><span>닫기</span></a>
+</div>
+ --> 
+<!-- END 도움말 -->
+</body>
+</html>

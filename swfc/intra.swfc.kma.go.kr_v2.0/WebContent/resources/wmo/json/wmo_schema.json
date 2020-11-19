@@ -1,0 +1,1257 @@
+{
+	"type":"object",
+	"$schema":"/resources/wmo/json/json_schema.4.json",
+	"codeList":{
+		"CI_DateTypeCode" : [
+				{"creation" 	:	"001"},
+				{"publication" 	:	"002"},
+				{"revision" 	:	"003"},
+				{"reference" 	:	"004"}
+			]
+	},
+	"definitions":{
+		"CI_Telephone":{
+			"telephoneseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"contactseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"voice":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			}
+			
+		},
+		"CI_Address":{
+			"addressseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"contactseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"deliverypoint":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"city":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"administrativearea":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"postalcode":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"country":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"electronicmailaddress":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			}
+			
+		},
+		"CI_OnlineResource":{
+			"onlineresourceseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"contactseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"extensioninformationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"digitaltransferoptionsseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"linkage":{
+				"type":"string",
+				"maxlength":255,
+				"format":"url",
+				"required":true
+			},
+			"protocol":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"name":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"description":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			}
+			
+		},
+		"CI_Contact":{
+			"contactseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"responsiblepartyseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"phone":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"CI_Telephone"
+					}
+					
+				}
+				
+			},
+			"address":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"CI_Address"
+					}
+					
+				}
+				
+			},
+			"onlineresource":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"CI_OnlineResource"
+					}
+					
+				}
+				
+			}
+			
+		},
+		"CI_ResponsibleParty":{
+			"citationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"dataidentificationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"distributorseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"identifierseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"individualname":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"maintenanceinformationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"organisationname":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"positionname":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"responsiblepartyseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"contactinfo":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"CI_Contact"
+					}
+					
+				}
+				
+			},
+			"role":{
+				"type":"string",
+				"enum" : {"$ref" : "CI_RoleCode" },
+				"required":true
+			}
+			
+		},
+		"MD_ExtensionInformation":{
+			"extensioninformationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"metadataseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"extensiononlineresource":{
+				"type":"array",
+				"required":true,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"CI_OnlineResource"
+					}
+					
+				}
+				
+			}
+			
+		},
+		"MD_MaintenanceInformation":{
+			"maintenanceinformationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"metadataseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"dataidentificationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"maintenanceandupdatefrequency":{
+				"type":"string",
+				"enum":{"$ref" : "MD_MaintenanceFrequencyCode"},
+				"required":true
+			},
+			"userdefinedmaintenancefrequency":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"updatescope":{
+				"type":"string",
+				"enum": {"$ref" : "MD_ScopeCode"},
+				"required":false
+			},
+			"contact":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"CI_ResponsibleParty"
+					}
+					
+				}
+				
+			}
+			
+		},
+		"MD_Keywords":{
+			"keywordsseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"dataidentificationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"keyword":{
+				"type":"string",
+				"maxlength":255,
+				"required":true
+			},
+			"type":{
+				"type":"string",
+				"enum": {"$ref" : "MD_KeywordTypeCode"},
+				"required":false
+			},
+			"thesaurusname":{
+				"type":"object",
+				"required":false,
+				"properties":{
+					"$ref":"CI_Citation"
+				}
+				
+			}
+			
+		},
+		"MD_Identifier":{
+			"identifierseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"citationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"geographicdescriptionseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"domainconsistencyseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"authority":{
+				"type":"object",
+				"required":false,
+				"properties":{
+					"$ref":"CI_ResponsibleParty"
+				}
+				
+			},
+			"code":{
+				"type":"string",
+				"maxlength":255,
+				"required":true
+			}
+			
+		},
+		"EX_GeographicDescription":{
+			"@type":{
+				"type":"string",
+				"maxlength":255,
+				"display":false,
+				"required":false,
+				"default":"EX_GeographicDescription"
+			},
+			"g_type":{
+				"type":"string",
+				"display":false,
+				"default":"2",
+				"required":false
+			},
+			"geographicdescriptionseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"extentseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"geographicidentifier":{
+				"type":"object",
+				"required":true,
+				"properties":{
+					"$ref":"MD_Identifier"
+				}
+				
+			}
+			
+		},
+		"EX_GeographicBoundingBox":{
+			"@type":{
+				"type":"string",
+				"maxlength":255,
+				"display":false,
+				"required":false,
+				"default":"EX_GeographicBoundingBox"
+			},
+			"g_type":{
+				"type":"string",
+				"display":false,
+				"default":"1",
+				"required":false
+			},
+			"geographicboundingboxseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"extentseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"westboundlongitude":{
+				"type":"number",
+				"required":true,
+				"minimum":-180,
+				"maximum":180
+			},
+			"eastboundlongitude":{
+				"type":"number",
+				"required":true,
+				"minimum":-180,
+				"maximum":180
+			},
+			"southboundlatitude":{
+				"type":"number",
+				"required":true,
+				"minimum":-180,
+				"maximum":180
+			},
+			"northboundlatitude":{
+				"type":"number",
+				"required":true,
+				"minimum":-180,
+				"maximum":180
+			}
+			
+		},
+		"EX_TemporalExtent":{
+			"temporalextentseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"extentseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"extent":{
+				"type":"string",
+				"maxlength":255,
+				"required": true
+			}
+			
+		},
+		"EX_Extent":{
+			"extentseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"dataidentificationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"geographicelement":{
+				"type":"array",
+				"required":true,
+				"items":[
+					{
+						"type":"object",
+						"name":"EX_GeographicDescription",
+						"required":false,
+						"properties":{
+							"$ref":"EX_GeographicDescription"
+						}
+						
+					},
+					{
+						"type":"object",
+						"name":"EX_GeographicBoundingBox",
+						"required":false,
+						"properties":{
+							"$ref":"EX_GeographicBoundingBox"
+						}
+						
+					}
+					
+				]
+				
+			},
+			"temporalelement":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"EX_TemporalExtent"
+					}
+					
+				}
+				
+			}
+			
+		},
+		"MD_Constraints":{
+			"constraintsseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"metadataseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"dataidentificationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"uselimitation":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			}
+			
+		},
+		"CI_Date":{
+			"dateseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"citationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"dates":{
+				"type":"string",
+				"label":"date",
+				"maxlength":255,
+				"description":"날짜 입력 양식 yyyy-MM-dd'T'HH:mm:ss'Z'",
+				"format": "date-time",
+				"required":true
+			},
+			"datetype":{
+				"type":"string",
+				"enum": {"$ref" : "CI_DateTypeCode" },
+				"required":true
+			}
+			
+		},
+		"CI_Citation":{
+			"citationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"dataidentificationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"keywordsseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"conformanceresultseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"title":{
+				"type":"string",
+				"maxlength":255,
+				"required":true
+			},
+			"alternativetitle":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"dates":{
+				"type":"array",
+				"label":"date",
+				"required":true,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"CI_Date"
+					}
+					
+				}
+				
+			},
+			"identifier":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"MD_Identifier"
+					}
+					
+				}
+				
+			},
+			"citedresponsibleparty":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"CI_ResponsibleParty"
+					}
+					
+				}
+				
+			},
+			"presentationform":{
+				"type":"string",
+				"enum":{"$ref" : "CI_PresentationFormCode" },
+				"required":false
+			}
+			
+		},
+		"MD_DataIdentification":{
+			"dataidentificationseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"metadataseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"citation":{
+				"type":"array",
+				"required":true,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"CI_Citation"
+					}
+					
+				}
+				
+			},
+			"abstract":{
+				"type":"string",
+				"maxlength":4000,
+				"format":"multiline",
+				"required":true
+			},
+			"pointofcontact":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"CI_ResponsibleParty"
+					}
+					
+				}
+				
+			},
+			"spatialrepresentationtype":{
+				"type":"string",
+				"enum": {"$ref" : "MD_SpatialRepresentationTypeCode"},
+				"required":false
+			},
+			"spatialresolution":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"language":{
+				"type":"string",
+				"maxlength":255,
+				"required":true
+			},
+			"topiccategory":{
+				"type":"string",
+				"enum":{ "$ref" : "MD_TopicCategoryCode" },
+				"required":true
+			},
+			"resourcemaintenance":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"MD_MaintenanceInformation"
+					}
+					
+				}
+				
+			},
+			"descriptivekeywords":{
+				"type":"array",
+				"required":true,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"MD_Keywords"
+					}
+					
+				}
+				
+			},
+			"extent":{
+				"type":"array",
+				"required":true,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"EX_Extent"
+					}
+					
+				}
+				
+			},
+			"resourceconstraints":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"MD_Constraints"
+					}
+					
+				}
+				
+			}
+			
+		},
+		"MD_Format":{
+			"formatseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"distributionseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"distributorseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"name":{
+				"type":"string",
+				"maxlength":255,
+				"required":true
+			},
+			"version":{
+				"type":"string",
+				"maxlength":255,
+				"required":true
+			},
+			"specification":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			},
+			"formatdistributor":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"MD_Distributor"
+					}
+					
+				}
+				
+			}
+			
+		},
+		"MD_DigitalTransferOptions":{
+			"digitaltransferoptionsseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"distributionseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"distributorseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"onlines":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"CI_OnlineResource"
+					}
+					
+				}
+				
+			}
+			
+		},
+		"MD_Distributor":{
+			"formatseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"distributionseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"distributorcontact":{
+				"type":"object",
+				"required":true,
+				"properties":{
+					"$ref":"CI_ResponsibleParty"
+				}
+				
+			},
+			"distributorformat":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"MD_Format"
+					}
+					
+				}
+				
+			},
+			"distributortransferoptions":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"MD_DigitalTransferOptions"
+					}
+					
+				}
+				
+			}
+			
+		},
+		"MD_Distribution":{
+			"distributionseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"metadataseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"distributionformat":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"MD_Format"
+					}
+					
+				}
+				
+			},
+			"distributor":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"MD_Distributor"
+					}
+					
+				}
+				
+			},
+			"transferoptions":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"MD_DigitalTransferOptions"
+					}
+					
+				}
+				
+			}
+			
+		},
+		"DQ_Scope":{
+			"scopeseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"dataqualityseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"levels":{
+				"type":"string",
+				"label":"level",
+				"enum":{"$ref" : "MD_ScopeCode"},
+				"required":true
+			}
+			
+		},
+		"LI_Lineage":{
+			"lineageseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"dataqualityseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"statement":{
+				"type":"string",
+				"maxlength":255,
+				"required":false
+			}
+			
+		},
+		"DQ_ConformanceResult":{
+			"@type":{
+				"type":"string",
+				"maxlength":255,
+				"display":false,
+				"required":false,
+				"default":"DQ_ConformanceResult"
+			},
+			"conformanceresultseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"domainconsistencyseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"specification":{
+				"type":"object",
+				"required":true,
+				"properties":{
+					"$ref":"CI_Citation"
+				}
+				
+			},
+			"explanation":{
+				"type":"string",
+				"maxlength":255,
+				"required":true
+			},
+			"pass":{
+				"type":"string",
+				"enum":[{"yes":1}, {"no":0}],
+				"required":true
+			}
+			
+		},
+		"DQ_DomainConsistency":{
+			"@type":{
+				"type":"string",
+				"maxlength":255,
+				"display":false,
+				"required":false,
+				"default":"DQ_DomainConsistency"
+			},
+			"domainconsistencyseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"dataqualityseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"measureidentification":{
+				"type":"array",
+				"required":false,
+				"maxlength":1,
+				"items":{	
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"MD_Identifier"
+					}
+				}
+				
+			},
+			"result":{
+				"type":"array",
+				"required":true,
+				"maxlength":2,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"DQ_ConformanceResult"
+					}
+					
+				}
+				
+			}
+			
+		},
+		"DQ_DataQuality":{
+			"dataqualityseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"metadataseqn":{
+				"type":"number",
+				"display":false,
+				"required":false
+			},
+			"scope":{
+				"type":"object",
+				"required":true,
+				"properties":{
+					"$ref":"DQ_Scope"
+				}
+				
+			},
+			"report":{
+				"type":"array",
+				"required":false,
+				"items":{
+					"type":"object",
+					"required":false,
+					"properties":{
+						"$ref":"DQ_DomainConsistency"
+					}
+					
+				}
+				
+			},
+			"lineage":{
+				"type":"object",
+				"required":false,
+				"properties":{
+					"$ref":"LI_Lineage"
+				}
+				
+			}
+			
+		}
+		
+	},
+	"id":"http://swfc.kma.go.kr",
+	"required":false,
+	"properties":{
+		"metadataseqn":{
+			"type":"number",
+			"display":false,
+			"required":false
+		},
+		"fileidentifier":{
+			"type":"string",
+			"maxlength":255,
+			"description":"필수 입력 항목입니다",
+			"required":true
+		},
+		"language":{
+			"type":"string",
+			"maxlength":255,
+			"required":false
+		},
+		"characterset":{
+			"type":"string",
+			"label":"characterSet",
+			"enum":{"$ref" : "MD_CharacterSetCode"},
+			"required":false
+		},
+		"hierarchylevel":{
+			"type":"string",
+			"enum":{"$ref" : "MD_ScopeCode"},
+			"required":false
+		},
+		"hierarchylevelname":{
+			"type":"string",
+			"maxlength":255,
+			"required":false
+		},
+		"contact":{
+			"type":"array",
+			"description":"필수 입력 항목입니다",
+			"required":true,
+			"items":{
+				"type":"object",
+				"required":false,
+				"properties":{
+					"$ref":"CI_ResponsibleParty"
+				}
+				
+			}
+			
+		},
+		"datestamp":{
+			"type":"string",
+			"description":"날짜 입력 양식 yyyy-MM-dd'T'HH:mm:ss'Z'",
+			"format":"date-time",
+			"required":true
+		},
+		"metadatastandardname":{
+			"type":"string",
+			"maxlength":255,
+			"required":false
+		},
+		"metadatastandardversion":{
+			"type":"string",
+			"maxlength":255,
+			"required":false
+		},
+		"locale":{
+			"type":"string",
+			"maxlength":255,
+			"required":false
+		},
+		"metadataextensioninfo":{
+			"type":"array",
+			"required":false,
+			"items":{
+				"type":"object",
+				"required":false,
+				"properties":{
+					"$ref":"MD_ExtensionInformation"
+				}
+				
+			}
+			
+		},
+		"metadatamaintenance":{
+			"type":"object",
+			"required":true,
+			"description":"필수 입력 항목입니다",
+			"properties":{
+				"$ref":"MD_MaintenanceInformation"
+			}
+			
+		},
+		"identificationinfo":{
+			"type":"array",
+			"required":true,
+			"description":"필수 입력 항목입니다.",
+			"items":{
+				"type":"object",
+				"required":false,
+				"properties":{
+					"$ref":"MD_DataIdentification"
+				}
+				
+			}
+			
+		},
+		"metadataconstraints":{
+			"type":"array",
+			"required":false,
+			"items":{
+				"type":"object",
+				"required":false,
+				"properties":{
+					"$ref":"MD_Constraints"
+				}
+				
+			}
+			
+		},
+		"distributioninfo":{
+			"type":"object",
+			"required":false,
+			"properties":{
+				"$ref":"MD_Distribution"
+			}
+			
+		},
+		"dataqualityinfo":{
+			"type":"array",
+			"required":false,
+			"items":{
+				"type":"object",
+				"required":false,
+				"properties":{
+					"$ref":"DQ_DataQuality"
+				}
+				
+			}
+			
+		}
+		
+	}
+}

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.BandMapper">
+	<select id="SelectMany" parameterType="hashmap" resultType="BandDTO">
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+     		
+		SELECT 
+			 B.CLT_TAR_BAND_SEQ_N       
+       		,(SELECT A.CLT_TAR_BAND_GRP_KOR_NM FROM SMT_CLT_TAR_BAND_GRP_T A WHERE A.CLT_TAR_BAND_GRP_SEQ_N = B.CLT_TAR_BAND_GRP_SEQ_N AND DEL_F_CD = 'N')
+       		 AS CLT_TAR_BAND_GRP_KOR_NM
+       		,B.CLT_TAR_BAND_GRP_SEQ_N   
+       		,B.CLT_TAR_BAND_KOR_NM      
+       		,B.CLT_TAR_BAND_ENG_NM      
+       		,B.CLT_TAR_BAND_DESC        
+       		,B.CLT_TAR_BAND_FRQC_BANDWIDTH
+       		,B.CLT_TAR_BAND_WIDTH_SZ     
+       		,B.CLT_TAR_BAND_HGT_SZ       
+       		,B.CLT_TAR_BAND_RES          
+       		,B.CLT_TAR_BAND_CEN_FRQC     
+       		,B.USE_F_CD                  
+       		,B.DEL_F_CD                  
+       		,B.RG_K_SEQ_N                
+       		,B.RG_D                      
+       		,B.RG_TM                     
+       		,B.RG_IP                     
+       		,B.MDF_K_SEQ_N               
+       		,B.MDF_D                     
+       		,B.MDF_TM                    
+       		,B.MDF_IP                    
+       		,B.CLT_TAR_BAND_CD                   
+		FROM 
+          SMT_CLT_TAR_BAND_T B
+		WHERE
+			B.DEL_F_CD = 'N'	
+			<if test="search_text != null and search_text != '' and search_target != null ">
+			   <if test="search_target == 'clt_tar_band_kor_nm' ">
+    				AND B.CLT_TAR_BAND_KOR_NM like '%' ||#{search_text} ||'%'
+			   </if>
+			   <if test="search_target == 'clt_tar_band_eng_nm'">
+    				AND B.CLT_TAR_BAND_ENG_NM like '%' ||#{search_text} ||'%'
+			   </if>
+			   <if test="search_target == 'all' ">
+    				AND ( B.CLT_TAR_BAND_KOR_NM like '%' ||#{search_text} ||'%' OR B.CLT_TAR_BAND_ENG_NM like '%' ||#{search_text} ||'%' )
+			   </if>
+  			</if>
+ 			<if test="search_use != null and search_use != '' ">
+ 					AND B.USE_F_CD = #{search_use}
+ 			</if> 
+ 			<if test="search_clt_tar_band_grp_seq_n != null and search_clt_tar_band_grp_seq_n != '' ">
+					AND B.CLT_TAR_BAND_GRP_SEQ_N = #{search_clt_tar_band_grp_seq_n}
+			</if> 
+		ORDER BY
+			B.RG_D DESC, B.RG_TM DESC
+		
+		<![CDATA[		
+				) A
+			) WHERE RNUM >= #{startRow}	AND RNUM <= #{endRow}
+		]]>		
+	</select>
+
+	<select id="Count" parameterType="hashmap" resultType="int">
+		SELECT 
+			COUNT(*) 
+		FROM 
+			SMT_CLT_TAR_BAND_T B
+		WHERE
+			DEL_F_CD = 'N'	
+			<if test="search_text != null and search_text != '' and search_target != null ">
+			   <if test="search_target == 'clt_tar_band_kor_nm' ">
+    				AND B.CLT_TAR_BAND_KOR_NM like '%' ||#{search_text} ||'%'
+			   </if>
+			   <if test="search_target == 'clt_tar_band_eng_nm'">
+    				AND B.CLT_TAR_BAND_ENG_NM like '%' ||#{search_text} ||'%'
+			   </if>
+			   <if test="search_target == 'all' ">
+    				AND ( B.CLT_TAR_BAND_KOR_NM like '%' ||#{search_text} ||'%' OR B.CLT_TAR_BAND_ENG_NM like '%' ||#{search_text} ||'%' )
+			   </if>
+  			</if>
+ 			<if test="search_use != null and search_use != '' ">
+ 					AND B.USE_F_CD = #{search_use}
+ 			</if> 
+ 			<if test="search_clt_tar_band_grp_seq_n != null and search_clt_tar_band_grp_seq_n != '' ">
+					AND B.CLT_TAR_BAND_GRP_SEQ_N = #{search_clt_tar_band_grp_seq_n}
+			</if> 
+	</select>
+	
+	<select id="SelectOne" parameterType="hashmap" resultType="BandDTO">
+		
+		SELECT 
+			 B.CLT_TAR_BAND_SEQ_N      			
+       		,(SELECT A.CLT_TAR_BAND_GRP_KOR_NM FROM SMT_CLT_TAR_BAND_GRP_T A WHERE A.CLT_TAR_BAND_GRP_SEQ_N = B.CLT_TAR_BAND_GRP_SEQ_N AND DEL_F_CD = 'N')
+       		 AS CLT_TAR_BAND_GRP_KOR_NM 
+       		,(SELECT A.CLT_TAR_BAND_GRP_ENG_NM FROM SMT_CLT_TAR_BAND_GRP_T A WHERE A.CLT_TAR_BAND_GRP_SEQ_N = B.CLT_TAR_BAND_GRP_SEQ_N AND DEL_F_CD = 'N')
+       		 AS CLT_TAR_BAND_GRP_ENG_NM 
+       		,B.CLT_TAR_BAND_GRP_SEQ_N    			
+       		,B.CLT_TAR_BAND_KOR_NM       			
+       		,B.CLT_TAR_BAND_ENG_NM       			
+       		,B.CLT_TAR_BAND_DESC         		
+       		,B.CLT_TAR_BAND_FRQC_BANDWIDTH			
+       		,B.CLT_TAR_BAND_WIDTH_SZ     			
+       		,B.CLT_TAR_BAND_HGT_SZ       			
+       		,B.CLT_TAR_BAND_RES          			
+       		,B.CLT_TAR_BAND_CEN_FRQC     			
+       		,B.USE_F_CD                  			
+       		,B.DEL_F_CD                  			
+       		,B.RG_K_SEQ_N                			
+       		,B.RG_D                      			
+       		,B.RG_TM                     			
+       		,B.RG_IP                     			
+       		,B.MDF_K_SEQ_N               			
+       		,B.MDF_D                     			
+       		,B.MDF_TM                    			
+       		,B.MDF_IP                    			
+       		,B.CLT_TAR_BAND_CD                    			
+		FROM 
+			SMT_CLT_TAR_BAND_T B
+		WHERE	
+			B.CLT_TAR_BAND_SEQ_N = #{clt_tar_band_seq_n}		
+	</select>
+	
+		
+	<select id="Insert" parameterType="BandDTO">
+		INSERT INTO SMT_CLT_TAR_BAND_T (
+			 CLT_TAR_BAND_SEQ_N        			
+       		,CLT_TAR_BAND_GRP_SEQ_N    			
+       		,CLT_TAR_BAND_KOR_NM       			
+       		,CLT_TAR_BAND_ENG_NM       			
+       		,CLT_TAR_BAND_DESC         			
+       		,CLT_TAR_BAND_FRQC_BANDWIDTH		
+       		,CLT_TAR_BAND_WIDTH_SZ     			
+       		,CLT_TAR_BAND_HGT_SZ       			
+       		,CLT_TAR_BAND_RES          			
+       		,CLT_TAR_BAND_CEN_FRQC     			
+       		,USE_F_CD                  			
+       		,DEL_F_CD                  			
+       		,RG_K_SEQ_N                			
+       		,RG_D                      			
+       		,RG_TM                     			
+       		,RG_IP                     			
+       		,MDF_K_SEQ_N               			
+       		,MDF_D                     			
+       		,MDF_TM                    			
+       		,MDF_IP                    			
+       		,CLT_TAR_BAND_CD                    			
+		) VALUES (
+	       	 SMT_CLT_TAR_BAND_T_SQ01.NEXTVAL
+			,#{clt_tar_band_grp_seq_n}
+			,#{clt_tar_band_kor_nm}
+			,#{clt_tar_band_eng_nm}
+			,#{clt_tar_band_desc}
+			,#{clt_tar_band_frqc_bandwidth}
+			,#{clt_tar_band_width_sz}
+			,#{clt_tar_band_hgt_sz}
+			,#{clt_tar_band_res}
+			,#{clt_tar_band_cen_frqc}
+			,#{use_f_cd}
+			,#{del_f_cd}
+			,#{rg_k_seq_n}
+			,TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,TO_CHAR(SYSDATE, 'HH24MISS')
+			,#{rg_ip}
+			,#{mdf_k_seq_n}
+			,#{mdf_d}
+			,#{mdf_tm}
+			,#{mdf_ip}
+			,#{clt_tar_band_cd}
+	       )
+	</select>
+	
+	<select id="Update" parameterType="BandDTO">
+		UPDATE SMT_CLT_TAR_BAND_T SET
+			 CLT_TAR_BAND_GRP_SEQ_N = #{clt_tar_band_grp_seq_n}
+       		,CLT_TAR_BAND_KOR_NM = #{clt_tar_band_kor_nm}
+       		,CLT_TAR_BAND_ENG_NM = #{clt_tar_band_eng_nm}
+       		,CLT_TAR_BAND_DESC = #{clt_tar_band_desc}
+       		,CLT_TAR_BAND_FRQC_BANDWIDTH = #{clt_tar_band_frqc_bandwidth}
+       		,CLT_TAR_BAND_WIDTH_SZ = #{clt_tar_band_width_sz}
+       		,CLT_TAR_BAND_HGT_SZ = #{clt_tar_band_hgt_sz}
+       		,CLT_TAR_BAND_RES = #{clt_tar_band_res}
+       		,CLT_TAR_BAND_CEN_FRQC = #{clt_tar_band_cen_frqc}
+			,USE_F_CD = #{use_f_cd}
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+			,CLT_TAR_BAND_CD = #{clt_tar_band_cd}
+		WHERE CLT_TAR_BAND_SEQ_N=#{clt_tar_band_seq_n}
+		
+	</select>
+
+	<!-- DELETE FROM SMT_CLT_TAR_BAND_T WHERE CLT_TAR_BAND_SEQ_N=#{clt_tar_band_seq_n} -->
+	<select id="Delete" parameterType="MapperParam">
+		UPDATE SMT_CLT_TAR_BAND_T SET
+			  DEL_F_CD = 'Y'
+			 ,USE_F_CD = 'N' 
+			 ,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			 ,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			 ,MDF_IP = #{mdf_ip}
+		WHERE CLT_TAR_BAND_SEQ_N=#{clt_tar_band_seq_n}
+	</select>
+	
+</mapper>

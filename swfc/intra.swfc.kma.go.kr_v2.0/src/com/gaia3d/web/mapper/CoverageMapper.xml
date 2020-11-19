@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gaia3d.web.mapper.CoverageMapper">
+	<select id="SelectMany" parameterType="hashmap" resultType="CoverageDTO">
+		/**
+			com.gaia3d.web.mapper.CoverageMapper.SelectMany
+		*/
+		SELECT * FROM (
+     		SELECT ROWNUM AS RNUM, A.* FROM (
+     			SELECT
+			        A.COVERAGE_SEQ_N        
+			       ,A.COVERAGE_KOR_NM       
+			       ,A.COVERAGE_ENG_NM       
+			       ,A.COVERAGE_DESC         
+			       ,A.USE_F_CD              
+			       ,A.DEL_F_CD              
+			       ,A.RG_K_SEQ_N            
+			       ,A.RG_D                  
+			       ,A.RG_TM                 
+			       ,A.RG_IP                 
+			       ,A.MDF_K_SEQ_N           
+			       ,A.MDF_D                 
+			       ,A.MDF_TM                
+			       ,A.MDF_IP                
+			       ,A.COVERAGE_CD                
+				FROM
+				       SMT_COVERAGE_T A
+				WHERE
+					A.DEL_F_CD = 'N'	
+				<if test="search_text != null and search_text != '' and search_target != null ">
+				   <if test="search_target == 'coverage_kor_nm' ">
+	    				AND A.COVERAGE_KOR_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'coverage_eng_nm'">
+	    				AND A.COVERAGE_ENG_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'all' ">
+	    				AND ( A.COVERAGE_KOR_NM like '%' ||#{search_text} ||'%' OR A.COVERAGE_ENG_NM like '%' ||#{search_text} ||'%' )
+				   </if>
+	  			</if>
+	 			<if test="search_use != null and search_use != '' ">
+	 					AND A.USE_F_CD = #{search_use}
+	 			</if> 
+			ORDER BY
+				A.RG_D DESC, A.RG_TM DESC
+				
+		<![CDATA[		
+				) A
+			) WHERE RNUM >= #{startRow}	AND RNUM <= #{endRow}
+		]]>		 	
+	</select>
+
+	
+	<select id="Count" parameterType="hashmap" resultType="int">
+		/**
+			com.gaia3d.web.mapper.CoverageMapper.Count
+		*/
+		SELECT 
+			COUNT(*) 
+		FROM 
+			SMT_COVERAGE_T A
+		WHERE
+					A.DEL_F_CD = 'N'	
+				<if test="search_text != null and search_text != '' and search_target != null ">
+				   <if test="search_target == 'coverage_kor_nm' ">
+	    				AND A.COVERAGE_KOR_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'coverage_eng_nm'">
+	    				AND A.COVERAGE_ENG_NM like '%' ||#{search_text} ||'%'
+				   </if>
+				   <if test="search_target == 'all' ">
+	    				AND ( A.COVERAGE_KOR_NM like '%' ||#{search_text} ||'%' OR A.COVERAGE_ENG_NM like '%' ||#{search_text} ||'%' )
+				   </if>
+	  			</if>
+	 			<if test="search_use != null and search_use != '' ">
+	 					AND A.USE_F_CD = #{search_use}
+	 			</if> 
+	</select>
+	
+		
+	<select id="SelectOne" parameterType="hashmap" resultType="CoverageDTO">
+		/**
+			com.gaia3d.web.mapper.CoverageMapper.SelectOne
+		*/
+		SELECT 
+			A.COVERAGE_SEQ_N   
+	       ,A.COVERAGE_KOR_NM  
+	       ,A.COVERAGE_ENG_NM  
+	       ,A.COVERAGE_DESC    
+	       ,A.USE_F_CD         
+	       ,A.DEL_F_CD         
+	       ,A.RG_K_SEQ_N       
+	       ,A.RG_D             
+	       ,A.RG_TM            
+	       ,A.RG_IP            
+	       ,A.MDF_K_SEQ_N      
+	       ,A.MDF_D            
+	       ,A.MDF_TM           
+	       ,A.MDF_IP           
+	       ,A.COVERAGE_CD           
+		FROM
+		       SMT_COVERAGE_T A
+		WHERE 
+			A.COVERAGE_SEQ_N=#{coverage_seq_n}
+	</select>
+
+	
+	<select id="Insert" parameterType="CoverageDTO">
+		/**
+			com.gaia3d.web.mapper.CoverageMapper.Insert
+		*/
+		INSERT INTO SMT_COVERAGE_T (
+			 COVERAGE_SEQ_N   
+			,COVERAGE_KOR_NM  
+			,COVERAGE_ENG_NM  
+			,COVERAGE_DESC    
+			,USE_F_CD         
+			,DEL_F_CD         
+			,RG_K_SEQ_N       
+			,RG_D             
+			,RG_TM            
+			,RG_IP            
+			,MDF_K_SEQ_N      
+			,MDF_D            
+			,MDF_TM           
+			,MDF_IP           
+			,COVERAGE_CD           
+		) VALUES (
+			 SMT_COVERAGE_T_SQ01.NEXTVAL
+			,#{coverage_kor_nm}
+			,#{coverage_eng_nm}
+			,#{coverage_desc}
+			,#{use_f_cd}
+			,#{del_f_cd}
+			,#{rg_k_seq_n}
+			,TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,TO_CHAR(SYSDATE, 'HH24MISS')
+			,#{rg_ip}
+			,#{mdf_k_seq_n}
+			,#{mdf_d}
+			,#{mdf_tm}
+			,#{mdf_ip}
+			,#{coverage_cd}
+		) 
+	</select>
+	
+	<select id="Update" parameterType="CoverageDTO">
+		/**
+			com.gaia3d.web.mapper.CoverageMapper.Update
+		*/
+		UPDATE SMT_COVERAGE_T SET 
+			 COVERAGE_KOR_NM =#{coverage_kor_nm} 
+			,COVERAGE_ENG_NM =#{coverage_eng_nm} 
+			,COVERAGE_DESC =#{coverage_desc} 
+			,USE_F_CD = #{use_f_cd}
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+			,COVERAGE_CD = #{coverage_cd}
+		WHERE COVERAGE_SEQ_N=#{coverage_seq_n}
+	</select>
+
+	<select id="Delete" parameterType="MapperParam">
+		/**
+			com.gaia3d.web.mapper.CoverageMapper.Delete
+		*/
+		UPDATE SMT_COVERAGE_T SET 
+			 DEL_F_CD = 'Y' 
+			,USE_F_CD = 'N' 
+			,MDF_K_SEQ_N = #{mdf_k_seq_n}
+			,MDF_D = TO_CHAR(SYSDATE, 'YYYYMMDD')
+			,MDF_TM = TO_CHAR(SYSDATE, 'HH24MISS')
+			,MDF_IP = #{mdf_ip}
+		WHERE COVERAGE_SEQ_N=#{coverage_seq_n}
+	</select>
+</mapper>
